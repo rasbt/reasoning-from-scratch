@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reasoning"
+
+version = "0.1.0"
+description = "Reasoning Models From Scratch"
+readme = "README.md"
+
+authors = [
+  { name = "Sebastian Raschka" }
+]
+
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+
+dependencies = [
+]
+
+classifiers = [
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["reasoning"]
+
+[tool.uv.sources]
+reasoning = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "reasoning",
+]
