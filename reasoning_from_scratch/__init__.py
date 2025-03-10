@@ -1,4 +1,4 @@
-# reasoning/__init__.py
+# reasoning_from_scratch/__init__.py
 
 """
 Reasoning package used by the "Reasoning Models From Scratch" book.

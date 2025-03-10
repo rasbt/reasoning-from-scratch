@@ -1,4 +1,4 @@
-# reasoning/ch02.py
+# reasoning_from_scratch/ch02.py
 
 class LLM:
     def __init__(self, model_name="placeholder-model"):

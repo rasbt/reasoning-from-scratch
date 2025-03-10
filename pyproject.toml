@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "reasoning"
+name = "reasoning_from_scratch"
 
 version = "0.1.0"
 description = "Reasoning Models From Scratch"
@@ -32,12 +32,14 @@ classifiers = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["reasoning"]
+include = ["reasoning_from_scratch"]
 
 [tool.uv.sources]
 reasoning = { workspace = true }
 
 [dependency-groups]
 dev = [
-    "reasoning",
+    "build>=1.2.2.post1",
+    "reasoning_from_scratch",
+    "twine>=6.1.0",
 ]
