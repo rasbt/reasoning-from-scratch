@@ -3,6 +3,8 @@
 This repository contains the code for developing an LLM reasoning model and is the official code repository for the book *Build A Reasoning Model (From Scratch)*.
 
 
+## Table of Contents (In Progress)
+
 - Chapter 1: Understanding reasoning models
 - Chapter 2: Using LLMs to generate text
 - Chapter 3: Evaluating reasoning models
@@ -42,7 +44,7 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 
 
 &nbsp;
-## Companion book
+## Companion Book
 
 Please note that *Build A Reasoning Model (From Scratch)* is a standalone book focused on methods to improve LLM reasoning. From chapter 1, the definition of reasoning is:
 
@@ -65,17 +67,13 @@ In this book, we work with a pre-trained open-source base LLM (Qwen3) on top of 
 The code in the main chapters of this book is designed to mostly run on consumer hardware within a reasonable timeframe and does not require specialized hardware. This approach ensures that a wide audience can engage with the material. Additionally, the code automatically utilizes GPUs if they are available. That being said, chapters 2-4 will work well on CPUs and GPUs. For chapters 5 and 6, it is recommended to use a GPU if you want to replicate the results in the chapter.
 
 
- (Please see the [setup](https://github.com/rasbt/LLMs-from-scratch/blob/main/setup/README.md) doc for additional recommendations.)
-
-
+(Please see the [setup_tips](TBD) doc for additional recommendations.)
 
 &nbsp;
 ## Exercises
 
 Each chapter of the book includes several exercises. The solutions are summarized in Appendix B, and the corresponding code notebooks are available in the main chapter folders of this repository (for example,  `ch02/01_main-chapter-code/exercise-solutions.ipynb`).
 
-
-<br>
 &nbsp;
 ## Questions, Feedback, and Contributing to This Repository
 
