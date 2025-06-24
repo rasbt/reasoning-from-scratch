@@ -37,9 +37,3 @@ include = ["reasoning_from_scratch"]
 [tool.uv.sources]
 reasoning = { workspace = true }
 
-[dependency-groups]
-dev = [
-    "build>=1.2.2.post1",
-    "reasoning_from_scratch",
-    "twine>=6.1.0",
-]
