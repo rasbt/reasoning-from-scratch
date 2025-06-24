@@ -2,7 +2,7 @@
 
 This repository contains the code for developing an LLM reasoning model and is the official code repository for the book *Build A Reasoning Model (From Scratch)*.
 
-
+&nbsp;
 ## Table of Contents (In Progress)
 
 - Chapter 1: Understanding reasoning models
