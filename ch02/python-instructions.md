@@ -6,8 +6,7 @@ This section introduces two beginner-friendly methods for installing the require
 
 There are, of course, many other ways to install and manage Python packages. If you are an experienced Python user and already have your own setup or preferences, feel free to skip this section.
 
-If neither of the two options below works for you, please do not hesitate to reach out, for example, by opening a [Discussion](https://gi
-thub.com/rasbt/reasoning-from-scratch/discussions).
+If neither of the two options below works for you, please do not hesitate to reach out, for example, by opening a [Discussion](https://github.com/rasbt/reasoning-from-scratch/discussions).
 
 &nbsp;
 ## Option 1: Using `pip` (built-in, works everywhere)
