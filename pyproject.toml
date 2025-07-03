@@ -17,6 +17,9 @@ license = { file = "LICENSE" }
 requires-python = ">=3.10"
 
 dependencies = [
+    "jupyterlab>=4.0",
+    "torch>=2.3.0",
+    "tokenizers>=0.21.2"
 ]
 
 classifiers = [
@@ -27,6 +30,11 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent"
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
 ]
 
 [tool.setuptools.packages.find]
