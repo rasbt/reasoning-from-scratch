@@ -4,7 +4,9 @@ This repository contains the code for developing an LLM reasoning model and is t
 
 &nbsp;
 
-[![Code tests Linux](https://github.com/rasbt/LLMs-from-scratch/actions/workflows/code-tests.yml/badge.svg?branch=main&label=Linux)](https://github.com/rasbt/LLMs-from-scratch/actions/workflows/code-tests.yml) [![Code tests macOS](https://github.com/rasbt/LLMs-from-scratch/actions/workflows/code-tests.yml/badge.svg?branch=main&label=macOS)](https://github.com/rasbt/LLMs-from-scratch/actions/workflows/code-tests.yml) [![Code tests Windows](https://github.com/rasbt/LLMs-from-scratch/actions/workflows/code-tests.yml/badge.svg?branch=main&label=Windows)](https://github.com/rasbt/LLMs-from-scratch/actions/workflows/code-tests.yml)
+[![Code tests Linux](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/basic-tests-all-os-uv.yml/badge.svg)](https://github.com/rasbt/LLMs-from-scratch/actions/workflows/basic-tests-all-os-uv.yml)
+
+[![Code tests Linux](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/basic-tests-all-os-uv.yml/badge.svg?branch=main&label=Linux)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/basic-tests-all-os-uv.yml) [![Code tests macOS](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/basic-tests-all-os-uv.yml/badge.svg?branch=main&label=macOS)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/basic-tests-all-os-uv.yml) [![Code tests Windows](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/basic-tests-all-os-uv.yml/badge.svg?branch=main&label=Windows)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/basic-tests-all-os-uv.yml)
 
 
 &nbsp;
