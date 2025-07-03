@@ -1,0 +1,27 @@
+name: Code Style Checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  flake8:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+    - name: Install ruff (a faster flake 8 equivalent)
+      run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv sync --dev --python=3.13
+          uv add ruff
+
+    - name: Run ruff with exceptions
+      run: |
+        source .venv/bin/activate
+        ruff check .

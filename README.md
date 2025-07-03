@@ -3,6 +3,10 @@
 This repository contains the code for developing an LLM reasoning model and is the official code repository for the book *Build A Reasoning Model (From Scratch)*.
 
 &nbsp;
+
+![Code Tests (Linux)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/code-tests.yml/badge.svg?branch=main&label=Linux) ![Code Tests (macOS)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/code-tests.yml/badge.svg?branch=main&label=macOS) ![Code Tests (Windows)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/code-tests.yml/badge.svg?branch=main&label=Windows)
+
+&nbsp;
 ## Table of Contents (In Progress)
 
 - Chapter 1: Understanding reasoning models

@@ -1,0 +1,48 @@
+name: Test Old PyTorch
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**/*.py'
+      - '**/*.ipynb'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '**/*.sh'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**/*.py'
+      - '**/*.ipynb'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '**/*.sh'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  uv-tests:
+    name: Code tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python (uv)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv and dependencies
+        shell: bash
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv sync
+          uv add pytest-ruff torch==2.7.1
+
+      - name: Test reasoning_from_scratch package
+        shell: bash
+        run: |
+          uv run pytest --ruff tests

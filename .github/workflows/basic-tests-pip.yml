@@ -1,0 +1,47 @@
+name: Code Tests (Plain pip)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**/*.py'
+      - '**/*.ipynb'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '**/*.sh'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**/*.py'
+      - '**/*.ipynb'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '**/*.sh'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pip-tests:
+    name: Pip Tests (Ubuntu Only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Create Virtual Environment and Install Dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+      - name: Test Selected Python Scripts
+        run: |
+          source .venv/bin/activate
+          pytest tests
