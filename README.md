@@ -74,7 +74,7 @@ In this book, we work with a pre-trained open-source base LLM (Qwen3) on top of 
 The code in the main chapters of this book is designed to mostly run on consumer hardware within a reasonable timeframe and does not require specialized hardware. This approach ensures that a wide audience can engage with the material. Additionally, the code automatically utilizes GPUs if they are available. That being said, chapters 2-4 will work well on CPUs and GPUs. For chapters 5 and 6, it is recommended to use a GPU if you want to replicate the results in the chapter.
 
 
-(Please see the [setup_tips](TBD) doc for additional recommendations.)
+(Please see the [setup_tips](ch02/https://github.com/rasbt/reasoning-from-scratch/blob/main/ch02/python-instructions.md) doc for additional recommendations.)
 
 &nbsp;
 ## Exercises
