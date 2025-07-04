@@ -35,6 +35,7 @@ classifiers = [
 [dependency-groups]
 dev = [
     "pytest>=8.3.5",
+    "transformers==4.53.0"
 ]
 
 [tool.setuptools.packages.find]
@@ -43,4 +44,3 @@ include = ["reasoning_from_scratch"]
 
 [tool.uv.sources]
 reasoning = { workspace = true }
-

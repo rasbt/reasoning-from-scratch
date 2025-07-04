@@ -39,7 +39,7 @@ jobs:
         shell: bash
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv sync
+          uv sync --group dev
           uv add pytest-ruff torch==2.7.1
 
       - name: Test reasoning_from_scratch package
