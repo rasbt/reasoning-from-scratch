@@ -36,6 +36,7 @@ classifiers = [
 dev = [
     "pytest>=8.3.5",
     "ruff>=0.4.4",
+    "pytest-ruff>=0.5",
     "transformers==4.53.0"
 ]
 
