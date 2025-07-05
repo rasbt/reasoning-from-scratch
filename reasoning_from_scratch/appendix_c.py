@@ -91,75 +91,75 @@ def load_weights_into_qwen(model, param_config, params):
 
     model.tok_emb.weight = assign(model.tok_emb.weight, params["model.embed_tokens.weight"], "model.embed_tokens.weight")
 
-    for l in range(param_config["n_layers"]):
-        block = model.trf_blocks[l]
+    for ln in range(param_config["n_layers"]):
+        block = model.trf_blocks[ln]
         att = block.att
 
         # Q, K, V projections
         att.W_query.weight = assign(
             att.W_query.weight,
-            params[f"model.layers.{l}.self_attn.q_proj.weight"],
-            f"model.layers.{l}.self_attn.q_proj.weight"
+            params[f"model.layers.{ln}.self_attn.q_proj.weight"],
+            f"model.layers.{ln}.self_attn.q_proj.weight"
         )
         att.W_key.weight = assign(
             att.W_key.weight,
-            params[f"model.layers.{l}.self_attn.k_proj.weight"],
-            f"model.layers.{l}.self_attn.k_proj.weight"
+            params[f"model.layers.{ln}.self_attn.k_proj.weight"],
+            f"model.layers.{ln}.self_attn.k_proj.weight"
         )
         att.W_value.weight = assign(
             att.W_value.weight,
-            params[f"model.layers.{l}.self_attn.v_proj.weight"],
-            f"model.layers.{l}.self_attn.v_proj.weight"
+            params[f"model.layers.{ln}.self_attn.v_proj.weight"],
+            f"model.layers.{ln}.self_attn.v_proj.weight"
         )
 
         # Output projection
         att.out_proj.weight = assign(
             att.out_proj.weight,
-            params[f"model.layers.{l}.self_attn.o_proj.weight"],
-            f"model.layers.{l}.self_attn.o_proj.weight"
+            params[f"model.layers.{ln}.self_attn.o_proj.weight"],
+            f"model.layers.{ln}.self_attn.o_proj.weight"
         )
 
         # QK norms
         if hasattr(att, "q_norm") and att.q_norm is not None:
             att.q_norm.scale = assign(
                 att.q_norm.scale,
-                params[f"model.layers.{l}.self_attn.q_norm.weight"],
-                f"model.layers.{l}.self_attn.q_norm.weight"
+                params[f"model.layers.{ln}.self_attn.q_norm.weight"],
+                f"model.layers.{ln}.self_attn.q_norm.weight"
             )
         if hasattr(att, "k_norm") and att.k_norm is not None:
             att.k_norm.scale = assign(
                 att.k_norm.scale,
-                params[f"model.layers.{l}.self_attn.k_norm.weight"],
-                f"model.layers.{l}.self_attn.k_norm.weight"
+                params[f"model.layers.{ln}.self_attn.k_norm.weight"],
+                f"model.layers.{ln}.self_attn.k_norm.weight"
             )
 
         # Attention layernorm
         block.norm1.scale = assign(
             block.norm1.scale,
-            params[f"model.layers.{l}.input_layernorm.weight"],
-            f"model.layers.{l}.input_layernorm.weight"
+            params[f"model.layers.{ln}.input_layernorm.weight"],
+            f"model.layers.{ln}.input_layernorm.weight"
         )
 
         # Feedforward weights
         block.ff.fc1.weight = assign(
             block.ff.fc1.weight,
-            params[f"model.layers.{l}.mlp.gate_proj.weight"],
-            f"model.layers.{l}.mlp.gate_proj.weight"
+            params[f"model.layers.{ln}.mlp.gate_proj.weight"],
+            f"model.layers.{ln}.mlp.gate_proj.weight"
         )
         block.ff.fc2.weight = assign(
             block.ff.fc2.weight,
-            params[f"model.layers.{l}.mlp.up_proj.weight"],
-            f"model.layers.{l}.mlp.up_proj.weight"
+            params[f"model.layers.{ln}.mlp.up_proj.weight"],
+            f"model.layers.{ln}.mlp.up_proj.weight"
         )
         block.ff.fc3.weight = assign(
             block.ff.fc3.weight,
-            params[f"model.layers.{l}.mlp.down_proj.weight"],
-            f"model.layers.{l}.mlp.down_proj.weight"
+            params[f"model.layers.{ln}.mlp.down_proj.weight"],
+            f"model.layers.{ln}.mlp.down_proj.weight"
         )
         block.norm2.scale = assign(
             block.norm2.scale,
-            params[f"model.layers.{l}.post_attention_layernorm.weight"],
-            f"model.layers.{l}.post_attention_layernorm.weight"
+            params[f"model.layers.{ln}.post_attention_layernorm.weight"],
+            f"model.layers.{ln}.post_attention_layernorm.weight"
         )
 
     # Final normalization and output head

@@ -17,6 +17,9 @@ license = { file = "LICENSE" }
 requires-python = ">=3.10"
 
 dependencies = [
+    "jupyterlab>=4.0",
+    "torch>=2.3.0",
+    "tokenizers>=0.21.2"
 ]
 
 classifiers = [
@@ -29,10 +32,17 @@ classifiers = [
   "Operating System :: OS Independent"
 ]
 
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "ruff>=0.4.4",
+    "pytest-ruff>=0.5",
+    "transformers==4.53.0"
+]
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["reasoning_from_scratch"]
 
 [tool.uv.sources]
 reasoning = { workspace = true }
-
