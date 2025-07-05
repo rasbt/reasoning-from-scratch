@@ -4,12 +4,12 @@ This repository contains the code for developing an LLM reasoning model and is t
 
 &nbsp;
 
-[![Code tests Linux](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/basic-tests-all-os-uv.yml/badge.svg)](https://github.com/rasbt/LLMs-from-scratch/actions/workflows/basic-tests-all-os-uv.yml)
-
-[![Code tests Linux](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/basic-tests-all-os-uv.yml/badge.svg?branch=main&label=Linux)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/basic-tests-all-os-uv.yml) [![Code tests macOS](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/basic-tests-all-os-uv.yml/badge.svg?branch=main&label=macOS)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/basic-tests-all-os-uv.yml) [![Code tests Windows](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/basic-tests-all-os-uv.yml/badge.svg?branch=main&label=Windows)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/basic-tests-all-os-uv.yml)
-
+[![Code tests Linux](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-linux.yml/badge.svg)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-linux.yml)
+[![Code tests macOS](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-macos.yml/badge.svg)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-macos.yml)
+[![Code tests Windows](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-windows.yml/badge.svg)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-windows.yml)
 
 &nbsp;
+
 ## Table of Contents (In Progress)
 
 - Chapter 1: Understanding reasoning models
