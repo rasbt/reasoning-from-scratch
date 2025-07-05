@@ -1,4 +1,4 @@
-name: Code Tests Linux
+name: Code tests Windows
 
 on:
   push:
@@ -25,12 +25,12 @@ concurrency:
 
 jobs:
   uv-tests:
-    name: Code tests
-    runs-on: ubuntu-latest
+    name: Code tests Windows
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python (uv)
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
@@ -41,7 +41,6 @@ jobs:
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv sync --group dev
 
-      - name: Test reasoning_from_scratch package
+      - name: Run tests
         shell: bash
-        run: |
-          uv run pytest --ruff tests
+        run: uv run pytest --ruff tests
