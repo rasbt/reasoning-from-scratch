@@ -63,48 +63,63 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Once installed, you can install Python packages like this:
+Once installed, you can install new Python packages similar to how you would do it via `pip` as described in the previous section, except that you replace `pip` with `uv pip`. For example
 
 ```bash
 uv pip install torch jupyterlab
 ```
 
-Alternatively, you can install all required Python package used in this book all once via the [`requirements.txt`](https://github.com/rasbt/reasoning-from-scratch/blob/main/requirements.txt) file:
-
-```bash
-pip install -r https://raw.githubusercontent.com/rasbt/reasoning-from-scratch/refs/heads/main/requirements.txt
-```
-
+However, if you are using `uv`, which I recommend and use myself, it's even better to use the native `uv` syntax instead of `uv pip`, as described below.
 
 &nbsp;
-#### Using virtual environments in `uv`
+### Recommended `uv` workflow
 
-`uv` automatically creates and uses a virtual environment in a central location, typically at `~/.venv` on macOS and Linux systems or `%LOCALAPPDATA%\uv\venv` on Windows. However, you can tell `uv` to create a virtual environment in your project folder by using the following command:
+Instead of using `uv pip`, I recommend and use the native `uv` worklow.
+
+First, clone the GitHub repository to your local machine:
+
+
 
 ```bash
-uv venv --project reasoning --python python3.12
+git clone https://github.com/rasbt/reasoning-from-scratch.git
 ```
 
-Creating a separate virtual environment for this project  is useful when working with many different projects that require different Python packages. 
+Next, navigate into this folder, e.g., on Linux and MacOS:
 
-After creating your environment, you have activate it via the instructions shown after executing the previous command. This is typically `source .venv/bin/activate` on macOS and Linux systems and `.venv\Scripts\Activate.ps1` in Windows PowerShell.
+```bash
+cd reasoning-from-scratch
+```
+
+Then, since this folder contains a `pyproject.toml` file, you are already good to go: `uv` will automatically create a (by default invisible) virtual environment folder (`.venv`) for this `reasoning-from-scratch` project into which it installs all the dependencies the first time you run a script or open Jupyter Lab.
+
+You will probably not need it but in general, you can install additional packages, which are not already part of the requirements listed in `pyproject.toml`, via `uv add`:
+
+
+```bash
+uv add llms_from_scratch
+```
+
+The above command will then add the package to the virtual environment and `pyproject.toml` file.
 
 &nbsp;
-#### Running code using `uv`
+### Running code via `uv`
 
-To run code, simply use:
+This section describes the `uv` commands to run Jupyter Lab and Python scripts.
 
-```bash
-uv python script.py
+To open Jupyter Lab, execute:
+
+```python
+uv run jupyter lab
 ```
 
-Or start a JupyterLab session with:
+Python scripts can be run via:
 
 ```bash
-uv run jupyterlab
+uv run python script.py
 ```
 
-&nbsp;
+
+
 
 > **Advanced usage:** This section describes a simple way to use `uv` that looks familiar to `pip` users. If you are interested in more advanced usage, please see [this document](https://github.com/rasbt/LLMs-from-scratch/tree/main/setup/01_optional-python-setup-preferences) for more explicit instructions on managing virtual environments in `uv`. 
 > If you are a macOS or Linux user and prefer the native uv commands, please refer to [this tutorial](https://github.com/rasbt/LLMs-from-scratch/blob/main/setup/01_optional-python-setup-preferences/native-uv.md). I also recommend checking the [official uv documentation](https://docs.astral.sh/uv/) for additional information.
