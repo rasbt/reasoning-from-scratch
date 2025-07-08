@@ -98,7 +98,7 @@ def test_rope():
 
 @pytest.fixture(scope="session")
 def qwen3_weights_path(tmp_path_factory):
-    """Creates and saves a deterministic Llama3 model for testing."""
+    """Creates and saves a deterministic model for testing."""
     path = tmp_path_factory.mktemp("models") / "qwen3_test_weights.pt"
 
     if not path.exists():
