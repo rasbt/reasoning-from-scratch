@@ -7,6 +7,7 @@
 from .utils import download_file
 
 from pathlib import Path
+import re
 
 import torch
 import torch.nn as nn
@@ -41,7 +42,7 @@ class Qwen3Model(nn.Module):
         self.final_norm = RMSNorm(cfg["emb_dim"])
         self.out_head = nn.Linear(cfg["emb_dim"], cfg["vocab_size"], bias=False, dtype=cfg["dtype"])
 
-        # Reusuable utilities
+        # Reusable utilities
         if cfg["head_dim"] is None:
             head_dim = cfg["emb_dim"] // cfg["n_heads"]
         else:
@@ -248,53 +249,79 @@ class RMSNorm(nn.Module):
         return norm_x.to(input_dtype)
 
 
-class Qwen3Tokenizer():
-    def __init__(
-        self,
-        tokenizer_file_path="tokenizer.json",
-        apply_chat_template=True,
-        add_generation_prompt=False,
-        add_thinking=False,
-    ):
-        from tokenizers import Tokenizer
-        tok_path = Path(tokenizer_file_path)
-        if not tok_path.is_file():
-            raise FileNotFoundError(
-                f"Tokenizer file '{tok_path}' not found. Please download it first."
-            )
+class Qwen3Tokenizer:
+    _SPECIALS = [
+        "<|endoftext|>",
+        "<|im_start|>", "<|im_end|>",
+        "<|object_ref_start|>", "<|object_ref_end|>",
+        "<|box_start|>", "<|box_end|>",
+        "<|quad_start|>", "<|quad_end|>",
+        "<|vision_start|>", "<|vision_end|>",
+        "<|vision_pad|>", "<|image_pad|>", "<|video_pad|>",
+    ]
+    _SPLIT_RE = re.compile(r"(<\|[^>]+?\|>)")
 
-        self.tokenizer = Tokenizer.from_file(str(tok_path))
+    def __init__(self, tokenizer_file_path="tokenizer.json",
+                 apply_chat_template=True,
+                 add_generation_prompt=False,
+                 add_thinking=False):
+        from tokenizers import Tokenizer
+
         self.apply_chat_template = apply_chat_template
         self.add_generation_prompt = add_generation_prompt
         self.add_thinking = add_thinking
 
-    def encode(self, prompt):
-        if self.apply_chat_template:
-            messages = [{"role": "user", "content": prompt}]
-            formatted_prompt = self.format_qwen_chat(
-                messages,
-                add_generation_prompt=self.add_generation_prompt,
-                add_thinking=self.add_thinking
+        tok_path = Path(tokenizer_file_path)
+        if not tok_path.is_file():
+            raise FileNotFoundError(
+                f"Tokenizer file '{tok_path}' not found. Please ensure it's available."
             )
+
+        self._tok = Tokenizer.from_file(str(tok_path))
+        self._special_to_id = {t: self._tok.token_to_id(t) for t in self._SPECIALS}
+
+        self.pad_token = "<|endoftext|>"
+        self.pad_token_id = self._special_to_id.get(self.pad_token)
+
+        # Match HF behavior: chat model → <|im_end|>, base model → <|endoftext|>
+        fname = tok_path.name.lower()
+        if "base" in fname and "reasoning" not in fname:
+            self.eos_token = "<|endoftext|>"
         else:
-            formatted_prompt = prompt
-        return self.tokenizer.encode(formatted_prompt).ids
+            self.eos_token = "<|im_end|>"
+        self.eos_token_id = self._special_to_id.get(self.eos_token)
+
+    def encode(self, prompt, chat_wrapped=None):
+        if chat_wrapped is None:
+            chat_wrapped = self.apply_chat_template
+
+        stripped = prompt.strip()
+        if stripped in self._special_to_id and "\n" not in stripped:
+            return [self._special_to_id[stripped]]
+
+        if chat_wrapped:
+            prompt = self._wrap_chat(prompt)
+
+        ids = []
+        for part in filter(None, self._SPLIT_RE.split(prompt)):
+            if part in self._special_to_id:
+                ids.append(self._special_to_id[part])
+            else:
+                ids.extend(self._tok.encode(part).ids)
+        return ids
 
     def decode(self, token_ids):
-        return self.tokenizer.decode(token_ids, skip_special_tokens=False)
+        return self._tok.decode(token_ids, skip_special_tokens=False)
 
-    @staticmethod
-    def format_qwen_chat(messages, add_generation_prompt=False, add_thinking=False):
-        prompt = ""
-        for msg in messages:
-            prompt += f"<|im_start|>{msg['role']}\n{msg['content']}<|im_end|>\n"
-        if add_generation_prompt:
-            prompt += "<|im_start|>assistant"
-            if add_thinking:
-                prompt += "\n"  # no <think> tags
+    def _wrap_chat(self, user_msg):
+        s = f"<|im_start|>user\n{user_msg}<|im_end|>\n"
+        if self.add_generation_prompt:
+            s += "<|im_start|>assistant"
+            if self.add_thinking:
+                s += "\n"  # insert no <think> tag, just a new line
             else:
-                prompt += "\n<think>\n\n</think>\n\n"
-        return prompt
+                s += "\n<think>\n\n</think>\n\n"
+        return s
 
 
 def download_qwen3_small(kind="base", tokenizer_only=False, out_dir="."):

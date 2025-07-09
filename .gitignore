@@ -1,5 +1,6 @@
 # Other temporary files
 tmp
+tokenizer-base.json
 
 # Installation artifacts
 uv.lock
