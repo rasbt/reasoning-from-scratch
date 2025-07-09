@@ -15,6 +15,8 @@ from reasoning_from_scratch.utils import download_file
 
 import importlib
 import os
+import shutil
+import tempfile
 import pytest
 import torch
 import torch.nn as nn
@@ -141,7 +143,6 @@ def test_tokenizer_equivalence():
         {"role": "user", "content": prompt},
     ]
     for s in ("-Base", ""):
-
         repo_id = f"Qwen/Qwen3-0.6B{s}"
         tokenizer_ref = AutoTokenizer.from_pretrained(repo_id)
         tokenizer_url = f"https://huggingface.co/Qwen/Qwen3-0.6B{s}/resolve/main/tokenizer.json"
@@ -149,11 +150,18 @@ def test_tokenizer_equivalence():
 
         old_name = "tokenizer.json"
         new_name = f"tokenizer{s.lower()}.json"  # file name is important for eos token setting
-        os.rename(old_name, new_name)
+
+        try:
+            shutil.move(old_name, new_name)
+        except Exception:
+            with tempfile.NamedTemporaryFile(delete=False, dir=".") as tmp_file:
+                shutil.copyfile(old_name, tmp_file.name)
+                os.replace(tmp_file.name, new_name)
+            os.remove(old_name)
 
         for states in ((True, True), (False, False)):
             tokenizer = Qwen3Tokenizer(
-                tokenizer_file_path=f"tokenizer{s}.json",
+                tokenizer_file_path=new_name,
                 add_generation_prompt=states[0],
                 add_thinking=states[1]
             )
