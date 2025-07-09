@@ -38,6 +38,7 @@ jobs:
       - name: Install uv and dependencies
         shell: bash
         run: |
+          export PATH="$HOME/.local/bin:$PATH"
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv sync --group dev
 
