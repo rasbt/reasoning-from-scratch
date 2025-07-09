@@ -285,7 +285,7 @@ class Qwen3Tokenizer:
 
         # Match HF behavior: chat model → <|im_end|>, base model → <|endoftext|>
         fname = tok_path.name.lower()
-        if "base" in fname and not "reasoning" in fname:
+        if "base" in fname and "reasoning" not in fname:
             self.eos_token = "<|endoftext|>"
         else:
             self.eos_token = "<|im_end|>"
