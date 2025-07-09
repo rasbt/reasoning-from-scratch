@@ -14,6 +14,7 @@ from reasoning_from_scratch.qwen3 import (
 from reasoning_from_scratch.utils import download_file
 
 import importlib
+import os
 import pytest
 import torch
 import torch.nn as nn
@@ -134,30 +135,45 @@ def test_rmsnorm_equivalence():
 @pytest.mark.skipif(not transformers_installed, reason="transformers not installed")
 def test_tokenizer_equivalence():
     from transformers import AutoTokenizer
-    repo_id = "Qwen/Qwen3-0.6B"
-    tokenizer_ref = AutoTokenizer.from_pretrained(repo_id)
+
     prompt = "Give me a short introduction to large language models."
     messages = [
         {"role": "user", "content": prompt},
     ]
+    for s in ("-Base", ""):
 
-    tokenizer_url = "https://huggingface.co/Qwen/Qwen3-0.6B/resolve/main/tokenizer.json"
-    download_file(tokenizer_url, out_dir=".")
-    for states in ((True, True), (False, False)):
-        tokenizer = Qwen3Tokenizer(
-            tokenizer_file_path="tokenizer.json",
-            add_generation_prompt=states[0],
-            add_thinking=states[1]
-        )
-        input_token_ids = tokenizer.encode(prompt)
-        input_token_ids_ref = tokenizer_ref.apply_chat_template(
-            messages,
-            tokenize=True,
-            add_generation_prompt=states[0],
-            enable_thinking=states[1],
-        )
-        assert input_token_ids == input_token_ids_ref, states
+        repo_id = f"Qwen/Qwen3-0.6B{s}"
+        tokenizer_ref = AutoTokenizer.from_pretrained(repo_id)
+        tokenizer_url = f"https://huggingface.co/Qwen/Qwen3-0.6B{s}/resolve/main/tokenizer.json"
+        download_file(tokenizer_url, out_dir=".")
 
-        output_text = tokenizer.decode(input_token_ids)
-        out_text_ref = tokenizer_ref.decode(input_token_ids_ref)
-        assert output_text == out_text_ref, states
+        old_name = "tokenizer.json"
+        new_name = f"tokenizer{s.lower()}.json"  # file name is important for eos token setting
+        os.rename(old_name, new_name)
+
+        for states in ((True, True), (False, False)):
+            tokenizer = Qwen3Tokenizer(
+                tokenizer_file_path=f"tokenizer{s}.json",
+                add_generation_prompt=states[0],
+                add_thinking=states[1]
+            )
+            input_token_ids = tokenizer.encode(prompt)
+            input_token_ids_ref = tokenizer_ref.apply_chat_template(
+                messages,
+                tokenize=True,
+                add_generation_prompt=states[0],
+                enable_thinking=states[1],
+            )
+            assert input_token_ids == input_token_ids_ref, states
+
+            output_text = tokenizer.decode(input_token_ids)
+            out_text_ref = tokenizer_ref.decode(input_token_ids_ref)
+            assert output_text == out_text_ref, states
+
+            assert tokenizer.encode("<|endoftext|>") == [tokenizer._special_to_id["<|endoftext|>"]]
+            assert tokenizer.encode("<|im_end|>") == [tokenizer._special_to_id["<|im_end|>"]]
+
+            expected_eos_token = "<|im_end|>" if "base" not in new_name else "<|endoftext|>"
+            expected_pad_token = "<|endoftext|>"
+            assert tokenizer.decode([tokenizer.eos_token_id]) == expected_eos_token
+            assert tokenizer.decode([tokenizer.pad_token_id]) == expected_pad_token
