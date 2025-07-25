@@ -162,6 +162,7 @@ def test_tokenizer_equivalence():
         for states in ((True, True), (False, False)):
             tokenizer = Qwen3Tokenizer(
                 tokenizer_file_path=new_name,
+                apply_chat_template=True,
                 add_generation_prompt=states[0],
                 add_thinking=states[1]
             )

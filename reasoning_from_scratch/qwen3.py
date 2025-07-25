@@ -297,7 +297,7 @@ class Qwen3Tokenizer:
     _SPLIT_RE = re.compile(r"(<\|[^>]+?\|>)")
 
     def __init__(self, tokenizer_file_path="tokenizer.json",
-                 apply_chat_template=True,
+                 apply_chat_template=False,
                  add_generation_prompt=False,
                  add_thinking=False):
         from tokenizers import Tokenizer
