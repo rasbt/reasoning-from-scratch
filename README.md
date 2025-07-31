@@ -17,7 +17,7 @@ This repository contains the code for developing an LLM reasoning model and is t
 | Chapter Title                                                | Main Code                                                    |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | Ch 1: Understanding reasoning models                         | No code                                                      |
-| Ch 2: Using LLMs to generate text                            | - [ch02_main.ipynb](ch02/01_main-chapter-code/ch02_main.ipynb)<br/>- [ch02_exercise-solutions.ipynb](ch02/ch02_exercise-solutions.ipynb) |
+| Ch 2: Using LLMs to generate text                            | - [ch02_main.ipynb](ch02/ch02_main.ipynb)<br/>- [ch02_exercise-solutions.ipynb](ch02/ch02_exercise-solutions.ipynb) |
 | Ch 3: Evaluating reasoning models                            | TBA                                                          |
 | Ch 4: Improving reasoning with inference-time scaling        | TBA                                                          |
 | Ch 5: Training reasoning models with reinforcement learning  | TBA                                                          |
