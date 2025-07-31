@@ -46,4 +46,4 @@ jobs:
         shell: bash
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          uv run pytest --ruff tests
+          uv run pytest tests

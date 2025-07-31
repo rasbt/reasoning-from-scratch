@@ -12,15 +12,19 @@ This repository contains the code for developing an LLM reasoning model and is t
 
 ## Table of Contents (In Progress)
 
-- Chapter 1: Understanding reasoning models
-- Chapter 2: Using LLMs to generate text
-- Chapter 3: Evaluating reasoning models
-- Chapter 4: Improving reasoning with inference-time scaling
-- Chapter 5: Training reasoning models with reinforcement learning
-- Chapter 6: Distilling reasoning models for efficient reasoning
-- Chapter 7: Improving the reasoning pipeline and future research directions
-- Appendix A: References and further reading
-- Appendix B: Exercise solutions
+
+
+| Chapter Title                                                | Main Code                                                    |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Ch 1: Understanding reasoning models                         | No code                                                      |
+| Ch 2: Using LLMs to generate text                            | - [ch02_main.ipynb](ch02/01_main-chapter-code/ch02_main.ipynb)<br/>- [ch02_exercise-solutions.ipynb](ch02/ch02_exercise-solutions.ipynb) |
+| Ch 3: Evaluating reasoning models                            | TBA                                                          |
+| Ch 4: Improving reasoning with inference-time scaling        | TBA                                                          |
+| Ch 5: Training reasoning models with reinforcement learning  | TBA                                                          |
+| Ch 6: Distilling reasoning models for efficient reasoning    | TBA                                                          |
+| Ch 7: Improving the reasoning pipeline and future directions | TBA                                                          |
+| Appendix A: References and further reading                   | No code                                                      |
+| Appendix B: Exercise solutions                               | No code                                                      |
 
 
 <br>
