@@ -1,2 +1,3 @@
+reasoning-from-scratch >= 0.1.2
 torch >= 2.7.1
 tokenizers >= 0.21.2

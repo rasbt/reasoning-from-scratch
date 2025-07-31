@@ -9,7 +9,8 @@ from reasoning_from_scratch.qwen3 import (
     QWEN_CONFIG_06_B,
     RMSNorm,
     Qwen3Model,
-    Qwen3Tokenizer
+    Qwen3Tokenizer,
+    KVCache
 )
 from reasoning_from_scratch.utils import download_file
 
@@ -186,3 +187,45 @@ def test_tokenizer_equivalence():
             expected_pad_token = "<|endoftext|>"
             assert tokenizer.decode([tokenizer.eos_token_id]) == expected_eos_token
             assert tokenizer.decode([tokenizer.pad_token_id]) == expected_pad_token
+
+
+# Add back when `generate_simple` from ch02 is added
+
+# @pytest.mark.parametrize("ModelClass", [Qwen3Model])
+# @pytest.mark.parametrize("generate_fn", [generate_simple])
+# def test_model(ModelClass, qwen3_weights_path, generate_fn):
+
+#     torch.manual_seed(123)
+#     model = ModelClass(QWEN_CONFIG_06_B)
+#     model.load_state_dict(torch.load(qwen3_weights_path))
+#     model.eval()
+
+#     tokenizer = Qwen3Tokenizer(
+#         tokenizer_file_path="tokenizer-base.json",
+#         repo_id="rasbt/qwen3-from-scratch",
+#         add_generation_prompt=False,
+#         add_thinking=False
+#     )
+
+#     prompt = "Give me a short introduction to large language models."
+#     input_token_ids = tokenizer.encode(prompt)
+#     input_token_ids = torch.tensor([input_token_ids])
+
+#     print(f"\n{50*'='}\n{22*' '}IN\n{50*'='}")
+#     print("\nInput text:", prompt)
+#     print("Encoded input text:", input_token_ids)
+#     print("encoded_tensor.shape:", input_token_ids.shape)
+
+#     out = generate_fn(
+#         model=model,
+#         idx=input_token_ids,
+#         max_new_tokens=5,
+#         context_size=QWEN_CONFIG_06_B["context_length"]
+#     )
+#     print("Encoded output text:", out)
+#     expect = torch.tensor([
+#         [151644, 872, 198, 35127, 752, 264, 2805, 16800, 311,
+#          3460, 4128,  4119, 13, 151645, 198, 112120, 83942, 60483,
+#          102652, 7414]
+#     ])
+#     assert torch.equal(expect, out)
