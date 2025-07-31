@@ -39,6 +39,8 @@ dev = [
     "pytest-ruff>=0.5",
     "transformers==4.53.0",
     "reasoning-from-scratch",
+    "twine>=6.1.0",
+    "build>=1.2.2.post1",
 ]
 
 [tool.setuptools.packages.find]
