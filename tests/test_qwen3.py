@@ -10,7 +10,6 @@ from reasoning_from_scratch.qwen3 import (
     RMSNorm,
     Qwen3Model,
     Qwen3Tokenizer,
-    KVCache
 )
 from reasoning_from_scratch.utils import download_file
 

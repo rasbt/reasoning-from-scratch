@@ -45,4 +45,4 @@ jobs:
       - name: Test reasoning_from_scratch package
         shell: bash
         run: |
-          uv run pytest --ruff tests
+          uv run pytest tests
