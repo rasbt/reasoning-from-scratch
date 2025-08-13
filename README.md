@@ -108,7 +108,7 @@ BibTeX entry:
 ```
 @book{build-llms-from-scratch-book,
   author       = {Sebastian Raschka},
-  title        = {Build A ReasoningModel (From Scratch)},
+  title        = {Build A Reasoning Model (From Scratch)},
   publisher    = {Manning},
   year         = {2025},
   isbn         = {TBD},
