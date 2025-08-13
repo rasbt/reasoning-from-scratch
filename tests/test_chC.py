@@ -5,22 +5,24 @@
 
 from pathlib import Path
 import sys
-
 import pytest
-from importnb import Notebook
 
 from reasoning_from_scratch.ch02 import (
     generate_text_basic,
     generate_text_basic_cache,
 )
-
+# Local imports
 from test_qwen3 import test_model
+from conftest import import_definitions_from_notebook
+
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-with Notebook():
-    from chC.chC_main import Qwen3Model
+
+nb_path = ROOT / "chC" / "chC_main.ipynb"
+mod = import_definitions_from_notebook(nb_path, "chC_chC_main_defs")
+Qwen3Model = getattr(mod, "Qwen3Model")
 
 
 @pytest.mark.parametrize("ModelClass", [Qwen3Model])

@@ -7,7 +7,9 @@ from reasoning_from_scratch.qwen3 import (
     QWEN_CONFIG_06_B,
     Qwen3Model,
 )
-
+import sys
+import types
+import nbformat
 import pytest
 import torch
 
@@ -23,3 +25,49 @@ def qwen3_weights_path(tmp_path_factory):
         torch.save(model.state_dict(), path)
 
     return path
+
+
+def import_definitions_from_notebook(nb_path, module_name):
+    if not nb_path.exists():
+        raise FileNotFoundError(f"Notebook file not found at: {nb_path}")
+
+    nb = nbformat.read(str(nb_path), as_version=4)
+
+    mod = types.ModuleType(module_name)
+    sys.modules[module_name] = mod
+
+    # Pass 1: execute only imports (handle multi-line)
+    for cell in nb.cells:
+        if cell.cell_type != "code":
+            continue
+        lines = cell.source.splitlines()
+        collecting = False
+        buf = []
+        paren_balance = 0
+        for line in lines:
+            stripped = line.strip()
+            if not collecting and (stripped.startswith("import ") or stripped.startswith("from ")):
+                collecting = True
+                buf = [line]
+                paren_balance = line.count("(") - line.count(")")
+                if paren_balance == 0:
+                    exec("\n".join(buf), mod.__dict__)
+                    collecting = False
+                    buf = []
+            elif collecting:
+                buf.append(line)
+                paren_balance += line.count("(") - line.count(")")
+                if paren_balance == 0:
+                    exec("\n".join(buf), mod.__dict__)
+                    collecting = False
+                    buf = []
+
+    # Pass 2: execute only def/class definitions
+    for cell in nb.cells:
+        if cell.cell_type != "code":
+            continue
+        src = cell.source
+        if "def " in src or "class " in src:
+            exec(src, mod.__dict__)
+
+    return mod
