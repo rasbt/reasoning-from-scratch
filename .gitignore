@@ -1,5 +1,8 @@
 # Other temporary files
 tmp
+qwen3-0.6B.pth
+qwen3-0.6B-base.pth
+tokenizer.json
 tokenizer-base.json
 
 # Installation artifacts

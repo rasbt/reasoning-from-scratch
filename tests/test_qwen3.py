@@ -11,10 +11,15 @@ from reasoning_from_scratch.qwen3 import (
     Qwen3Model,
     Qwen3Tokenizer,
 )
+from reasoning_from_scratch.ch02 import (
+    generate_text_basic,
+    generate_text_basic_cache,
+)
 from reasoning_from_scratch.utils import download_file
 
 import importlib
 import os
+import platform
 import shutil
 import tempfile
 import pytest
@@ -99,19 +104,6 @@ def test_rope():
     torch.testing.assert_close(queries_rot, ref_queries_rot)
 
 
-@pytest.fixture(scope="session")
-def qwen3_weights_path(tmp_path_factory):
-    """Creates and saves a deterministic model for testing."""
-    path = tmp_path_factory.mktemp("models") / "qwen3_test_weights.pt"
-
-    if not path.exists():
-        torch.manual_seed(123)
-        model = Qwen3Model(QWEN_CONFIG_06_B)
-        torch.save(model.state_dict(), path)
-
-    return path
-
-
 def test_rmsnorm_equivalence():
     torch.manual_seed(42)
 
@@ -188,43 +180,44 @@ def test_tokenizer_equivalence():
             assert tokenizer.decode([tokenizer.pad_token_id]) == expected_pad_token
 
 
-# Add back when `generate_simple` from ch02 is added
+@pytest.mark.parametrize("ModelClass", [Qwen3Model])
+@pytest.mark.parametrize("generate_fn", [generate_text_basic, generate_text_basic_cache,])
+def test_model(ModelClass, qwen3_weights_path, generate_fn):
 
-# @pytest.mark.parametrize("ModelClass", [Qwen3Model])
-# @pytest.mark.parametrize("generate_fn", [generate_simple])
-# def test_model(ModelClass, qwen3_weights_path, generate_fn):
+    posix_expected = torch.tensor([[68082, 101072, 46055, 45748, 13108]])
+    windows_expected = torch.tensor([[68082, 101567, 139559, 136628, 115975]])
+    osname = platform.system()
+    table = {"Linux": posix_expected, "Darwin": posix_expected, "Windows": windows_expected}
+    expected = table[osname]
 
-#     torch.manual_seed(123)
-#     model = ModelClass(QWEN_CONFIG_06_B)
-#     model.load_state_dict(torch.load(qwen3_weights_path))
-#     model.eval()
+    torch.manual_seed(123)
+    torch.set_num_threads(1)
+    torch.use_deterministic_algorithms(True)
 
-#     tokenizer = Qwen3Tokenizer(
-#         tokenizer_file_path="tokenizer-base.json",
-#         repo_id="rasbt/qwen3-from-scratch",
-#         add_generation_prompt=False,
-#         add_thinking=False
-#     )
+    torch.manual_seed(123)
+    model = ModelClass(QWEN_CONFIG_06_B)
+    model.load_state_dict(torch.load(qwen3_weights_path / "qwen3_test_weights.pt"))
+    model.eval()
 
-#     prompt = "Give me a short introduction to large language models."
-#     input_token_ids = tokenizer.encode(prompt)
-#     input_token_ids = torch.tensor([input_token_ids])
+    tokenizer = Qwen3Tokenizer(
+        tokenizer_file_path=qwen3_weights_path / "tokenizer-base.json",
+        add_generation_prompt=False,
+        add_thinking=False
+    )
 
-#     print(f"\n{50*'='}\n{22*' '}IN\n{50*'='}")
-#     print("\nInput text:", prompt)
-#     print("Encoded input text:", input_token_ids)
-#     print("encoded_tensor.shape:", input_token_ids.shape)
+    prompt = "Give me a short introduction to large language models."
+    input_token_ids = tokenizer.encode(prompt)
+    input_token_ids = torch.tensor([input_token_ids])
 
-#     out = generate_fn(
-#         model=model,
-#         idx=input_token_ids,
-#         max_new_tokens=5,
-#         context_size=QWEN_CONFIG_06_B["context_length"]
-#     )
-#     print("Encoded output text:", out)
-#     expect = torch.tensor([
-#         [151644, 872, 198, 35127, 752, 264, 2805, 16800, 311,
-#          3460, 4128,  4119, 13, 151645, 198, 112120, 83942, 60483,
-#          102652, 7414]
-#     ])
-#     assert torch.equal(expect, out)
+    # print(f"\n{50*'='}\n{22*' '}IN\n{50*'='}")
+    # print("\nInput text:", prompt)
+    # print("Encoded input text:", input_token_ids)
+    # print("encoded_tensor.shape:", input_token_ids.shape)
+
+    out = generate_fn(
+        model=model,
+        token_ids=input_token_ids.clone(),
+        max_new_tokens=5,
+    )
+    # print("Tested output:", out)
+    assert torch.equal(out, expected)
