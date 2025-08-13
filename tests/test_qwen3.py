@@ -185,11 +185,11 @@ def test_model(ModelClass, qwen3_weights_path, generate_fn):
 
     torch.manual_seed(123)
     model = ModelClass(QWEN_CONFIG_06_B)
-    model.load_state_dict(torch.load(qwen3_weights_path))
+    model.load_state_dict(torch.load(qwen3_weights_path / "qwen3_test_weights.pt"))
     model.eval()
 
     tokenizer = Qwen3Tokenizer(
-        tokenizer_file_path="tokenizer-base.json",
+        tokenizer_file_path=qwen3_weights_path / "tokenizer-base.json",
         add_generation_prompt=False,
         add_thinking=False
     )
