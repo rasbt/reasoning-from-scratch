@@ -25,8 +25,8 @@ This repository contains the code for developing an LLM reasoning model and is t
 | Ch 6: Distilling reasoning models for efficient reasoning    | TBA                                                          |
 | Ch 7: Improving the reasoning pipeline and future directions | TBA                                                          |
 | Appendix A: References and further reading                   | No code                                                      |
-| Appendix B: Exercise solutions                               | No code                                                      |
-
+| Appendix B: Exercise solutions                               | No code; solutions are in each chapter's subfolder           |
+| Appendix C: Qwen3 LLM source code                            | - [chC_main.ipynb](chC/chC_main.ipynb)                       |
 
 <br>
 &nbsp;

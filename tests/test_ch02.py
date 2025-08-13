@@ -12,6 +12,7 @@ from reasoning_from_scratch.ch02 import (
     generate_stats
 )
 
+
 # Dummy model for generate_text_basic tests.
 class DummyModel:
     def __init__(self, fixed_token, vocab_size=5):
@@ -30,6 +31,7 @@ class DummyModel:
         out[..., self.fixed_token] = 1.0
         return out
 
+
 class DummyModelCache(DummyModel):
     def __init__(self, fixed_token, vocab_size=5, n_layers=2):
         super().__init__(fixed_token, vocab_size)
@@ -38,6 +40,7 @@ class DummyModelCache(DummyModel):
 
     def reset_kv_cache(self):
         self.reset_called = True
+
 
 class DummyTokenizer:
     def decode(self, token_list):
@@ -64,6 +67,7 @@ def test_generate_text_basic_stops_on_eos():
     assert output.size(1) == 0
     assert dummy_model.eval_called is True
 
+
 def test_generate_text_basic_generates_tokens_without_eos():
     # batch_size = 1
     # seq_len = 2
@@ -84,10 +88,11 @@ def test_generate_text_basic_cache_stops_on_eos():
     fixed_token = 3
 
     dummy_model = DummyModelCache(fixed_token=fixed_token, n_layers=4)
-    token_ids = torch.tensor([[2, 2]])    
+    token_ids = torch.tensor([[2, 2]])
     output = generate_text_basic_cache(dummy_model, token_ids, max_new_tokens, eos_token_id=fixed_token)
     assert output.size(1) == 0
     assert dummy_model.reset_called is True
+
 
 def test_generate_text_basic_cache_generates_tokens_without_eos():
     # batch_size = 1
@@ -97,7 +102,7 @@ def test_generate_text_basic_cache_generates_tokens_without_eos():
 
     dummy_model = DummyModelCache(fixed_token=fixed_token, n_layers=3)
     token_ids = torch.tensor([[5]])
-    
+
     output = generate_text_basic_cache(dummy_model, token_ids, max_new_tokens, eos_token_id=None)
     assert output.size(1) == max_new_tokens
     assert torch.all(output == fixed_token)
@@ -110,10 +115,9 @@ def test_generate_stats_prints_output(monkeypatch, capsys):
     start_time = 100.0
     end_time = 102.0
 
-
     monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
     generate_stats(output_token_ids, tokenizer, start_time, end_time)
-    
+
     captured = capsys.readouterr().out
     assert "Time:" in captured
     assert "tokens/sec" in captured
