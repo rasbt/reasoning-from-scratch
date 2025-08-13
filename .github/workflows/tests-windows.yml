@@ -45,9 +45,9 @@ jobs:
       - name: Run tests
         shell: bash
         env:
-          PATH: "$HOME/.local/bin:$PATH"
           OMP_NUM_THREADS: "1"
           MKL_NUM_THREADS: "1"
           CUBLAS_WORKSPACE_CONFIG: ":16:8"
         run: |
+          export PATH="$HOME/.local/bin:$PATH"
           uv run pytest tests
