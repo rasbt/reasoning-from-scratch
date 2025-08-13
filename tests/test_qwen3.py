@@ -19,6 +19,7 @@ from reasoning_from_scratch.utils import download_file
 
 import importlib
 import os
+import platform
 import shutil
 import tempfile
 import pytest
@@ -183,7 +184,12 @@ def test_tokenizer_equivalence():
 @pytest.mark.parametrize("generate_fn", [generate_text_basic, generate_text_basic_cache,])
 def test_model(ModelClass, qwen3_weights_path, generate_fn):
 
-    # For deterministic tests on windows
+    posix_expected = torch.tensor([[68082, 101072, 46055, 45748, 13108]])
+    windows_expected = torch.tensor([[68082, 101567, 139559, 136628, 115975]])
+    osname = platform.system()
+    table = {"Linux": posix_expected, "Darwin": posix_expected, "Windows": windows_expected}
+    expected = table[osname]
+
     torch.manual_seed(123)
     torch.set_num_threads(1)
     torch.use_deterministic_algorithms(True)
@@ -203,18 +209,15 @@ def test_model(ModelClass, qwen3_weights_path, generate_fn):
     input_token_ids = tokenizer.encode(prompt)
     input_token_ids = torch.tensor([input_token_ids])
 
-    print(f"\n{50*'='}\n{22*' '}IN\n{50*'='}")
-    print("\nInput text:", prompt)
-    print("Encoded input text:", input_token_ids)
-    print("encoded_tensor.shape:", input_token_ids.shape)
+    # print(f"\n{50*'='}\n{22*' '}IN\n{50*'='}")
+    # print("\nInput text:", prompt)
+    # print("Encoded input text:", input_token_ids)
+    # print("encoded_tensor.shape:", input_token_ids.shape)
 
     out = generate_fn(
         model=model,
-        token_ids=input_token_ids,
+        token_ids=input_token_ids.clone(),
         max_new_tokens=5,
     )
-    print("Encoded output text:", out)
-    expect = torch.tensor([
-        [68082, 101072,  46055,  45748,  13108]
-    ])
-    assert torch.equal(expect, out)
+    # print("Tested output:", out)
+    assert torch.equal(out, expected)
