@@ -183,6 +183,11 @@ def test_tokenizer_equivalence():
 @pytest.mark.parametrize("generate_fn", [generate_text_basic, generate_text_basic_cache,])
 def test_model(ModelClass, qwen3_weights_path, generate_fn):
 
+    # For deterministic tests on windows
+    torch.manual_seed(123)
+    torch.set_num_threads(1)
+    torch.use_deterministic_algorithms(True)
+
     torch.manual_seed(123)
     model = ModelClass(QWEN_CONFIG_06_B)
     model.load_state_dict(torch.load(qwen3_weights_path / "qwen3_test_weights.pt"))
