@@ -397,7 +397,10 @@ def download_qwen3_small(kind="base", tokenizer_only=False, out_dir="."):
         download_file(primary, out_dir=out_dir, backup_url=backup)
 
 
-def load_hf_weights_into_qwen(model, param_config, params):
+def load_hf_weights_into_qwen(model, param_config, params):  # noqa: E741
+    """
+    Only used in Appendix D for loading the other Qwen3 variants.
+    """
     def assign(left, right, tensor_name="unknown"):
         if left.shape != right.shape:
             raise ValueError(f"Shape mismatch in tensor '{tensor_name}'. Left: {left.shape}, Right: {right.shape}")
