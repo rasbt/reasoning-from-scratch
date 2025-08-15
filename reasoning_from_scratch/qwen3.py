@@ -397,7 +397,7 @@ def download_qwen3_small(kind="base", tokenizer_only=False, out_dir="."):
         download_file(primary, out_dir=out_dir, backup_url=backup)
 
 
-def load_hf_weights_into_qwen(model, param_config, params):  # noqa: E741
+def load_hf_weights_into_qwen(model, param_config, params):
     """
     Only used in Appendix D for loading the other Qwen3 variants.
     """
@@ -408,7 +408,7 @@ def load_hf_weights_into_qwen(model, param_config, params):  # noqa: E741
 
     model.tok_emb.weight = assign(model.tok_emb.weight, params["model.embed_tokens.weight"], "model.embed_tokens.weight")
 
-    for l in range(param_config["n_layers"]):
+    for l in range(param_config["n_layers"]):  # noqa: E741
         block = model.trf_blocks[l]
         att = block.att
 
