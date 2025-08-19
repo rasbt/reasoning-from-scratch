@@ -47,7 +47,7 @@ def generate_text_basic_cache(
     eos_token_id=None
 ):
 
-    input_length = token_ids.shape[1] 
+    input_length = token_ids.shape[1]
 
     model.eval()
     with torch.no_grad():
@@ -58,8 +58,8 @@ def generate_text_basic_cache(
         for _ in range(max_new_tokens):
             next_token = torch.argmax(out, dim=-1, keepdim=True)
 
-            if (eos_token_id is not None 
-                   and torch.all(next_token == eos_token_id)):
+            if (eos_token_id is not None
+                    and torch.all(next_token == eos_token_id)):
                 break
 
             token_ids = torch.cat([token_ids, next_token], dim=1)
