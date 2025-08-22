@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 
-nb_path = ROOT / "chC" / "chC_main.ipynb"
+nb_path = ROOT / "chC" / "01_main-chapter-code" / "chC_main.ipynb"
 mod = import_definitions_from_notebook(nb_path, "chC_chC_main_defs")
 Qwen3Model = getattr(mod, "Qwen3Model")
 
