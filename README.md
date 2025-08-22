@@ -51,7 +51,7 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 | Chapter Title                                                | Main Code                                                    |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | Ch 1: Understanding reasoning models                         | No code                                                      |
-| Ch 2: Generating text with a pre-trained LLM                 | - [ch02_main.ipynb](ch02/ch02_main.ipynb)<br/>- [ch02_exercise-solutions.ipynb](ch02/ch02_exercise-solutions.ipynb) |
+| Ch 2: Generating text with a pre-trained LLM                 | - [ch02_main.ipynb](ch02/01_main-chapter-code/ch02_main.ipynb)<br/>- [ch02_exercise-solutions.ipynb](ch02/01_main-chapter-code/ch02_exercise-solutions.ipynb) |
 | Ch 3: Evaluating reasoning models                            | TBA                                                          |
 | Ch 4: Improving reasoning with inference-time scaling        | TBA                                                          |
 | Ch 5: Training reasoning models with reinforcement learning  | TBA                                                          |
@@ -59,7 +59,7 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 | Ch 7: Improving the reasoning pipeline and future directions | TBA                                                          |
 | Appendix A: References and further reading                   | No code                                                      |
 | Appendix B: Exercise solutions                               | No code; solutions are in each chapter's subfolder           |
-| Appendix C: Qwen3 LLM source code                            | - [chC_main.ipynb](chC/chC_main.ipynb)                       |
+| Appendix C: Qwen3 LLM source code                            | - [chC_main.ipynb](chC/01_main-chapter-code/chC_main.ipynb)  |
 
 <br>
 &nbsp;
@@ -100,12 +100,12 @@ However, if you are interested in understanding how a conventional base LLM is i
 The code in the main chapters of this book is designed to mostly run on consumer hardware within a reasonable timeframe and does not require specialized server hardware. This approach ensures that a wide audience can engage with the material. Additionally, the code automatically utilizes GPUs if they are available. That being said, chapters 2-4 will work well on CPUs and GPUs. For chapters 5 and 6, it is recommended to use a GPU if you want to replicate the results in the chapter.
 
 
-(Please see the [setup_tips](ch02/https://github.com/rasbt/reasoning-from-scratch/blob/main/ch02/python-instructions.md) doc for additional recommendations.)
+(Please see the [setup_tips](ch02/https://github.com/rasbt/reasoning-from-scratch/blob/main/ch02/01_main-chapter-code/python-instructions.md) doc for additional recommendations.)
 
 &nbsp;
 ## Exercises
 
-Each chapter of the book includes several exercises. The solutions are summarized in Appendix B, and the corresponding code notebooks are available in the main chapter folders of this repository (for example,  `ch02/01_main-chapter-code/exercise-solutions.ipynb`).
+Each chapter of the book includes several exercises. The solutions are summarized in Appendix B, and the corresponding code notebooks are available in the main chapter folders of this repository (for example,  `[ch02/01_main-chapter-code/ch02_exercise-solutions.ipynb](ch02/01_main-chapter-code/ch02_exercise-solutions.ipynb)`).
 
 &nbsp;
 ## Questions, Feedback, and Contributing to This Repository
