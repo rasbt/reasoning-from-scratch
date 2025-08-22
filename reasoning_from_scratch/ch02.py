@@ -22,24 +22,25 @@ def get_device():
     return device
 
 
+@torch.inference_mode()
 def generate_text_basic(model, token_ids, max_new_tokens, eos_token_id=None):
     input_length = token_ids.shape[1]
-
     model.eval()
-    with torch.no_grad():
-        for _ in range(max_new_tokens):
-            out = model(token_ids)[:, -1]
-            next_token = torch.argmax(out, dim=-1, keepdim=True)
 
-            # Stop if all sequences in the batch have generated EOS
-            if (eos_token_id is not None
-                    and torch.all(next_token == eos_token_id)):
-                break
+    for _ in range(max_new_tokens):
+        out = model(token_ids)[:, -1]
+        next_token = torch.argmax(out, dim=-1, keepdim=True)
 
-            token_ids = torch.cat([token_ids, next_token], dim=1)
+        # Stop if all sequences in the batch have generated EOS
+        if (eos_token_id is not None
+                and torch.all(next_token == eos_token_id)):
+            break
+
+        token_ids = torch.cat([token_ids, next_token], dim=1)
     return token_ids[:, input_length:]
 
 
+@torch.inference_mode()
 def generate_text_basic_cache(
     model,
     token_ids,
@@ -48,22 +49,20 @@ def generate_text_basic_cache(
 ):
 
     input_length = token_ids.shape[1]
-
     model.eval()
-    with torch.no_grad():
-        cache = KVCache(n_layers=model.cfg["n_layers"])
-        model.reset_kv_cache()
+    cache = KVCache(n_layers=model.cfg["n_layers"])
+    model.reset_kv_cache()
+    out = model(token_ids, cache=cache)[:, -1]
 
-        out = model(token_ids, cache=cache)[:, -1]
-        for _ in range(max_new_tokens):
-            next_token = torch.argmax(out, dim=-1, keepdim=True)
+    for _ in range(max_new_tokens):
+        next_token = torch.argmax(out, dim=-1, keepdim=True)
 
-            if (eos_token_id is not None
-                    and torch.all(next_token == eos_token_id)):
-                break
+        if (eos_token_id is not None
+                and torch.all(next_token == eos_token_id)):
+            break
 
-            token_ids = torch.cat([token_ids, next_token], dim=1)
-            out = model(next_token, cache=cache)[:, -1]
+        token_ids = torch.cat([token_ids, next_token], dim=1)
+        out = model(next_token, cache=cache)[:, -1]
 
     return token_ids[:, input_length:]
 
