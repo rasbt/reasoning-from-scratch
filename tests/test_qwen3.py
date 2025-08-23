@@ -142,7 +142,11 @@ def test_tokenizer_equivalence():
         download_file(tokenizer_url, out_dir=".")
 
         old_name = "tokenizer.json"
-        new_name = f"tokenizer{s.lower()}.json"  # file name is important for eos token setting
+
+        if not s:
+            new_name = "tokenizer-reasoning.json"
+        else:
+            new_name = "tokenizer-base.json"
 
         try:
             shutil.move(old_name, new_name)
