@@ -55,5 +55,4 @@ reasoning-from-scratch = { workspace = true }
 [tool.uv.workspace]
 members = [
     ".",
-    ".",
 ]
