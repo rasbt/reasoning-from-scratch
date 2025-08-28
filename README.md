@@ -1,25 +1,27 @@
 # Build A Reasoning Model (From Scratch)
 
-This repository contains the code for developing an LLM reasoning model and is the official code repository for the book *Build A Reasoning Model (From Scratch)*.
+This repository contains the code for developing an LLM reasoning model and is the official code repository for the book [*Build a Reasoning Model (From Scratch)*](https://mng.bz/lZ5B).
 
 
 <br>
 <br>
 
-<a href="https://amzn.to/4fqvn0D"><img src="https://sebastianraschka.com/images/reasoning-from-scratch-images/cover.webp?123" width="250px"></a>
+<a href="https://mng.bz/lZ5B"><img src="https://sebastianraschka.com/images/reasoning-from-scratch-images/cover.webp?123" width="250px"></a>
+
+(Printed in color.)
 
 <br>
 
-In *Build a Reasoning Model (From Scratch)*, you will learn and understand how a reasoning large language model (LLM) works.
+In [*Build a Reasoning Model (From Scratch)*](https://mng.bz/lZ5B), you will learn and understand how a reasoning large language model (LLM) works.
 
 Reasoning is one of the most exciting and important recent advances in improving LLMs, but it’s also one of the easiest to misunderstand if you only hear the term reasoning and read about it in theory. This is why this book takes a hands-on approach. We will start with a pre-trained base LLM and then add reasoning capabilities ourselves, step by step in code, so you can see exactly how it works.
 
 The methods described in this book walk you through the process of developing your own small-but-functional reasoning model for educational purposes. It mirrors the approaches used in creating large-scale reasoning models such as DeepSeek R1, GPT-5 Thinking, and others. In addition, this book includes code for loading the weights of existing, pretrained models.
 
 - Link to the official [source code repository](https://github.com/rasbt/reasoning-from-scratch)
-- Link to the book at Manning (the publisher's website) (TBD)
+- Link to the [book at Manning](https://mng.bz/lZ5B) (the publisher's website)
 - Link to the book page on Amazon.com (TBD)
-- ISBN TBD
+- ISBN 9781633434677
 
 
 
@@ -58,7 +60,7 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 | Ch 6: Distilling reasoning models for efficient reasoning    | TBA                                                          |
 | Ch 7: Improving the reasoning pipeline and future directions | TBA                                                          |
 | Appendix A: References and further reading                   | No code                                                      |
-| Appendix B: Exercise solutions                               | No code; solutions are in each chapter's subfolder           |
+| Appendix B: Exercise solutions                               | Code and solutions are in each chapter's subfolder           |
 | Appendix C: Qwen3 LLM source code                            | - [chC_main.ipynb](chC/01_main-chapter-code/chC_main.ipynb)  |
 
 <br>
@@ -77,11 +79,9 @@ The mental model below summarizes the main techniques covered in this book.
 &nbsp;
 ## Companion Book
 
-Please note that *Build A Reasoning Model (From Scratch)* is a standalone book focused on methods to improve LLM reasoning. From chapter 1, the definition of reasoning is:
+Please note that *Build A Reasoning Model (From Scratch)* is a standalone book focused on methods to improve LLM reasoning.
 
-> Reasoning, in the context of LLMs, refers to the model's ability to produce intermediate steps before providing a final answer. This is a process that is often described as chain-of-thought (CoT) reasoning. In CoT reasoning, the LLM explicitly generates a structured sequence of statements or computations that illustrate how it arrives at its conclusion.
-
-In this book, we work with a pre-trained open-source base LLM (Qwen3) on top of which we code apply reasoning methods from scratch. 
+In this book, we work with a pre-trained open-source base LLM (Qwen3) on top of which we code apply reasoning methods from scratch. This includes inference-time scaling, reinforcement learning, and distillation.
 
 However, if you are interested in understanding how a conventional base LLM is implemented, you may like my previous book, [*Build a Large Language Model (From Scratch)*](https://amzn.to/4fqvn0D).
 
@@ -105,13 +105,13 @@ The code in the main chapters of this book is designed to mostly run on consumer
 &nbsp;
 ## Exercises
 
-Each chapter of the book includes several exercises. The solutions are summarized in Appendix B, and the corresponding code notebooks are available in the main chapter folders of this repository (for example,  `[ch02/01_main-chapter-code/ch02_exercise-solutions.ipynb](ch02/01_main-chapter-code/ch02_exercise-solutions.ipynb)`).
+Each chapter of the book includes several exercises. The solutions are summarized in Appendix B, and the corresponding code notebooks are available in the main chapter folders of this repository (for example,  [`ch02/01_main-chapter-code/ch02_exercise-solutions.ipynb`](ch02/01_main-chapter-code/ch02_exercise-solutions.ipynb)).
 
 &nbsp;
 ## Questions, Feedback, and Contributing to This Repository
 
 
-I welcome all sorts of feedback, best shared via the Manning Forum (URL TBD) or [GitHub Discussions](https://github.com/rasbt/reasoning-from-scratch/discussions). Likewise, if you have any questions or just want to bounce ideas off others, please don't hesitate to post these in the forum as well.
+I welcome all sorts of feedback, best shared via the [Manning Discussion Forum](https://livebook.manning.com/forum?product=raschka2&page=1) or [GitHub Discussions](https://github.com/rasbt/reasoning-from-scratch/discussions). Likewise, if you have any questions or just want to bounce ideas off others, please don't hesitate to post these in the forum as well.
 
 Please note that since this repository contains the code corresponding to a print book, I currently cannot accept contributions that would extend the contents of the main chapter code, as it would introduce deviations from the physical book. Keeping it consistent helps ensure a smooth experience for everyone.
 
@@ -122,7 +122,7 @@ If you find this book or code useful for your research, please consider citing i
 
 Chicago-style citation:
 
-> Raschka, Sebastian. *Build A Reasoning Model (From Scratch)*. Manning, 2025. ISBN: TBD.
+> Raschka, Sebastian. *Build A Reasoning Model (From Scratch)*. Manning, 2025. ISBN: 9781633434677.
 
 BibTeX entry:
 
@@ -132,8 +132,8 @@ BibTeX entry:
   title        = {Build A Reasoning Model (From Scratch)},
   publisher    = {Manning},
   year         = {2025},
-  isbn         = {TBD},
-  url          = {TBD},
+  isbn         = {9781633434677},
+  url          = {https://mng.bz/lZ5B},
   github       = {https://github.com/rasbt/reasoning-from-scratch}
 }
 ```
