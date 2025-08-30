@@ -8,7 +8,6 @@
 &nbsp;
 ## Bonus material
 
-- [02_setup-tips](02_setup-tips/)  contains optional Python setup recommendations and cloud GPU recommendations
-
-
+- [02_setup-tips](02_setup-tips/) contains optional Python setup recommendations and cloud GPU recommendations
+- [03_optimized-LLM](03_optimized-LLM) info on how to use a GPU-optimized version of the LLM
 

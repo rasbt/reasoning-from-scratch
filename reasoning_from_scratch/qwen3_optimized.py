@@ -76,15 +76,10 @@ class Qwen3Model(nn.Module):
         # Shape (1, 1, num_tokens, num_tokens) to broadcast across batch and heads
         mask = mask[None, None, :, :]  # broadcast mask
 
-        next_cache = []
         for i, block in enumerate(self.trf_blocks):
-            blk_cache = cache.get(i) if cache else None
-            x, new_blk_cache = block(x, mask, self.cos, self.sin,
-                                     start_pos=pos_start,
-                                     cache=blk_cache)
             if cache is not None:
-                cache.update(i, new_blk_cache)
-            next_cache.append(new_blk_cache)
+                cache.allocate(i, x.size(0))
+            x = block(x, mask, self.cos, self.sin, start_pos=pos_start, cache=cache, layer_idx=i)
 
         x = self.final_norm(x)
         logits = self.out_head(x.to(self.cfg["dtype"]))
@@ -109,11 +104,11 @@ class TransformerBlock(nn.Module):
         self.norm1 = RMSNorm(cfg["emb_dim"], eps=1e-6)
         self.norm2 = RMSNorm(cfg["emb_dim"], eps=1e-6)
 
-    def forward(self, x, mask, cos, sin, start_pos=0, cache=None):
+    def forward(self, x, mask, cos, sin, start_pos=0, cache=None, layer_idx=None):
         # Shortcut connection for attention block
         shortcut = x
         x = self.norm1(x)
-        x, next_cache = self.att(x, mask, cos, sin, start_pos=start_pos, cache=cache)  # Shape [batch_size, num_tokens, emb_size]
+        x = self.att(x, mask, cos, sin, start_pos=start_pos, cache=cache, layer_idx=layer_idx)
         x = x + shortcut  # Add the original input back
 
         # Shortcut connection for feed-forward block
@@ -122,7 +117,7 @@ class TransformerBlock(nn.Module):
         x = self.ff(x)
         x = x + shortcut  # Add the original input back
 
-        return x, next_cache
+        return x
 
 
 class FeedForward(nn.Module):
@@ -169,7 +164,7 @@ class GroupedQueryAttention(nn.Module):
         else:
             self.q_norm = self.k_norm = None
 
-    def forward(self, x, mask, cos, sin, start_pos=0, cache=None):
+    def forward(self, x, mask, cos, sin, start_pos=0, cache=None, layer_idx=None):
         b, num_tokens, _ = x.shape
 
         # Apply projections
@@ -193,25 +188,46 @@ class GroupedQueryAttention(nn.Module):
         keys_new = apply_rope(keys_new, cos, sin, offset=start_pos)
 
         if cache is not None:
-            prev_k, prev_v = cache
-            keys = torch.cat([prev_k, keys_new], dim=2)
-            values = torch.cat([prev_v, values_new], dim=2)
+            if layer_idx is None:
+                raise ValueError("layer_idx required for KVCache")
+            cache.append(layer_idx, keys_new, values_new)
+            keys, values = cache.view(layer_idx)
         else:
-            start_pos = 0  # reset RoPE
             keys, values = keys_new, values_new
-        next_cache = (keys, values)
 
         # Expand K and V to match number of heads
-        keys = keys.repeat_interleave(self.group_size, dim=1)
-        values = values.repeat_interleave(self.group_size, dim=1)
+        if self.group_size > 1:
+            num_groups, seq_len, head_dim = keys.shape[1], keys.shape[2], keys.shape[3]
+            keys = keys[:, :, None, :, :].expand(b, num_groups, self.group_size, seq_len, head_dim)
+            keys = keys.reshape(b, self.num_heads, seq_len, head_dim)
+            values = values[:, :, None, :, :].expand(b, num_groups, self.group_size, seq_len, head_dim)
+            values = values.reshape(b, self.num_heads, seq_len, head_dim)
 
-        # Attention
-        attn_scores = queries @ keys.transpose(2, 3)
-        attn_scores = attn_scores.masked_fill(mask, -torch.inf)
-        attn_weights = torch.softmax(attn_scores / self.head_dim**0.5, dim=-1)
+        # Attention mask preparation
+        add_mask = None
+        if mask is not None:
+            mask = mask.to(torch.bool)
+            if mask.ndim == 2:
+                mask = mask[None, None, :, :]
+            elif mask.ndim == 3:
+                mask = mask[None, :, :, :]
+            if mask.shape[0] == 1:
+                mask = mask.expand(b, 1, mask.shape[-2], mask.shape[-1])
+            neg = torch.finfo(queries.dtype).min
+            add_mask = torch.zeros_like(mask, dtype=queries.dtype).masked_fill(mask, neg)
 
-        context = (attn_weights @ values).transpose(1, 2).reshape(b, num_tokens, self.d_out)
-        return self.out_proj(context), next_cache
+        # SDPA attention
+        context = torch.nn.functional.scaled_dot_product_attention(
+            queries.contiguous(),
+            keys.contiguous(),
+            values.contiguous(),
+            attn_mask=add_mask,
+            dropout_p=0.0,
+            is_causal=False
+        )
+
+        # Final projection
+        return self.out_proj(context.transpose(1, 2).reshape(b, num_tokens, self.d_out))
 
 
 def compute_rope_params(head_dim, theta_base=10_000, context_length=4096, dtype=torch.float32):
@@ -306,7 +322,7 @@ class Qwen3Tokenizer:
         tok_path = Path(tokenizer_file_path)
         if not tok_path.is_file():
             raise FileNotFoundError(
-                f"Tokenizer file '{tok_path}' not found. Please ensure it's available."
+                f"Tokenizer file '{tok_path}' not found. Please allocate it's available."
             )
 
         self._tok = Tokenizer.from_file(str(tok_path))
@@ -357,21 +373,39 @@ class Qwen3Tokenizer:
 
 
 class KVCache:
-    def __init__(self, n_layers):
-        self.cache = [None] * n_layers
+    def __init__(self, n_layers, max_len, num_kv_groups, head_dim, device, dtype):
+        self.k = [None] * n_layers
+        self.v = [None] * n_layers
+        self.len = [0] * n_layers
+        self.max_len = max_len
+        self.num_kv_groups = num_kv_groups
+        self.head_dim = head_dim
+        self.device = device
+        self.dtype = dtype
 
-    def get(self, layer_idx):
-        return self.cache[layer_idx]
+    def allocate(self, layer_idx, b):
+        if self.k[layer_idx] is None:
+            self.k[layer_idx] = torch.empty(b, self.num_kv_groups, self.max_len, self.head_dim,
+                                            device=self.device, dtype=self.dtype)
+            self.v[layer_idx] = torch.empty(b, self.num_kv_groups, self.max_len, self.head_dim,
+                                            device=self.device, dtype=self.dtype)
+            self.len[layer_idx] = 0
 
-    def update(self, layer_idx, value):
-        self.cache[layer_idx] = value
+    def append(self, layer_idx, k_new, v_new):
+        L = self.len[layer_idx]
+        T = k_new.shape[2]
+        self.k[layer_idx][:, :, L:L+T, :].copy_(k_new)
+        self.v[layer_idx][:, :, L:L+T, :].copy_(v_new)
+        self.len[layer_idx] = L + T
 
-    def get_all(self):
-        return self.cache
+    def view(self, layer_idx):
+        L = self.len[layer_idx]
+        return self.k[layer_idx][:, :, :L, :], self.v[layer_idx][:, :, :L, :]
 
     def reset(self):
-        for i in range(len(self.cache)):
-            self.cache[i] = None
+        for i in range(len(self.k)):
+            self.k[i] = self.v[i] = None
+            self.len[i] = 0
 
 
 def download_qwen3_small(kind="base", tokenizer_only=False, out_dir="."):
@@ -517,3 +551,37 @@ def load_hf_weights_into_qwen(model, param_config, params):
         # Model uses weight tying, hence we reuse the embedding layer weights here
         print("Model uses weight tying.")
         model.out_head.weight = assign(model.out_head.weight, params["model.embed_tokens.weight"], "model.embed_tokens.weight")
+
+
+@torch.inference_mode()
+def generate_text_basic_cache(
+    model,
+    token_ids,
+    max_new_tokens,
+    eos_token_id=None
+):
+
+    input_length = token_ids.shape[1]
+    model.eval()
+    cache = KVCache(
+        n_layers=model.cfg["n_layers"],
+        max_len=model.cfg["context_length"],
+        num_kv_groups=model.cfg["n_kv_groups"],
+        head_dim=model.cfg["head_dim"],
+        device=next(model.parameters()).device,
+        dtype=model.cfg["dtype"],
+    )
+    model.reset_kv_cache()
+    out = model(token_ids, cache=cache)[:, -1]
+
+    for _ in range(max_new_tokens):
+        next_token = torch.argmax(out, dim=-1, keepdim=True)
+
+        if (eos_token_id is not None
+                and torch.all(next_token == eos_token_id)):
+            break
+
+        token_ids = torch.cat([token_ids, next_token], dim=1)
+        out = model(next_token, cache=cache)[:, -1]
+
+    return token_ids[:, input_length:]
