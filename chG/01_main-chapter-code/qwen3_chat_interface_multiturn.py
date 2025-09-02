@@ -29,7 +29,6 @@ COMPILE = False
 # ============================================================
 
 
-
 def get_model_and_tokenizer(qwen3_config, local_dir, device, use_compile, use_reasoning):
     if use_reasoning:
         download_qwen3_small(kind="reasoning", tokenizer_only=False, out_dir=local_dir)
@@ -113,12 +112,10 @@ async def main(message: chainlit.Message):
         model=MODEL,
         token_ids=input_ids_tensor,
         max_new_tokens=MAX_NEW_TOKENS,
+        eos_token_id=TOKENIZER.eos_token_id
     ):
         token_id = tok.squeeze(0)
         piece = TOKENIZER.decode(token_id.tolist())
-        if piece in ("<|endoftext|>", "<|im_end|>"):
-            break
-
         await out_msg.stream_token(piece)
 
     # 4) Finalize the streamed message

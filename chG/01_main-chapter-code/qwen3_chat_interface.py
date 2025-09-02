@@ -92,12 +92,10 @@ async def main(message: chainlit.Message):
         model=MODEL,
         token_ids=input_ids_tensor,
         max_new_tokens=MAX_NEW_TOKENS,
+        eos_token_id=TOKENIZER.eos_token_id
     ):
         token_id = tok.squeeze(0)
         piece = TOKENIZER.decode(token_id.tolist())
-        if piece in ("<|endoftext|>", "<|im_end|>"):
-            break
-
         await out_msg.stream_token(piece)
 
     # 4) Finalize the streamed message
