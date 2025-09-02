@@ -8,6 +8,8 @@ qwen3-0.6B-base.pth
 tokenizer-reasoning.json
 tokenizer.json
 tokenizer-base.json
+.chainlit
+chainlit.md
 
 # Installation artifacts
 uv.lock
