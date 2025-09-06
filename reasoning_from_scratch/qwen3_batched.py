@@ -216,10 +216,9 @@ class GroupedQueryAttention(nn.Module):
             prev_k, prev_v = cache
             keys = torch.cat([prev_k, keys_new], dim=2)
             values = torch.cat([prev_v, values_new], dim=2)
-            next_cache = (keys, values)
         else:
             keys, values = keys_new, values_new
-            next_cache = (keys, values)
+        next_cache = (keys, values)
 
         # Expand K and V to match number of heads
         keys = keys.repeat_interleave(self.group_size, dim=1)
