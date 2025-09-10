@@ -29,6 +29,17 @@ COMPILE = False
 # ============================================================
 
 
+def trim_input_tensor(input_ids_tensor, context_len, max_new_tokens):
+    assert max_new_tokens < context_len
+    keep_len = max(1, context_len - max_new_tokens)
+
+    # If the prompt is too long, left-truncate to keep_len
+    if input_ids_tensor.shape[1] > keep_len:
+        input_ids_tensor = input_ids_tensor[:, -keep_len:]
+
+    return input_ids_tensor
+
+
 def get_model_and_tokenizer(qwen3_config, local_dir, device, use_compile, use_reasoning):
     if use_reasoning:
         download_qwen3_small(kind="reasoning", tokenizer_only=False, out_dir=local_dir)
@@ -80,6 +91,13 @@ MODEL, TOKENIZER = get_model_and_tokenizer(
     use_reasoning=REASONING
 )
 
+# Even though the official TOKENIZER.eos_token_id is either <|im_end|> (reasoning)
+# or <|endoftext|> (base), the reasoning model sometimes emits both.
+EOS_TOKEN_IDS = (
+    TOKENIZER.encode("<|im_end|>")[0],
+    TOKENIZER.encode("<|endoftext|>")[0]
+)
+
 
 @chainlit.on_chat_start
 async def on_start():
@@ -103,6 +121,13 @@ async def main(message: chainlit.Message):
     input_ids = TOKENIZER.encode(prompt)
     input_ids_tensor = torch.tensor(input_ids, device=DEVICE).unsqueeze(0)
 
+    # Multi-turn can be very long, so we add this left-trimming
+    input_ids_tensor = trim_input_tensor(
+        input_ids_tensor=input_ids_tensor,
+        context_len=MODEL.cfg["context_length"],
+        max_new_tokens=MAX_NEW_TOKENS
+    )
+
     # 2) Start an outgoing message we can stream into
     out_msg = chainlit.Message(content="")
     await out_msg.send()
@@ -112,9 +137,11 @@ async def main(message: chainlit.Message):
         model=MODEL,
         token_ids=input_ids_tensor,
         max_new_tokens=MAX_NEW_TOKENS,
-        eos_token_id=TOKENIZER.eos_token_id
+        # eos_token_id=TOKENIZER.eos_token_id
     ):
         token_id = tok.squeeze(0)
+        if token_id in EOS_TOKEN_IDS:
+            break
         piece = TOKENIZER.decode(token_id.tolist())
         await out_msg.stream_token(piece)
 
