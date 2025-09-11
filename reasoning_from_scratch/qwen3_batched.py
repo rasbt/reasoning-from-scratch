@@ -220,7 +220,7 @@ class GroupedQueryAttention(nn.Module):
         # Apply mask with -inf so masked entries are exactly zero after softmax
         attn_scores = attn_scores.masked_fill(mask, -torch.inf)
 
-        # Stable log-sum-exp over the unmasked set
+        # More numerically stable attention: log-sum-exp over the unmasked set
         row_max = attn_scores.amax(dim=-1, keepdim=True)
         row_max = torch.where(torch.isfinite(row_max), row_max, torch.zeros_like(row_max))
         exp_scores = torch.exp(attn_scores - row_max)
