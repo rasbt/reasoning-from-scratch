@@ -59,6 +59,7 @@ def test_batched_vs_nonbatched_equivalence_with_batched_model(reasoning):
     prompts = [
         "Explain large language models in two sentences.",
         "Explain large language models in one sentence.",
+        "1+1?"
     ]
 
     # Non-batched inputs
@@ -223,6 +224,7 @@ def test_batched_vs_nonbatched_equivalence_with_single_versus_batched_model(reas
     prompts = [
         "Explain large language models in two sentences.",
         "Explain large language models in one sentence.",
+        "1+1?"
     ]
 
     # Non-batched inputs
