@@ -28,7 +28,7 @@ QWEN_CONFIG_06_B = {
 
 
 class Qwen3Model(nn.Module):
-    def __init__(self, cfg):
+    def __init__(self, cfg, exact=False):
         super().__init__()
 
         # Main model parameters
@@ -53,6 +53,7 @@ class Qwen3Model(nn.Module):
         self.register_buffer("cos", cos, persistent=False)
         self.register_buffer("sin", sin, persistent=False)
         self.cfg = cfg
+        self.exact = exact
         self.current_pos = 0  # Track current position in KV cache
 
     def forward(self, in_idx, cache=None):
@@ -79,7 +80,7 @@ class Qwen3Model(nn.Module):
         for i, block in enumerate(self.trf_blocks):
             if cache is not None:
                 cache.allocate(i, x.size(0))
-            x = block(x, mask, self.cos, self.sin, start_pos=pos_start, cache=cache, layer_idx=i)
+            x = block(x, mask, self.cos, self.sin, start_pos=pos_start, cache=cache, layer_idx=i, exact=self.exact)
 
         x = self.final_norm(x)
         logits = self.out_head(x.to(self.cfg["dtype"]))
@@ -98,17 +99,17 @@ class TransformerBlock(nn.Module):
             head_dim=cfg["head_dim"],
             num_kv_groups=cfg["n_kv_groups"],
             qk_norm=cfg["qk_norm"],
-            dtype=cfg["dtype"]
+            dtype=cfg["dtype"],
         )
         self.ff = FeedForward(cfg)
         self.norm1 = RMSNorm(cfg["emb_dim"], eps=1e-6)
         self.norm2 = RMSNorm(cfg["emb_dim"], eps=1e-6)
 
-    def forward(self, x, mask, cos, sin, start_pos=0, cache=None, layer_idx=None):
+    def forward(self, x, mask, cos, sin, start_pos=0, cache=None, layer_idx=None, exact=False):
         # Shortcut connection for attention block
         shortcut = x
         x = self.norm1(x)
-        x = self.att(x, mask, cos, sin, start_pos=start_pos, cache=cache, layer_idx=layer_idx)
+        x = self.att(x, mask, cos, sin, start_pos=start_pos, cache=cache, layer_idx=layer_idx, exact=exact)
         x = x + shortcut  # Add the original input back
 
         # Shortcut connection for feed-forward block
@@ -164,7 +165,7 @@ class GroupedQueryAttention(nn.Module):
         else:
             self.q_norm = self.k_norm = None
 
-    def forward(self, x, mask, cos, sin, start_pos=0, cache=None, layer_idx=None):
+    def forward(self, x, mask, cos, sin, start_pos=0, cache=None, layer_idx=None, exact=False):
         b, num_tokens, _ = x.shape
 
         # Apply projections
@@ -217,14 +218,29 @@ class GroupedQueryAttention(nn.Module):
             add_mask = torch.zeros_like(mask, dtype=queries.dtype).masked_fill(mask, neg)
 
         # SDPA attention
-        context = torch.nn.functional.scaled_dot_product_attention(
-            queries.contiguous(),
-            keys.contiguous(),
-            values.contiguous(),
-            attn_mask=add_mask,
-            dropout_p=0.0,
-            is_causal=False
-        )
+        if exact:
+            with torch.backends.cuda.sdp_kernel(
+                enable_flash=False,
+                enable_mem_efficient=False,
+                enable_math=True,
+            ):
+                context = torch.nn.functional.scaled_dot_product_attention(
+                    queries.contiguous(),
+                    keys.contiguous(),
+                    values.contiguous(),
+                    attn_mask=add_mask,
+                    dropout_p=0.0,
+                    is_causal=False,
+                )
+        else:
+            context = torch.nn.functional.scaled_dot_product_attention(
+                queries.contiguous(),
+                keys.contiguous(),
+                values.contiguous(),
+                attn_mask=add_mask,
+                dropout_p=0.0,
+                is_causal=False,
+            )
 
         # Final projection
         return self.out_proj(context.transpose(1, 2).reshape(b, num_tokens, self.d_out))

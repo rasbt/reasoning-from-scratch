@@ -267,7 +267,6 @@ def test_batched_vs_nonbatched_equivalence_with_single_versus_batched_model(reas
     for idx, out_single in enumerate(outputs_single):
         out_batch = outputs_batched[idx].tolist()
 
-        # Drop the first generated token from both
         text_single = tokenizer.decode(out_single)
         text_batch = tokenizer.decode(out_batch)
 
