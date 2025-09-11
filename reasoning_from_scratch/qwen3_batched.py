@@ -227,12 +227,15 @@ class GroupedQueryAttention(nn.Module):
         # More numerically stable attention
         attn_scores = queries @ keys.transpose(2, 3)
         # Use large negative sentinel instead of -inf for stable softmax when a row is fully masked
-        attn_scores = attn_scores.masked_fill(mask, -1e9)
+        neg_large = torch.finfo(attn_scores.dtype).min
+        attn_scores = attn_scores.masked_fill(mask, neg_large)
         attn_scores = attn_scores / (self.head_dim ** 0.5)
         attn_weights = torch.softmax(attn_scores, dim=-1)
         # Zero out masked positions post-softmax and renormalize to keep sums ~1 where possible
         attn_weights = attn_weights.masked_fill(mask, 0.0)
-        denom = attn_weights.sum(dim=-1, keepdim=True).clamp(min=1e-9)
+        denom = attn_weights.sum(dim=-1, keepdim=True).clamp(
+            min=torch.finfo(attn_weights.dtype).eps
+        )
         attn_weights = attn_weights / denom
 
         context = (attn_weights @ values).transpose(1, 2).reshape(b, num_tokens, self.d_out)
