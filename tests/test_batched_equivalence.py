@@ -12,7 +12,9 @@ from reasoning_from_scratch.ch02 import (
     generate_text_basic_cache,
 )
 from reasoning_from_scratch.qwen3 import (
+    apply_rope,
     download_qwen3_small,
+    GroupedQueryAttention,
     Qwen3Tokenizer,
     Qwen3Model,
     QWEN_CONFIG_06_B,
@@ -21,7 +23,6 @@ from reasoning_from_scratch.qwen3_batched import (
     generate_text_basic_batched_cache,
     Qwen3Model as Qwen3ModelBatched,
 )
-
 
 skip_expensive = os.environ.get("SKIP_EXPENSIVE", "0") == "1"
 
@@ -115,11 +116,10 @@ def test_batched_vs_nonbatched_equivalence_with_batched_model(reasoning):
 
 # monkeypatch GroupedQueryAttention.forward
 # This new forward uses the padding-stable softmax calculation
-# for the simple Qwen3 model.
+# for the simple Qwen3 model as well.
 # This is so that it is numerically exactly the same as in the batched version;
 # otherwise, tiny floating point differences can lead to slight divergences after
 # a few generated tokens.
-from reasoning_from_scratch.qwen3 import apply_rope, GroupedQueryAttention
 
 
 def new_forward(self, x, mask, cos, sin, start_pos=0, cache=None):
