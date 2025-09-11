@@ -87,7 +87,6 @@ class Qwen3Model(nn.Module):
             qmask = attn_mask[:, pos_start:pos_end].unsqueeze(-1)
             x = x * qmask.to(x.dtype)
 
-        next_cache = []
         for i, block in enumerate(self.trf_blocks):
             blk_cache = cache.get(i) if cache else None
             x, new_blk_cache = block(x, mask, self.cos, self.sin,
@@ -95,7 +94,6 @@ class Qwen3Model(nn.Module):
                                      pos_ids=pos_ids_current)
             if cache is not None:
                 cache.update(i, new_blk_cache)
-            next_cache.append(new_blk_cache)
 
         x = self.final_norm(x)
         logits = self.out_head(x.to(self.cfg["dtype"]))
@@ -220,7 +218,7 @@ class GroupedQueryAttention(nn.Module):
         # Apply mask with -inf so masked entries are exactly zero after softmax
         attn_scores = attn_scores.masked_fill(mask, -torch.inf)
 
-        # More numerically stable attention: log-sum-exp over the unmasked set
+        # Stable log-sum-exp over the unmasked set
         row_max = attn_scores.amax(dim=-1, keepdim=True)
         row_max = torch.where(torch.isfinite(row_max), row_max, torch.zeros_like(row_max))
         exp_scores = torch.exp(attn_scores - row_max)
