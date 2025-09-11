@@ -13,6 +13,8 @@ on:
 jobs:
   flake8:
     runs-on: ubuntu-latest
+    env:
+      SKIP_EXPENSIVE: "1"
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python

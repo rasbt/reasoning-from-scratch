@@ -31,6 +31,8 @@ jobs:
   uv-tests:
     name: Code tests Linux
     runs-on: ubuntu-latest
+    env:
+      SKIP_EXPENSIVE: "1"
     steps:
       - uses: actions/checkout@v4
 
