@@ -31,6 +31,8 @@ jobs:
   uv-tests:
     name: Code tests macOS
     runs-on: macos-latest
+    env:
+      SKIP_EXPENSIVE: "1"
     steps:
       - uses: actions/checkout@v4
 

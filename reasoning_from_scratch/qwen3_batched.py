@@ -7,7 +7,6 @@ from .qwen3 import KVCache
 import torch
 import torch.nn as nn
 
-
 # 0.6 billion parameters
 QWEN_CONFIG_06_B = {
     "vocab_size": 151_936,     # Vocabulary size
@@ -53,49 +52,40 @@ class Qwen3Model(nn.Module):
         self.current_pos = 0  # Track current position in KV cache
 
     def forward(self, in_idx, cache=None, attn_mask=None):
-        # Forward pass
         tok_embeds = self.tok_emb(in_idx)
         x = tok_embeds
+        B, num_tokens = x.shape[0], x.shape[1]
 
-        num_tokens = x.shape[1]
-        if cache is not None:
-            pos_start = self.current_pos
-            pos_end = pos_start + num_tokens
-            self.current_pos = pos_end
-            mask = torch.triu(
-                torch.ones(pos_end, pos_end, device=x.device, dtype=torch.bool), diagonal=1
-            )[pos_start:pos_end, :pos_end]
+        # Derive pos_start from cache content (layer 0 K length) if present
+        if cache is not None and cache.get(0) is not None:
+            prev_k0, _ = cache.get(0)                 # (B, G_kv, L_prev, D)
+            pos_start = prev_k0.size(2)               # L_prev
         else:
-            pos_start = 0  # Not strictly necessary but helps torch.compile
-            mask = torch.triu(
-                torch.ones(num_tokens, num_tokens, device=x.device, dtype=torch.bool), diagonal=1
-            )
+            pos_start = 0
 
-        # Expand causal mask to 4D
-        if cache is not None:
-            cur_keys_len = pos_end
-        else:
-            cur_keys_len = num_tokens
-        causal4d = mask[None, None, :, :]  # (1, 1, Q=num_tokens, K=cur_keys_len)
+        pos_end = pos_start + num_tokens
+        self.current_pos = pos_end  # keep this for compatibility
 
-        # Combine with key-padding mask and compute pos_ids
-        pos_ids_current = None
-        if attn_mask is not None:
-            B = in_idx.shape[0]
+        # Build causal mask for [Q=num_tokens, K=pos_end]
+        base = torch.triu(
+            torch.ones(pos_end, pos_end, device=x.device, dtype=torch.bool), diagonal=1
+        )
+        causal4d = base[pos_start:pos_end, :pos_end][None, None, :, :]
 
-            # Key padding mask (mask out pad tokens in keys)
-            kpm = (attn_mask[:, :cur_keys_len] == 0).view(B, 1, 1, cur_keys_len)
+        has_pad = attn_mask is not None and (~attn_mask[:, :pos_end]).any()
+        if has_pad:
+            # Mask out padded keys so they don't appear in the softmax denominator
+            kpm = (attn_mask[:, :pos_end] == 0).view(B, 1, 1, pos_end)
             mask = causal4d | kpm
-
-            # Per-token position ids for RoPE (pad-invariant)
-            pos_ids_full = attn_mask[:, :cur_keys_len].long().cumsum(dim=-1) - 1
-            pos_ids_full = pos_ids_full.clamp_min(0)
-            pos_ids_current = pos_ids_full[:, -num_tokens:]
         else:
             mask = causal4d
-            # Fallback pos_ids when no attn_mask is provided
-            base = torch.arange(pos_start, pos_start + num_tokens, device=x.device)
-            pos_ids_current = base.unsqueeze(0).expand(in_idx.shape[0], -1)
+
+        pos_ids_current = torch.arange(pos_start, pos_end, device=x.device).unsqueeze(0).expand(B, -1)
+
+        # zero-out padded query rows so their Q/K/V become zeros and don't affect cache
+        if attn_mask is not None:
+            qmask = attn_mask[:, pos_start:pos_end].unsqueeze(-1)
+            x = x * qmask.to(x.dtype)
 
         next_cache = []
         for i, block in enumerate(self.trf_blocks):
@@ -224,18 +214,27 @@ class GroupedQueryAttention(nn.Module):
         keys = keys.repeat_interleave(self.group_size, dim=1)
         values = values.repeat_interleave(self.group_size, dim=1)
 
-        # More numerically stable attention
-        attn_scores = queries @ keys.transpose(2, 3)
-        # Use large negative sentinel instead of -inf for stable softmax when a row is fully masked
-        attn_scores = attn_scores.masked_fill(mask, -1e9)
-        attn_scores = attn_scores / (self.head_dim ** 0.5)
-        attn_weights = torch.softmax(attn_scores, dim=-1)
-        # Zero out masked positions post-softmax and renormalize to keep sums ~1 where possible
-        attn_weights = attn_weights.masked_fill(mask, 0.0)
-        denom = attn_weights.sum(dim=-1, keepdim=True).clamp(min=1e-9)
-        attn_weights = attn_weights / denom
+        attn_scores = torch.matmul(queries.to(torch.float32), keys.transpose(2, 3).to(torch.float32))
+        attn_scores = attn_scores / self.head_dim**0.5
 
-        context = (attn_weights @ values).transpose(1, 2).reshape(b, num_tokens, self.d_out)
+        # Apply mask with -inf so masked entries are exactly zero after softmax
+        attn_scores = attn_scores.masked_fill(mask, -torch.inf)
+
+        # Stable log-sum-exp over the unmasked set
+        row_max = attn_scores.amax(dim=-1, keepdim=True)
+        row_max = torch.where(torch.isfinite(row_max), row_max, torch.zeros_like(row_max))
+        exp_scores = torch.exp(attn_scores - row_max)
+        exp_scores = exp_scores.masked_fill(mask, 0.0)
+
+        denom = exp_scores.sum(dim=-1, keepdim=True)
+        attn_weights = exp_scores / denom.clamp(min=torch.finfo(exp_scores.dtype).tiny)
+
+        # Back to model dtype
+        attn_weights = attn_weights.to(values.dtype)
+
+        # As before
+        context = torch.matmul(attn_weights, values)
+        context = context.transpose(1, 2).reshape(b, num_tokens, self.d_out)
         return self.out_proj(context), next_cache
 
 

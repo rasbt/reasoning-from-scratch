@@ -31,6 +31,8 @@ jobs:
   pip-tests:
     name: Pip Tests (Ubuntu Only)
     runs-on: ubuntu-latest
+    env:
+      SKIP_EXPENSIVE: "1"
     steps:
       - uses: actions/checkout@v4
 
