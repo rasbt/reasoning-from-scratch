@@ -114,6 +114,7 @@ def test_qwen3_vs_optimized_qwen3(reasoning):
     prompts = [
         "Explain large language models in two sentences.",
         "Explain large language models in one sentence.",
+        "1+1?"
     ]
 
     single_inputs = [

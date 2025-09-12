@@ -49,7 +49,6 @@ class Qwen3Model(nn.Module):
         self.register_buffer("cos", cos, persistent=False)
         self.register_buffer("sin", sin, persistent=False)
         self.cfg = cfg
-        self.current_pos = 0  # Track current position in KV cache
 
     def forward(self, in_idx, cache=None, attn_mask=None):
         tok_embeds = self.tok_emb(in_idx)
@@ -64,7 +63,6 @@ class Qwen3Model(nn.Module):
             pos_start = 0
 
         pos_end = pos_start + num_tokens
-        self.current_pos = pos_end  # keep this for compatibility
 
         # Build causal mask for [Q=num_tokens, K=pos_end]
         base = torch.triu(
@@ -72,7 +70,7 @@ class Qwen3Model(nn.Module):
         )
         causal4d = base[pos_start:pos_end, :pos_end][None, None, :, :]
 
-        has_pad = attn_mask is not None and (~attn_mask[:, :pos_end]).any()
+        has_pad = attn_mask is not None and (~attn_mask[:, :pos_end]).any().item()
         if has_pad:
             # Mask out padded keys so they don't appear in the softmax denominator
             kpm = (attn_mask[:, :pos_end] == 0).view(B, 1, 1, pos_end)
@@ -99,8 +97,9 @@ class Qwen3Model(nn.Module):
         logits = self.out_head(x.to(self.cfg["dtype"]))
         return logits
 
+    # Keep for compatibility with regular, non-batched generate_text_basic_cache function
     def reset_kv_cache(self):
-        self.current_pos = 0
+        pass
 
 
 class TransformerBlock(nn.Module):
@@ -317,7 +316,6 @@ def generate_text_basic_batched_cache(
 
     # Init cache and model position
     cache = KVCache(n_layers=model.cfg["n_layers"])
-    model.reset_kv_cache()
 
     # Prefill
     out = model(token_ids, cache=cache, attn_mask=attn_mask)[:, -1]
