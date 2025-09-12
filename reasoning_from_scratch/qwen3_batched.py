@@ -297,8 +297,70 @@ class RMSNorm(nn.Module):
 @torch.inference_mode()
 def generate_text_basic_batched_cache(
     model,
-    token_ids: torch.Tensor,
-    max_new_tokens: int,
+    token_ids,
+    max_new_tokens,
+    eos_token_id=None,
+    attn_mask=None,
+    pad_id=None,
+):
+    device = token_ids.device
+    model.eval()
+
+    batch_size, input_length = token_ids.shape
+
+    if attn_mask is None and pad_id is not None:
+        attn_mask = (token_ids != pad_id).to(torch.bool)
+    if attn_mask is not None:
+        attn_mask = attn_mask.to(torch.bool).to(device)
+
+    # Init cache and model position
+    cache = KVCache(n_layers=model.cfg["n_layers"])
+
+    # Prefill
+    out = model(token_ids, cache=cache, attn_mask=attn_mask)[:, -1]
+
+    # Track which sequences have already produced EOS
+    if eos_token_id is not None:
+        # If a prompt already ends with EOS, consider it finished
+        finished = (token_ids[:, -1] == eos_token_id)
+    else:
+        finished = None
+
+    # Decode
+    cur_attn = attn_mask
+    for _ in range(max_new_tokens):
+        # If all sequences are already finished, stop
+        if eos_token_id is not None and finished is not None and torch.all(finished):
+            break
+
+        next_token = torch.argmax(out, dim=-1, keepdim=True)
+
+        if eos_token_id is not None:
+            # Force already finished rows to keep emitting EOS to maintain shape
+            eos_tok = next_token.new_full((batch_size, 1), eos_token_id)
+            next_token = torch.where(finished.view(batch_size, 1), eos_tok, next_token)
+
+        # Extend mask to include the newly generated token
+        if cur_attn is not None:
+            ones = torch.ones((batch_size, 1), dtype=cur_attn.dtype, device=device)
+            cur_attn = torch.cat([cur_attn, ones], dim=1)
+
+        # Advance one token with KV cache
+        out = model(next_token, cache=cache, attn_mask=cur_attn)[:, -1]
+        token_ids = torch.cat([token_ids, next_token], dim=1)
+
+        # Update finished mask after appending this step's token
+        if eos_token_id is not None:
+            finished = finished | (next_token.squeeze(1) == eos_token_id)
+
+    return token_ids[:, input_length:]
+
+
+@torch.inference_mode()
+def generate_text_basic_batched_stream_cache(
+    model,
+    token_ids,
+    max_new_tokens,
     eos_token_id=None,
     attn_mask=None,
     pad_id=None,
@@ -307,7 +369,6 @@ def generate_text_basic_batched_cache(
     model.eval()
 
     B, T = token_ids.shape
-    input_length = T
 
     if attn_mask is None and pad_id is not None:
         attn_mask = (token_ids != pad_id).to(torch.bool)
@@ -323,17 +384,18 @@ def generate_text_basic_batched_cache(
     # Decode
     cur_attn = attn_mask
     for _ in range(max_new_tokens):
-        next_token = torch.argmax(out, dim=-1, keepdim=True)  # [B, 1]
+        next_token = torch.argmax(out, dim=-1, keepdim=True)
 
-        if eos_token_id is not None and torch.all(next_token == eos_token_id):
+        if eos_token_id is not None and torch.all(next_token.squeeze(-1) == eos_token_id):
             break
+
+        yield next_token
 
         # Extend mask to include the newly generated token
         if cur_attn is not None:
             ones = torch.ones((B, 1), dtype=cur_attn.dtype, device=device)
             cur_attn = torch.cat([cur_attn, ones], dim=1)
 
+        # Advance one token with KV cache
         out = model(next_token, cache=cache, attn_mask=cur_attn)[:, -1]
         token_ids = torch.cat([token_ids, next_token], dim=1)
-
-    return token_ids[:, input_length:]
