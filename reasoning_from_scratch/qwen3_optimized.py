@@ -4,6 +4,7 @@
 
 from .utils import download_file
 
+import contextlib
 from pathlib import Path
 import re
 
@@ -219,11 +220,7 @@ class GroupedQueryAttention(nn.Module):
 
         # SDPA attention
         if exact:
-            with torch.backends.cuda.sdp_kernel(
-                enable_flash=False,
-                enable_mem_efficient=False,
-                enable_math=True,
-            ):
+            with sdpa_exact():
                 context = torch.nn.functional.scaled_dot_product_attention(
                     queries.contiguous(),
                     keys.contiguous(),
@@ -601,3 +598,17 @@ def generate_text_basic_cache(
         out = model(next_token, cache=cache)[:, -1]
 
     return token_ids[:, input_length:]
+
+
+@contextlib.contextmanager
+def sdpa_exact():
+    try:
+        from torch.nn.attention import sdpa_kernel, SDPBackend
+        with sdpa_kernel(SDPBackend.MATH):
+            yield
+    except Exception:
+        # Deprecated, but to support older PyTorch versions
+        with torch.backends.cuda.sdp_kernel(
+            enable_flash=False, enable_mem_efficient=False, enable_math=True
+        ):
+            yield
