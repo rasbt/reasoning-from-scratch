@@ -399,7 +399,14 @@ def load_hf_weights_into_qwen(model, param_config, params):
     def assign(left, right, tensor_name="unknown"):
         if left.shape != right.shape:
             raise ValueError(f"Shape mismatch in tensor '{tensor_name}'. Left: {left.shape}, Right: {right.shape}")
-        return torch.nn.Parameter(right.clone().detach() if isinstance(right, torch.Tensor) else torch.tensor(right))
+
+        with torch.no_grad():
+            if isinstance(right, torch.Tensor):
+                left.copy_(right)
+            else:
+                left.copy_(torch.as_tensor(right, dtype=left.dtype, device=left.device))
+
+        return left
 
     model.tok_emb.weight = assign(model.tok_emb.weight, params["model.embed_tokens.weight"], "model.embed_tokens.weight")
 
@@ -512,6 +519,5 @@ def load_hf_weights_into_qwen(model, param_config, params):
     if "lm_head.weight" in params:
         model.out_head.weight = assign(model.out_head.weight, params["lm_head.weight"], "lm_head.weight")
     else:
-        # Model uses weight tying, hence we reuse the embedding layer weights here
+        model.out_head.weight = model.tok_emb.weight
         print("Model uses weight tying.")
-        model.out_head.weight = assign(model.out_head.weight, params["model.embed_tokens.weight"], "model.embed_tokens.weight")
