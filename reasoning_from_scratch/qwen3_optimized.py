@@ -68,12 +68,14 @@ class Qwen3Model(nn.Module):
             pos_end = pos_start + num_tokens
             self.current_pos = pos_end
             mask = torch.triu(
-                torch.ones(pos_end, pos_end, device=x.device, dtype=torch.bool), diagonal=1
-            )[pos_start:pos_end, :pos_end]
+                torch.full((num_tokens, pos_end), -torch.inf, device=x.device, dtype=self.cfg["dtype"]),
+                diagonal=1 + pos_start,
+            )
         else:
             pos_start = 0  # Not strictly necessary but helps torch.compile
             mask = torch.triu(
-                torch.ones(num_tokens, num_tokens, device=x.device, dtype=torch.bool), diagonal=1
+                torch.full((num_tokens, num_tokens), -torch.inf, device=x.device, dtype=self.cfg["dtype"]),
+                diagonal=1,
             )
         # Shape (1, 1, num_tokens, num_tokens) to broadcast across batch and heads
         mask = mask[None, None, :, :]  # broadcast mask
@@ -81,7 +83,13 @@ class Qwen3Model(nn.Module):
         for i, block in enumerate(self.trf_blocks):
             if cache is not None:
                 cache.allocate(i, x.size(0))
-            x = block(x, mask, self.cos, self.sin, start_pos=pos_start, cache=cache, layer_idx=i, exact=self.exact)
+            x = block(
+                x, mask, self.cos, self.sin,
+                start_pos=pos_start,
+                cache=cache,
+                layer_idx=i,
+                exact=self.exact,
+            )
 
         x = self.final_norm(x)
         logits = self.out_head(x.to(self.cfg["dtype"]))
@@ -205,18 +213,16 @@ class GroupedQueryAttention(nn.Module):
             values = values[:, :, None, :, :].expand(b, num_groups, self.group_size, seq_len, head_dim)
             values = values.reshape(b, self.num_heads, seq_len, head_dim)
 
-        # Attention mask preparation
-        add_mask = None
+        # Attention mask
+        attn_mask = None
         if mask is not None:
-            mask = mask.to(torch.bool)
-            if mask.ndim == 2:
-                mask = mask[None, None, :, :]
-            elif mask.ndim == 3:
-                mask = mask[None, :, :, :]
-            if mask.shape[0] == 1:
-                mask = mask.expand(b, 1, mask.shape[-2], mask.shape[-1])
-            neg = torch.finfo(queries.dtype).min
-            add_mask = torch.zeros_like(mask, dtype=queries.dtype).masked_fill(mask, neg)
+            attn_mask = mask
+            if attn_mask.ndim == 2:
+                attn_mask = attn_mask[None, None, :, :]
+            elif attn_mask.ndim == 3:
+                attn_mask = attn_mask[None, :, :, :]
+            if attn_mask.dtype != queries.dtype:
+                attn_mask = attn_mask.to(queries.dtype)
 
         # SDPA attention
         if exact:
@@ -225,7 +231,7 @@ class GroupedQueryAttention(nn.Module):
                     queries.contiguous(),
                     keys.contiguous(),
                     values.contiguous(),
-                    attn_mask=add_mask,
+                    attn_mask=attn_mask,
                     dropout_p=0.0,
                     is_causal=False,
                 )
@@ -234,7 +240,7 @@ class GroupedQueryAttention(nn.Module):
                 queries.contiguous(),
                 keys.contiguous(),
                 values.contiguous(),
-                attn_mask=add_mask,
+                attn_mask=attn_mask,
                 dropout_p=0.0,
                 is_causal=False,
             )
@@ -253,7 +259,7 @@ def compute_rope_params(head_dim, theta_base=10_000, context_length=4096, dtype=
     positions = torch.arange(context_length, dtype=dtype)
 
     # Compute the angles
-    angles = positions[:, None] * inv_freq[None, :]  # Shape: (context_length, head_dim // 2)
+    angles = positions.unsqueeze(1) * inv_freq.unsqueeze(0)  # Shape: (context_length, head_dim // 2)
 
     # Expand angles to match the head_dim
     angles = torch.cat([angles, angles], dim=1)  # Shape: (context_length, head_dim)
