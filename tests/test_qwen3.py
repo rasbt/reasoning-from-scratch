@@ -134,54 +134,61 @@ def test_tokenizer_equivalence():
     messages = [
         {"role": "user", "content": prompt},
     ]
-    for s in ("-Base", ""):
-        repo_id = f"Qwen/Qwen3-0.6B{s}"
-        tokenizer_ref = AutoTokenizer.from_pretrained(repo_id)
-        tokenizer_url = f"https://huggingface.co/Qwen/Qwen3-0.6B{s}/resolve/main/tokenizer.json"
-        download_file(tokenizer_url, out_dir=".")
 
-        old_name = "tokenizer.json"
+    for apply_chat_template in (True, False):
+        for s in ("-Base", ""):
+            repo_id = f"Qwen/Qwen3-0.6B{s}"
+            tokenizer_ref = AutoTokenizer.from_pretrained(repo_id)
+            tokenizer_url = f"https://huggingface.co/Qwen/Qwen3-0.6B{s}/resolve/main/tokenizer.json"
+            download_file(tokenizer_url, out_dir=".")
 
-        if not s:
-            new_name = "tokenizer-reasoning.json"
-        else:
-            new_name = "tokenizer-base.json"
+            old_name = "tokenizer.json"
 
-        try:
-            shutil.move(old_name, new_name)
-        except Exception:
-            with tempfile.NamedTemporaryFile(delete=False, dir=".") as tmp_file:
-                shutil.copyfile(old_name, tmp_file.name)
-                os.replace(tmp_file.name, new_name)
-            os.remove(old_name)
+            if not s:
+                new_name = "tokenizer-reasoning.json"
+            else:
+                new_name = "tokenizer-base.json"
 
-        for states in ((True, True), (False, False)):
-            tokenizer = Qwen3Tokenizer(
-                tokenizer_file_path=new_name,
-                apply_chat_template=True,
-                add_generation_prompt=states[0],
-                add_thinking=states[1]
-            )
-            input_token_ids = tokenizer.encode(prompt)
-            input_token_ids_ref = tokenizer_ref.apply_chat_template(
-                messages,
-                tokenize=True,
-                add_generation_prompt=states[0],
-                enable_thinking=states[1],
-            )
-            assert input_token_ids == input_token_ids_ref, states
+            try:
+                shutil.move(old_name, new_name)
+            except Exception:
+                with tempfile.NamedTemporaryFile(delete=False, dir=".") as tmp_file:
+                    shutil.copyfile(old_name, tmp_file.name)
+                    os.replace(tmp_file.name, new_name)
+                os.remove(old_name)
 
-            output_text = tokenizer.decode(input_token_ids)
-            out_text_ref = tokenizer_ref.decode(input_token_ids_ref)
-            assert output_text == out_text_ref, states
+            for states in ((True, True), (False, False)):
+                tokenizer = Qwen3Tokenizer(
+                    tokenizer_file_path=new_name,
+                    apply_chat_template=apply_chat_template,
+                    add_generation_prompt=states[0],
+                    add_thinking=states[1]
+                )
+                input_token_ids = tokenizer.encode(prompt)
 
-            assert tokenizer.encode("<|endoftext|>") == [tokenizer._special_to_id["<|endoftext|>"]]
-            assert tokenizer.encode("<|im_end|>") == [tokenizer._special_to_id["<|im_end|>"]]
+                if apply_chat_template:
+                    input_token_ids_ref = tokenizer_ref.apply_chat_template(
+                        messages,
+                        tokenize=True,
+                        add_generation_prompt=states[0],
+                        enable_thinking=states[1],
+                    )
+                else:
+                    input_token_ids_ref = input_token_ids
 
-            expected_eos_token = "<|im_end|>" if "base" not in new_name else "<|endoftext|>"
-            expected_pad_token = "<|endoftext|>"
-            assert tokenizer.decode([tokenizer.eos_token_id]) == expected_eos_token
-            assert tokenizer.decode([tokenizer.pad_token_id]) == expected_pad_token
+                assert input_token_ids == input_token_ids_ref, states
+
+                output_text = tokenizer.decode(input_token_ids)
+                out_text_ref = tokenizer_ref.decode(input_token_ids_ref)
+                assert output_text == out_text_ref, states
+
+                assert tokenizer.encode("<|endoftext|>") == [tokenizer._special_to_id["<|endoftext|>"]]
+                assert tokenizer.encode("<|im_end|>") == [tokenizer._special_to_id["<|im_end|>"]]
+
+                expected_eos_token = "<|im_end|>" if "base" not in new_name else "<|endoftext|>"
+                expected_pad_token = "<|endoftext|>"
+                assert tokenizer.decode([tokenizer.eos_token_id]) == expected_eos_token
+                assert tokenizer.decode([tokenizer.pad_token_id]) == expected_pad_token
 
 
 @pytest.mark.parametrize("ModelClass", [Qwen3Model])
