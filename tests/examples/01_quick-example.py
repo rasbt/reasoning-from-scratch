@@ -76,10 +76,10 @@ device = torch.device(args.device) if args.device else get_device()
 
 if args.reasoning:
     download_qwen3_small(kind="reasoning", tokenizer_only=False, out_dir="qwen3")
-    tokenizer_file_path = Path("qwen3") / "tokenizer-reasoning.json"
-    model_file = Path("qwen3") / "qwen3-0.6B-reasoning.pth"
+    tokenizer_path = Path("qwen3") / "tokenizer-reasoning.json"
+    model_path = Path("qwen3") / "qwen3-0.6B-reasoning.pth"
     tokenizer = Qwen3Tokenizer(
-        tokenizer_file_path=tokenizer_file_path,
+        tokenizer_file_path=tokenizer_path,
         apply_chat_template=True,
         add_generation_prompt=True,
         add_thinking=True
@@ -87,12 +87,12 @@ if args.reasoning:
 
 else:
     download_qwen3_small(kind="base", tokenizer_only=False, out_dir="qwen3")
-    tokenizer_file_path = Path("qwen3") / "tokenizer-base.json"
-    model_file = Path("qwen3") / "qwen3-0.6B-base.pth"
-    tokenizer = Qwen3Tokenizer(tokenizer_file_path=tokenizer_file_path)
+    tokenizer_path = Path("qwen3") / "tokenizer-base.json"
+    model_path = Path("qwen3") / "qwen3-0.6B-base.pth"
+    tokenizer = Qwen3Tokenizer(tokenizer_file_path=tokenizer_path)
 
 model = Qwen3Model(QWEN_CONFIG_06_B)
-model.load_state_dict(torch.load(model_file, map_location=device))
+model.load_state_dict(torch.load(model_path, map_location=device))
 
 model.to(device)
 
