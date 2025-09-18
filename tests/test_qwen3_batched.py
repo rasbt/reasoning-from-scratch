@@ -37,14 +37,14 @@ def test_batched_vs_nonbatched_equivalence_with_batched_model(reasoning):
     # Download and init tokenizer
     kind = "reasoning" if reasoning else "base"
     download_qwen3_small(kind=kind, tokenizer_only=False, out_dir="qwen3")
-    tokenizer_file = Path("qwen3") / (
+    tokenizer_path = Path("qwen3") / (
         "tokenizer-reasoning.json" if reasoning else "tokenizer-base.json"
     )
-    model_file = Path("qwen3") / (
+    model_path = Path("qwen3") / (
         "qwen3-0.6B-reasoning.pth" if reasoning else "qwen3-0.6B-base.pth"
     )
     tokenizer = Qwen3Tokenizer(
-        tokenizer_file_path=tokenizer_file,
+        tokenizer_file_path=tokenizer_path,
         apply_chat_template=True if reasoning else False,
         add_generation_prompt=True if reasoning else False,
         add_thinking=True if reasoning else False,
@@ -52,7 +52,7 @@ def test_batched_vs_nonbatched_equivalence_with_batched_model(reasoning):
 
     # Models
     model_batched = Qwen3ModelBatched(QWEN_CONFIG_06_B)
-    model_batched.load_state_dict(torch.load(model_file, map_location=device))
+    model_batched.load_state_dict(torch.load(model_path, map_location=device))
     model_batched.to(device)
     model_batched.eval()
 
@@ -197,14 +197,14 @@ def test_batched_vs_nonbatched_equivalence_with_single_versus_batched_model(reas
     # Download and init tokenizer
     kind = "reasoning" if reasoning else "base"
     download_qwen3_small(kind=kind, tokenizer_only=False, out_dir="qwen3")
-    tokenizer_file = Path("qwen3") / (
+    tokenizer_path = Path("qwen3") / (
         "tokenizer-reasoning.json" if reasoning else "tokenizer-base.json"
     )
-    model_file = Path("qwen3") / (
+    model_path = Path("qwen3") / (
         "qwen3-0.6B-reasoning.pth" if reasoning else "qwen3-0.6B-base.pth"
     )
     tokenizer = Qwen3Tokenizer(
-        tokenizer_file_path=tokenizer_file,
+        tokenizer_file_path=tokenizer_path,
         apply_chat_template=True if reasoning else False,
         add_generation_prompt=True if reasoning else False,
         add_thinking=True if reasoning else False,
@@ -212,12 +212,12 @@ def test_batched_vs_nonbatched_equivalence_with_single_versus_batched_model(reas
 
     # Models
     model = Qwen3Model(QWEN_CONFIG_06_B)
-    model.load_state_dict(torch.load(model_file, map_location=device))
+    model.load_state_dict(torch.load(model_path, map_location=device))
     model.to(device)
     model.eval()
 
     model_batched = Qwen3ModelBatched(QWEN_CONFIG_06_B)
-    model_batched.load_state_dict(torch.load(model_file, map_location=device))
+    model_batched.load_state_dict(torch.load(model_path, map_location=device))
     model_batched.to(device)
     model_batched.eval()
 
@@ -290,14 +290,14 @@ def test_plain_vs_streaming_generation(reasoning):
     # Download and init tokenizer
     kind = "reasoning" if reasoning else "base"
     download_qwen3_small(kind=kind, tokenizer_only=False, out_dir="qwen3")
-    tokenizer_file = Path("qwen3") / (
+    tokenizer_path = Path("qwen3") / (
         "tokenizer-reasoning.json" if reasoning else "tokenizer-base.json"
     )
-    model_file = Path("qwen3") / (
+    model_path = Path("qwen3") / (
         "qwen3-0.6B-reasoning.pth" if reasoning else "qwen3-0.6B-base.pth"
     )
     tokenizer = Qwen3Tokenizer(
-        tokenizer_file_path=tokenizer_file,
+        tokenizer_file_path=tokenizer_path,
         apply_chat_template=True if reasoning else False,
         add_generation_prompt=True if reasoning else False,
         add_thinking=True if reasoning else False,
@@ -305,12 +305,12 @@ def test_plain_vs_streaming_generation(reasoning):
 
     # Models
     model = Qwen3Model(QWEN_CONFIG_06_B)
-    model.load_state_dict(torch.load(model_file, map_location=device))
+    model.load_state_dict(torch.load(model_path, map_location=device))
     model.to(device)
     model.eval()
 
     model_batched = Qwen3ModelBatched(QWEN_CONFIG_06_B)
-    model_batched.load_state_dict(torch.load(model_file, map_location=device))
+    model_batched.load_state_dict(torch.load(model_path, map_location=device))
     model_batched.to(device)
     model_batched.eval()
 

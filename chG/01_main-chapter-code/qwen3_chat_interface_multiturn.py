@@ -43,10 +43,10 @@ def trim_input_tensor(input_ids_tensor, context_len, max_new_tokens):
 def get_model_and_tokenizer(qwen3_config, local_dir, device, use_compile, use_reasoning):
     if use_reasoning:
         download_qwen3_small(kind="reasoning", tokenizer_only=False, out_dir=local_dir)
-        tokenizer_file_path = Path(local_dir) / "tokenizer-reasoning.json"
-        model_file = Path(local_dir) / "qwen3-0.6B-reasoning.pth"
+        tokenizer_path = Path(local_dir) / "tokenizer-reasoning.json"
+        model_path = Path(local_dir) / "qwen3-0.6B-reasoning.pth"
         tokenizer = Qwen3Tokenizer(
-            tokenizer_file_path=tokenizer_file_path,
+            tokenizer_file_path=tokenizer_path,
             apply_chat_template=True,
             add_generation_prompt=True,
             add_thinking=True
@@ -54,12 +54,12 @@ def get_model_and_tokenizer(qwen3_config, local_dir, device, use_compile, use_re
 
     else:
         download_qwen3_small(kind="base", tokenizer_only=False, out_dir=local_dir)
-        tokenizer_file_path = Path(local_dir) / "tokenizer-base.json"
-        model_file = Path(local_dir) / "qwen3-0.6B-base.pth"
-        tokenizer = Qwen3Tokenizer(tokenizer_file_path=tokenizer_file_path)
+        tokenizer_path = Path(local_dir) / "tokenizer-base.json"
+        model_path = Path(local_dir) / "qwen3-0.6B-base.pth"
+        tokenizer = Qwen3Tokenizer(tokenizer_file_path=tokenizer_path)
 
     model = Qwen3Model(qwen3_config)
-    model.load_state_dict(torch.load(model_file, map_location=device))
+    model.load_state_dict(torch.load(model_path, map_location=device))
     model.to(device)
     if use_compile:
         model = torch.compile(model)

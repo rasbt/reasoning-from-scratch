@@ -86,14 +86,14 @@ def test_qwen3_vs_optimized_qwen3(reasoning):
     # Download and init tokenizer
     kind = "reasoning" if reasoning else "base"
     download_qwen3_small(kind=kind, tokenizer_only=False, out_dir="qwen3")
-    tokenizer_file = Path("qwen3") / (
+    tokenizer_path = Path("qwen3") / (
         "tokenizer-reasoning.json" if reasoning else "tokenizer-base.json"
     )
-    model_file = Path("qwen3") / (
+    model_path = Path("qwen3") / (
         "qwen3-0.6B-reasoning.pth" if reasoning else "qwen3-0.6B-base.pth"
     )
     tokenizer = Qwen3Tokenizer(
-        tokenizer_file_path=tokenizer_file,
+        tokenizer_file_path=tokenizer_path,
         apply_chat_template=True if reasoning else False,
         add_generation_prompt=True if reasoning else False,
         add_thinking=True if reasoning else False,
@@ -101,12 +101,12 @@ def test_qwen3_vs_optimized_qwen3(reasoning):
 
     # Models
     model = Qwen3Model(QWEN_CONFIG_06_B)
-    model.load_state_dict(torch.load(model_file, map_location=device))
+    model.load_state_dict(torch.load(model_path, map_location=device))
     model.to(device)
     model.eval()
 
     model_optimized = Qwen3ModelOptimized(QWEN_CONFIG_06_B, exact=True)
-    model_optimized.load_state_dict(torch.load(model_file, map_location=device))
+    model_optimized.load_state_dict(torch.load(model_path, map_location=device))
     model_optimized.to(device)
     model_optimized.eval()
 
