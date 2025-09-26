@@ -151,7 +151,7 @@ def test_equality_check():
 
     for pred, truth, expected in cases:
         got = ch03.equality_check(ch03.normalize_text(pred), ch03.normalize_text(truth))
-        assert got == expected, f"{name} failed: {pred!r} vs {truth!r} -> {got!r}, expected {expected!r}"
+        assert got == expected, f"{pred!r} -> {got!r}, expected {expected!r}"
 
 
 def test_split_into_parts():
