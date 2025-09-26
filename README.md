@@ -45,7 +45,6 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 
 ## Table of Contents (In Progress)
 
-
 [![Code tests Linux](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-linux.yml/badge.svg)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-linux.yml)
 [![Code tests macOS](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-macos.yml/badge.svg)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-macos.yml)
 [![Code tests Windows](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-windows.yml/badge.svg)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-windows.yml)
@@ -54,7 +53,7 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | Ch 1: Understanding reasoning models                         | No code                                                      |
 | Ch 2: Generating text with a pre-trained LLM                 | - [ch02_main.ipynb](ch02/01_main-chapter-code/ch02_main.ipynb)<br/>- [ch02_exercise-solutions.ipynb](ch02/01_main-chapter-code/ch02_exercise-solutions.ipynb) |
-| Ch 3: Evaluating reasoning models                            | TBA                                                          |
+| Ch 3: Evaluating reasoning models                            | - [ch03_main.ipynb](ch03/01_main-chapter-code/ch03_main.ipynb)<br/> |
 | Ch 4: Improving reasoning with inference-time scaling        | TBA                                                          |
 | Ch 5: Training reasoning models with reinforcement learning  | TBA                                                          |
 | Ch 6: Distilling reasoning models for efficient reasoning    | TBA                                                          |
