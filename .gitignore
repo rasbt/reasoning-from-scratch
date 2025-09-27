@@ -1,4 +1,5 @@
 # Other temporary files
+*.jsonl
 Untitled.ipynb
 qwen3/
 tmp
