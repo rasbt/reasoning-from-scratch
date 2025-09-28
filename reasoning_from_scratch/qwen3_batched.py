@@ -399,3 +399,187 @@ def generate_text_basic_batched_stream_cache(
         # Advance one token with KV cache
         out = model(next_token, cache=cache, attn_mask=cur_attn)[:, -1]
         token_ids = torch.cat([token_ids, next_token], dim=1)
+
+
+def shrink_kv_cache_inplace(cache, keep_mask, n_layers):
+    if keep_mask.dtype != torch.bool:
+        keep_mask = keep_mask.to(torch.bool)
+    for i in range(n_layers):
+        kv = cache.get(i)
+        if kv is None:
+            continue
+        K, V = kv
+        K = K[keep_mask]  # shrink along batch dim
+        V = V[keep_mask]
+        cache.update(i, (K, V))
+
+
+@torch.inference_mode()
+def generate_text_basic_batched_cache_stop(
+    model,
+    token_ids,
+    max_new_tokens,
+    eos_token_id=None,
+    attn_mask=None,
+    pad_id=None,
+):
+    """
+    Same as generate_text_basic_batched_cache but
+    with per-sequence early stop.
+    I.e., finished rows that see an EOS written don't
+    participate in forward pass anymore.
+    """
+    device = token_ids.device
+    model.eval()
+
+    B, T0 = token_ids.shape
+
+    # Build attention mask
+    if attn_mask is None and pad_id is not None:
+        attn_mask = (token_ids != pad_id)
+    if attn_mask is not None:
+        attn_mask = attn_mask.to(torch.bool).to(device)
+
+    # Init cache and prefill once on full batch
+    cache = KVCache(n_layers=model.cfg["n_layers"])
+    out = model(token_ids, cache=cache, attn_mask=attn_mask)[:, -1]  # (B, V)
+
+    finished_full = torch.zeros(B, dtype=torch.bool, device=device)
+    active_idx = torch.arange(B, device=device)  # active rows -> original rows
+    cur_attn_active = attn_mask                  # mirrors the active cache
+    generated_full_steps = []                    # list of (B,1) step tensors
+
+    for _ in range(max_new_tokens):
+        # Next tokens for the active sub-batch
+        next_token_active = torch.argmax(out, dim=-1, keepdim=True)  # (B_active, 1)
+
+        # Scatter into a full-sized (B,1) step tensor (EOS for finished rows)
+        fill_val = int(eos_token_id) if eos_token_id is not None else 0
+        step_full = torch.full((B, 1), fill_value=fill_val,
+                               dtype=token_ids.dtype, device=device)
+        step_full.index_copy_(0, active_idx, next_token_active)
+        generated_full_steps.append(step_full)
+
+        # Update finished bookkeeping in full-batch coordinates
+        if eos_token_id is not None:
+            newly_finished_active = (next_token_active.squeeze(1) == eos_token_id)
+            finished_full.index_put_(
+                (active_idx,),
+                newly_finished_active | finished_full.index_select(0, active_idx)
+            )
+        else:
+            newly_finished_active = torch.zeros_like(
+                next_token_active.squeeze(1), dtype=torch.bool, device=device
+            )
+
+        if eos_token_id is not None and torch.all(finished_full):
+            break
+
+        # Keep only survivors in the compute batch
+        keep_mask_active = ~newly_finished_active
+        if keep_mask_active.ndim == 0:
+            keep_any = bool(keep_mask_active.item())
+        else:
+            keep_any = bool(keep_mask_active.any().item())
+        if not keep_any:
+            break
+
+        next_token_survivors = next_token_active[keep_mask_active]  # (B_surv, 1)
+        active_idx = active_idx[keep_mask_active]
+
+        # Shrink attn mask and append a "1" for the generated token
+        if cur_attn_active is not None:
+            cur_attn_active = cur_attn_active[keep_mask_active]
+            ones = torch.ones((cur_attn_active.size(0), 1),
+                              dtype=cur_attn_active.dtype, device=device)
+            cur_attn_active = torch.cat([cur_attn_active, ones], dim=1)
+
+        # Shrink KV cache along batch dim to survivors
+        shrink_kv_cache_inplace(cache, keep_mask_active, model.cfg["n_layers"])
+
+        # Advance one token for survivors only
+        out = model(next_token_survivors, cache=cache, attn_mask=cur_attn_active)[:, -1]
+
+    # Concatenate per-step tensors; return only the generated part
+    if generated_full_steps:
+        return torch.cat(generated_full_steps, dim=1)  # (B, L_generated)
+    else:
+        return torch.empty((B, 0), dtype=token_ids.dtype, device=device)
+
+
+@torch.inference_mode()
+def generate_text_basic_batched_stream_cache_stop(
+    model,
+    token_ids: torch.Tensor,
+    max_new_tokens: int,
+    eos_token_id: int | None = None,
+    attn_mask: torch.Tensor | None = None,
+    pad_id: int | None = None,
+):
+    """
+    Same as generate_text_basic_batched_stream_cache but
+    with per-sequence early stop.
+    """
+    device = token_ids.device
+    model.eval()
+
+    B, T0 = token_ids.shape
+
+    if attn_mask is None and pad_id is not None:
+        attn_mask = (token_ids != pad_id)
+    if attn_mask is not None:
+        attn_mask = attn_mask.to(torch.bool).to(device)
+
+    cache = KVCache(n_layers=model.cfg["n_layers"])
+    out = model(token_ids, cache=cache, attn_mask=attn_mask)[:, -1]  # (B, V)
+
+    finished_full = torch.zeros(B, dtype=torch.bool, device=device)
+    active_idx = torch.arange(B, device=device)
+    cur_attn_active = attn_mask
+
+    for _ in range(max_new_tokens):
+        next_token_active = torch.argmax(out, dim=-1, keepdim=True)  # (B_active, 1)
+
+        # Build full-sized step to yield
+        fill_val = int(eos_token_id) if eos_token_id is not None else 0
+        step_full = torch.full((B, 1), fill_value=fill_val,
+                               dtype=token_ids.dtype, device=device)
+        step_full.index_copy_(0, active_idx, next_token_active)
+
+        if eos_token_id is not None:
+            newly_finished_active = (next_token_active.squeeze(1) == eos_token_id)
+            finished_full.index_put_(
+                (active_idx,),
+                newly_finished_active | finished_full.index_select(0, active_idx)
+            )
+        else:
+            newly_finished_active = torch.zeros_like(
+                next_token_active.squeeze(1), dtype=torch.bool, device=device
+            )
+
+        # Yield before shrinking so callers still see exactly one (B,1) per step
+        yield step_full
+
+        if eos_token_id is not None and torch.all(finished_full):
+            break
+
+        keep_mask_active = ~newly_finished_active
+        if keep_mask_active.ndim == 0:
+            keep_any = bool(keep_mask_active.item())
+        else:
+            keep_any = bool(keep_mask_active.any().item())
+        if not keep_any:
+            break
+
+        next_token_survivors = next_token_active[keep_mask_active]
+        active_idx = active_idx[keep_mask_active]
+
+        if cur_attn_active is not None:
+            cur_attn_active = cur_attn_active[keep_mask_active]
+            ones = torch.ones((cur_attn_active.size(0), 1),
+                              dtype=cur_attn_active.dtype, device=device)
+            cur_attn_active = torch.cat([cur_attn_active, ones], dim=1)
+
+        shrink_kv_cache_inplace(cache, keep_mask_active, model.cfg["n_layers"])
+
+        out = model(next_token_survivors, cache=cache, attn_mask=cur_attn_active)[:, -1]

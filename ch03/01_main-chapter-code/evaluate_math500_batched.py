@@ -19,14 +19,13 @@ from reasoning_from_scratch.qwen3 import (
     Qwen3Tokenizer,
     QWEN_CONFIG_06_B,
 )
+from reasoning_from_scratch.qwen3_batched import (
+    Qwen3Model as Qwen3ModelBatched,
+)
 from reasoning_from_scratch.ch03 import (
     render_prompt,
     extract_final_candidate,
     grade_answer,
-)
-from reasoning_from_scratch.qwen3_batched import (
-    Qwen3Model as Qwen3ModelBatched,
-    generate_text_basic_batched_cache,
 )
 
 
@@ -232,12 +231,25 @@ def parse_args():
         action="store_true",
         help="Print per-sample correctness while evaluating.",
     )
+    parser.add_argument(
+        "--disable_efficient_mode",
+        action="store_true",
+        help="Uses an alternative implementation of batched inference that is simpler but more memory and compute intense.",
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
 
+    if args.disable_efficient_mode:
+        from reasoning_from_scratch.qwen3_batched import (
+            generate_text_basic_batched_cache,
+        )
+    else:
+        from reasoning_from_scratch.qwen3_batched import (
+            generate_text_basic_batched_cache_stop as generate_text_basic_batched_cache,
+        )
     if args.device == "auto":
         device = get_device()
     else:
