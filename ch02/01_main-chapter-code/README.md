@@ -2,12 +2,9 @@
 
 
 &nbsp;
-
 ## Main chapter code
 
-- [ch02_main.ipynb](ch02_main.ipynb) contains the main chapter code
-- [ch02_exercise-solutions.ipynb](ch02_exercise-solutions.ipynb) contains the exercise solutions
+- [ch02_main.ipynb](ch02_main.ipynb): main chapter code
+- [ch02_exercise-solutions.ipynb](ch02_exercise-solutions.ipynb): exercise solutions
 
 
-
-&nbsp;
