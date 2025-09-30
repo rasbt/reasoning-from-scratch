@@ -199,6 +199,49 @@ def test_grade_answer():
         assert got == expected, f"case {i} failed: pred={pred!r}, gt={gt!r} -> {got!r}, expected {expected!r}"
 
 
+tests = [
+    ("check_1", "3/4", r"\frac{3}{4}", True),
+    ("check_2", "(3)/(4)", r"3/4", True),
+    ("check_3", r"\frac{\sqrt{8}}{2}", "sqrt(2)", True),
+    ("check_4", r"\( \frac{1}{2} + \frac{1}{6} \)", "2/3", True),
+    ("check_5", "(1, 2)", r"(1,2)", True),
+    ("check_6", "(2, 1)", "(1, 2)", False),
+    ("check_7", "(1, 2, 3)", "(1, 2)", False),
+    ("check_8", "0.5", "1/2", True),
+    ("check_9", "0.3333333333", "1/3", False),
+    ("check_10", "1,234/2", "617", True),
+    ("check_11", r"\text{2/3}", "2/3", True),
+    ("check_12", "50%", "1/2", False),
+    ("check_13", r"2\cdot 3/4", "3/2", True),
+    ("check_14", r"90^\circ", "90", True),
+    ("check_15", r"\left(\frac{3}{4}\right)", "3/4", True),
+]
+
+
+def test_run_demos_table_pass_fail_labels(capsys):
+    ch03.run_demos_table(tests)
+    out = capsys.readouterr().out
+
+    rows = {}
+    for line in out.splitlines():
+        if not line.strip() or line.startswith("Test"):
+            continue
+        parts = [p.strip() for p in line.split("|")]
+        if len(parts) != 4:
+            continue
+        name, expect_str, got_str, status = parts
+        rows[name] = (expect_str, got_str, status)
+
+    for name, *_ in tests:
+        assert name in rows, f"Row for {name} not found.\n{out}"
+        expect_str, got_str, status = rows[name]
+        should_pass = (expect_str == got_str)
+        expected_label = "PASS" if should_pass else "FAIL"
+        assert status == expected_label, (
+            f"{name}: expected {expected_label} but saw {status}\n{out}"
+        )
+
+
 def test_render_prompt():
     cases = [
         "Compute 1/2 + 1/6.",

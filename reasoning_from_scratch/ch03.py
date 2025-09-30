@@ -270,26 +270,7 @@ def grade_answer(pred_text, gt_text):
     return result  # True only if all checks passed
 
 
-def run_demos_table():
-    # Define test cases: (name, prediction, ground truth, expected result)
-    tests = [
-        ("check_1", "3/4", r"\frac{3}{4}", True),
-        ("check_2", "(3)/(4)", r"3/4", True),
-        ("check_3", r"\frac{\sqrt{8}}{2}", "sqrt(2)", True),
-        ("check_4", r"\( \frac{1}{2} + \frac{1}{6} \)", "2/3", True),
-        ("check_5", "(1, 2)", r"(1,2)", True),
-        ("check_6", "(2, 1)", "(1, 2)", False),
-        ("check_7", "(1, 2, 3)", "(1, 2)", False),
-        ("check_8", "0.5", "1/2", True),
-        ("check_9", "0.3333333333", "1/3", False),
-        ("check_10", "1,234/2", "617", True),
-        ("check_11", r"\text{2/3}", "2/3", True),
-        ("check_12", "50%", "1/2", False),
-        ("check_13", r"2\cdot 3/4", "3/2", True),
-        ("check_14", r"90^\circ", "90", True),
-        ("check_15", r"\left(\frac{3}{4}\right)", "3/4", True),
-    ]
-
+def run_demos_table(tests):
     header = ("Test", "Expect", "Got", "Status")
     rows = []
     for name, pred, gtruth, expect in tests:
