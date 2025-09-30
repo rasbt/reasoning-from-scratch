@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "reasoning_from_scratch"
 
-version = "0.1.4"
+version = "0.1.5"
 description = "Reasoning Models From Scratch"
 readme = "README.md"
 
