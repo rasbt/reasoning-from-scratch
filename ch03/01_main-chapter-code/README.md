@@ -4,7 +4,7 @@
 ## Main chapter code
 
 - [ch03_main.ipynb](ch03_main.ipynb): main chapter code
-- `ch03_exercise-solutions.ipynb`: exercise solutions (in progress)
+- [ch03_exercise-solutions.ipynb](ch03_exercise-solutions.ipynb): exercise solutions
 - [evaluate_math500.py](evaluate_math500.py): standalone script to evaluate models on the MATH-500 dataset
 - [evaluate_math500_batched.py](evaluate_math500_batched.py): same as above, but processes multiple examples in parallel during generation
 

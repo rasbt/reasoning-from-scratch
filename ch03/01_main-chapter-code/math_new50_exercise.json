@@ -1,0 +1,402 @@
+[
+  {
+    "problem": "Solve for x: 5(x-3) - 2(2x+1) = 7.",
+    "solution": "Expand: 5x-15 -4x-2 = 7 -> x-17 = 7 -> x = 24.",
+    "answer": "24",
+    "subject": "Algebra",
+    "level": 2,
+    "unique_id": "gen/algebra/001.json"
+  },
+  {
+    "problem": "A recipe uses 3/5 cup of oil. You only have a 1/4-cup measure. How many full 1/4-cup scoops do you need to meet or exceed the recipe?",
+    "solution": "We need at least 3/5 = 0.6 cups. One scoop is 0.25. Two scoops = 0.5, three scoops = 0.75 ≥ 0.6.",
+    "answer": "3",
+    "subject": "Prealgebra",
+    "level": 1,
+    "unique_id": "gen/prealgebra/002.json"
+  },
+  {
+    "problem": "Find the remainder when 2025^{2025} is divided by 4.",
+    "solution": "2025 ≡ 1 (mod 4). Thus 2025^{2025} ≡ 1^{2025} ≡ 1 (mod 4).",
+    "answer": "1",
+    "subject": "Number Theory",
+    "level": 2,
+    "unique_id": "gen/number_theory/003.json"
+  },
+  {
+    "problem": "Find the area of the triangle with vertices (1,2), (5,2), and (3,7).",
+    "solution": "Base from (1,2) to (5,2) is 4. Height is vertical distance from (3,7) to y=2, which is 5. Area = 1/2·4·5 = 10.",
+    "answer": "10",
+    "subject": "Geometry",
+    "level": 2,
+    "unique_id": "gen/geometry/004.json"
+  },
+  {
+    "problem": "Two fair coins are flipped. What is the probability of getting at least one head?",
+    "solution": "Only outcome without a head is TT with probability 1/4. So probability = 1 - 1/4 = 3/4.",
+    "answer": "3/4",
+    "subject": "Counting & Probability",
+    "level": 1,
+    "unique_id": "gen/counting_and_probability/005.json"
+  },
+  {
+    "problem": "Let f(x) = x^3 - 4x + 5. Find the remainder when f(x) is divided by (x-2).",
+    "solution": "Remainder is f(2) = 8 - 8 + 5 = 5.",
+    "answer": "5",
+    "subject": "Intermediate Algebra",
+    "level": 2,
+    "unique_id": "gen/intermediate_algebra/006.json"
+  },
+  {
+    "problem": "Compute \\(\\sin 30^\\circ + \\cos 60^\\circ\\).",
+    "solution": "\\(\\sin 30^\\circ = 1/2\\) and \\(\\cos 60^\\circ = 1/2\\). Sum = 1.",
+    "answer": "1",
+    "subject": "Precalculus",
+    "level": 1,
+    "unique_id": "gen/precalculus/007.json"
+  },
+  {
+    "problem": "Solve the system: \\(2x + y = 11\\) and \\(3x - y = 4\\).",
+    "solution": "Add equations: 5x = 15 -> x = 3. Then 2*3 + y = 11 -> y = 5.",
+    "answer": "(3, 5)",
+    "subject": "Algebra",
+    "level": 2,
+    "unique_id": "gen/algebra/008.json"
+  },
+  {
+    "problem": "In circle O, chord AB has length 10 and is 12 units from the center. Find the radius.",
+    "solution": "Right triangle with radius r, half chord 5, distance to chord 12: r^2 = 12^2 + 5^2 = 144 + 25 = 169 -> r = 13.",
+    "answer": "13",
+    "subject": "Geometry",
+    "level": 3,
+    "unique_id": "gen/geometry/009.json"
+  },
+  {
+    "problem": "How many positive divisors does 2^5 · 3^2 · 7 have?",
+    "solution": "Count = (5+1)(2+1)(1+1) = 6·3·2 = 36.",
+    "answer": "36",
+    "subject": "Number Theory",
+    "level": 2,
+    "unique_id": "gen/number_theory/010.json"
+  },
+  {
+    "problem": "Simplify \\(\\frac{6x^2 - 3x}{3x}\\) for \\(x \\ne 0\\).",
+    "solution": "Factor numerator: 3x(2x - 1). Divide by 3x gives 2x - 1.",
+    "answer": "2x - 1",
+    "subject": "Algebra",
+    "level": 1,
+    "unique_id": "gen/algebra/011.json"
+  },
+  {
+    "problem": "Evaluate \\(\\tan 45^\\circ + \\sec 60^\\circ\\).",
+    "solution": "\\(\\tan 45^\\circ = 1\\), \\(\\sec 60^\\circ = 2\\). Sum = 3.",
+    "answer": "3",
+    "subject": "Precalculus",
+    "level": 1,
+    "unique_id": "gen/precalculus/012.json"
+  },
+  {
+    "problem": "A fair six-sided die is rolled twice. What is the probability the sum is 9?",
+    "solution": "Pairs: (3,6),(4,5),(5,4),(6,3) → 4 outcomes of 36. Probability = 4/36 = 1/9.",
+    "answer": "1/9",
+    "subject": "Counting & Probability",
+    "level": 2,
+    "unique_id": "gen/counting_and_probability/013.json"
+  },
+  {
+    "problem": "Find the distance between the points (−2,5) and (4,−1).",
+    "solution": "Distance = sqrt((4+2)^2 + (−1−5)^2) = sqrt(6^2 + (−6)^2) = sqrt(72) = 6\\sqrt{2}.",
+    "answer": "6\\sqrt{2}",
+    "subject": "Geometry",
+    "level": 1,
+    "unique_id": "gen/geometry/014.json"
+  },
+  {
+    "problem": "Compute \\(\\gcd(456, 210)\\).",
+    "solution": "456 = 210·2 + 36; 210 = 36·5 + 30; 36 = 30 + 6; 30 = 6·5. gcd = 6.",
+    "answer": "6",
+    "subject": "Number Theory",
+    "level": 3,
+    "unique_id": "gen/number_theory/015.json"
+  },
+  {
+    "problem": "If \\(x^2 - 7x + k\\) has a double root, find k.",
+    "solution": "Discriminant zero: (−7)^2 − 4k = 0 → 49 − 4k = 0 → k = 49/4.",
+    "answer": "49/4",
+    "subject": "Intermediate Algebra",
+    "level": 2,
+    "unique_id": "gen/intermediate_algebra/016.json"
+  },
+  {
+    "problem": "Compute the area of a regular hexagon with side length 6.",
+    "solution": "Area = (3\\sqrt{3}/2)s^2 = (3\\sqrt{3}/2)·36 = 54\\sqrt{3}.",
+    "answer": "54\\sqrt{3}",
+    "subject": "Geometry",
+    "level": 3,
+    "unique_id": "gen/geometry/017.json"
+  },
+  {
+    "problem": "Simplify \\(\\frac{5}{\\sqrt{2}}\\) to a rationalized form.",
+    "solution": "Multiply by \\(\\sqrt{2}/\\sqrt{2}\\): 5\\sqrt{2}/2.",
+    "answer": "5\\sqrt{2}/2",
+    "subject": "Prealgebra",
+    "level": 2,
+    "unique_id": "gen/prealgebra/018.json"
+  },
+  {
+    "problem": "Solve for \\(x>0\\): \\(\\log_{10}(x) + \\log_{10}(4x) = 3\\).",
+    "solution": "Combine: \\(\\log_{10}(4x^2)=3\\) → 4x^2 = 10^3 = 1000 → x^2 = 250 → x = 5\\sqrt{10}.",
+    "answer": "5\\sqrt{10}",
+    "subject": "Precalculus",
+    "level": 3,
+    "unique_id": "gen/precalculus/019.json"
+  },
+  {
+    "problem": "If \\(a\\) and \\(b\\) are positive integers with \\(ab=360\\) and \\(\\gcd(a,b)=6\\), find \\(\\operatorname{lcm}(a,b)\\).",
+    "solution": "ab = gcd·lcm → 360 = 6·lcm → lcm = 60.",
+    "answer": "60",
+    "subject": "Number Theory",
+    "level": 2,
+    "unique_id": "gen/number_theory/020.json"
+  },
+  {
+    "problem": "Find all real solutions of \\(x^2 + 4x + 7 = 0\\).",
+    "solution": "Discriminant: 16 − 28 = −12 < 0, so no real roots.",
+    "answer": "No real solutions",
+    "subject": "Algebra",
+    "level": 1,
+    "unique_id": "gen/algebra/021.json"
+  },
+  {
+    "problem": "A drawer has 4 red, 5 blue, and 3 green socks. If you draw two at random without replacement, what is the probability both are blue?",
+    "solution": "Total socks 12. P = (5/12)·(4/11) = 20/132 = 5/33.",
+    "answer": "5/33",
+    "subject": "Counting & Probability",
+    "level": 3,
+    "unique_id": "gen/counting_and_probability/022.json"
+  },
+  {
+    "problem": "Compute \\(\\cos^2 30^\\circ + \\sin^2 30^\\circ\\).",
+    "solution": "Identity gives 1.",
+    "answer": "1",
+    "subject": "Precalculus",
+    "level": 1,
+    "unique_id": "gen/precalculus/023.json"
+  },
+  {
+    "problem": "Solve for y in terms of x: \\(\\frac{y-3}{2} = 5x - 1\\).",
+    "solution": "y − 3 = 10x − 2 → y = 10x + 1.",
+    "answer": "y = 10x + 1",
+    "subject": "Algebra",
+    "level": 1,
+    "unique_id": "gen/algebra/024.json"
+  },
+  {
+    "problem": "Find the area of a right triangle with hypotenuse 13 and one leg 5.",
+    "solution": "Other leg = \\(\\sqrt{13^2 - 5^2} = \\sqrt{169−25}=\\sqrt{144}=12\\). Area = 1/2·5·12 = 30.",
+    "answer": "30",
+    "subject": "Geometry",
+    "level": 1,
+    "unique_id": "gen/geometry/025.json"
+  },
+  {
+    "problem": "Compute the sum of the first 40 positive even integers.",
+    "solution": "Even integers: 2,4,...,80. Sum = 40·(2+80)/2 = 40·41 = 1640.",
+    "answer": "1640",
+    "subject": "Prealgebra",
+    "level": 2,
+    "unique_id": "gen/prealgebra/026.json"
+  },
+  {
+    "problem": "Let \\(g(x) = 2x^2 - kx + 9\\). If x=3 is a root, find k.",
+    "solution": "0 = 2·9 − 3k + 9 = 27 − 3k → k = 9.",
+    "answer": "9",
+    "subject": "Intermediate Algebra",
+    "level": 2,
+    "unique_id": "gen/intermediate_algebra/027.json"
+  },
+  {
+    "problem": "How many integers n satisfy \\(1 \\le n \\le 100\\) and \\(\\gcd(n, 18) = 1\\)?",
+    "solution": "Numbers coprime to 18 avoid factors 2 and 3. Count via inclusion-exclusion: 100 − ⌊100/2⌋ − ⌊100/3⌋ + ⌊100/6⌋ = 100 − 50 − 33 + 16 = 33.",
+    "answer": "33",
+    "subject": "Number Theory",
+    "level": 4,
+    "unique_id": "gen/number_theory/028.json"
+  },
+  {
+    "problem": "A line passes through (2,3) and (6,15). Find its slope-intercept form.",
+    "solution": "Slope m = (15−3)/(6−2)=12/4=3. Using (2,3): 3 = 3·2 + b → b = −3. So y = 3x − 3.",
+    "answer": "y = 3x − 3",
+    "subject": "Algebra",
+    "level": 2,
+    "unique_id": "gen/algebra/029.json"
+  },
+  {
+    "problem": "Evaluate \\(\\binom{10}{3}\\).",
+    "solution": "10·9·8/3·2·1 = 120.",
+    "answer": "120",
+    "subject": "Counting & Probability",
+    "level": 1,
+    "unique_id": "gen/counting_and_probability/030.json"
+  },
+  {
+    "problem": "Find the perimeter of an isosceles triangle with equal sides 10 and base 12.",
+    "solution": "Perimeter = 10 + 10 + 12 = 32.",
+    "answer": "32",
+    "subject": "Geometry",
+    "level": 1,
+    "unique_id": "gen/geometry/031.json"
+  },
+  {
+    "problem": "Simplify \\(\\frac{9a^2b}{3ab^2}\\) for \\(a,b \\ne 0\\).",
+    "solution": "Cancel: (9/3)·(a^2/a)·(b/b^2) = 3a/b.",
+    "answer": "3a/b",
+    "subject": "Prealgebra",
+    "level": 1,
+    "unique_id": "gen/prealgebra/032.json"
+  },
+  {
+    "problem": "If \\(f(x) = \\frac{2x+1}{x-4}\\), compute f(6).",
+    "solution": "f(6) = (12+1)/(6−4)=13/2.",
+    "answer": "13/2",
+    "subject": "Intermediate Algebra",
+    "level": 1,
+    "unique_id": "gen/intermediate_algebra/033.json"
+  },
+  {
+    "problem": "Find the smallest positive integer n such that 7n ≡ 1 (mod 20).",
+    "solution": "Check multiples: 7·3=21 ≡1 (mod 20). Smallest n=3.",
+    "answer": "3",
+    "subject": "Number Theory",
+    "level": 2,
+    "unique_id": "gen/number_theory/034.json"
+  },
+  {
+    "problem": "Given \\(\\sin \\theta = 3/5\\) with \\(\\theta\\) acute, find \\(\\cos \\theta\\).",
+    "solution": "Right triangle: cos = \\(\\sqrt{1−(3/5)^2}=\\sqrt{16/25}=4/5\\).",
+    "answer": "4/5",
+    "subject": "Precalculus",
+    "level": 1,
+    "unique_id": "gen/precalculus/035.json"
+  },
+  {
+    "problem": "A rectangle has area 84 and length 12. Find its diagonal.",
+    "solution": "Width = 84/12 = 7. Diagonal = \\(\\sqrt{12^2 + 7^2}=\\sqrt{144+49}=\\sqrt{193}\\).",
+    "answer": "\\sqrt{193}",
+    "subject": "Geometry",
+    "level": 2,
+    "unique_id": "gen/geometry/036.json"
+  },
+  {
+    "problem": "Evaluate \\(\\sum_{k=1}^{20} (2k-1)\\).",
+    "solution": "Sum of first 20 odd numbers = 20^2 = 400.",
+    "answer": "400",
+    "subject": "Prealgebra",
+    "level": 2,
+    "unique_id": "gen/prealgebra/037.json"
+  },
+  {
+    "problem": "Factor completely: \\(x^2 - 11x + 30\\).",
+    "solution": "(x − 5)(x − 6).",
+    "answer": "(x−5)(x−6)",
+    "subject": "Algebra",
+    "level": 1,
+    "unique_id": "gen/algebra/038.json"
+  },
+  {
+    "problem": "In how many ways can the letters of the word PEARL be arranged?",
+    "solution": "All distinct: 5! = 120.",
+    "answer": "120",
+    "subject": "Counting & Probability",
+    "level": 1,
+    "unique_id": "gen/counting_and_probability/039.json"
+  },
+  {
+    "problem": "Find all real x satisfying \\(x^2 - 6x + 5 = 0\\).",
+    "solution": "Quadratic factors: (x−1)(x−5)=0 → x=1 or x=5.",
+    "answer": "1, 5",
+    "subject": "Algebra",
+    "level": 1,
+    "unique_id": "gen/algebra/040.json"
+  },
+  {
+    "problem": "A circle has circumference 24\\(\\pi\\). Find its area.",
+    "solution": "C = 2\\pi r = 24\\pi → r = 12. Area = \\pi r^2 = 144\\pi.",
+    "answer": "144\\pi",
+    "subject": "Geometry",
+    "level": 1,
+    "unique_id": "gen/geometry/041.json"
+  },
+  {
+    "problem": "Compute the number of ordered pairs (a,b) of integers with 1 ≤ a ≤ 6 and 1 ≤ b ≤ 8 such that a and b are coprime.",
+    "solution": "Count pairs via totients or direct inclusion-exclusion is tedious; compute by sum over a: φ(8) for a odd and coprime to 8; better brute logic: For each a, count b in [1..8] coprime to a.\n- a=1: 8\n- a=2: b odd not divisible by 2 -> 4\n- a=3: b not multiple of 3 -> 8−2=6\n- a=4: b odd and not multiple of 2 -> 4\n- a=5: b not multiple of 5 -> 8−1=7\n- a=6: b coprime to 6 (avoid 2 or 3): 8−4=4\nSum = 8+4+6+4+7+4 = 33.",
+    "answer": "33",
+    "subject": "Counting & Probability",
+    "level": 4,
+    "unique_id": "gen/counting_and_probability/042.json"
+  },
+  {
+    "problem": "Find the remainder when \\(x^4 - 2x^3 + 5x - 1\\) is divided by \\(x-2\\).",
+    "solution": "Remainder is f(2) = 16 − 16 + 10 − 1 = 9.",
+    "answer": "9",
+    "subject": "Intermediate Algebra",
+    "level": 2,
+    "unique_id": "gen/intermediate_algebra/043.json"
+  },
+  {
+    "problem": "If \\(\\frac{1}{p} + \\frac{1}{q} = \\frac{1}{6}\\) with positive integers p ≤ q, find (p,q).",
+    "solution": "\\(\\frac{1}{p} = \\frac{1}{6} − \\frac{1}{q} = \\frac{q−6}{6q}\\). So p = 6q/(q−6). For integer p with p ≤ q, try q−6 | 36: q−6 ∈ {1,2,3,4,6,9,12,18,36}. Checking yields (p,q) = (12,12).",
+    "answer": "(12, 12)",
+    "subject": "Number Theory",
+    "level": 5,
+    "unique_id": "gen/number_theory/044.json"
+  },
+  {
+    "problem": "Compute \\(\\cos 15^\\circ\\) in simplest radical form.",
+    "solution": "Use angle difference: cos15 = cos(45−30) = cos45 cos30 + sin45 sin30 = (\\(\\sqrt{2}/2\\))(\\(\\sqrt{3}/2\\)) + (\\(\\sqrt{2}/2\\))(1/2) = (\\(\\sqrt{6}+\\sqrt{2}\\))/4.",
+    "answer": "(\\sqrt{6}+\\sqrt{2})/4",
+    "subject": "Precalculus",
+    "level": 4,
+    "unique_id": "gen/precalculus/045.json"
+  },
+  {
+    "problem": "The arithmetic mean of 6, 11, x, and 17 is 12. Find x.",
+    "solution": "(6+11+x+17)/4 = 12 → (34 + x) = 48 → x = 14.",
+    "answer": "14",
+    "subject": "Prealgebra",
+    "level": 1,
+    "unique_id": "gen/prealgebra/046.json"
+  },
+  {
+    "problem": "Let the function be defined by f(x) = ax + b. Given f(2)=7 and f(−1)=−2, find (a,b).",
+    "solution": "System: 2a + b = 7; −a + b = −2 → subtract: 3a = 9 → a = 3; then b = 7 − 6 = 1.",
+    "answer": "(3, 1)",
+    "subject": "Algebra",
+    "level": 2,
+    "unique_id": "gen/algebra/047.json"
+  },
+  {
+    "problem": "A right circular cone has height 12 and base radius 5. Find its volume.",
+    "solution": "V = (1/3)πr^2 h = (1/3)π·25·12 = 100π.",
+    "answer": "100\\pi",
+    "subject": "Geometry",
+    "level": 2,
+    "unique_id": "gen/geometry/048.json"
+  },
+  {
+    "problem": "How many integers n with 1 ≤ n ≤ 1000 are multiples of 6 or 10 but not of 15?",
+    "solution": "Count multiples of 6 or 10: N = ⌊1000/6⌋ + ⌊1000/10⌋ − ⌊1000/30⌋ = 166 + 100 − 33 = 233. Subtract those also multiple of 15: multiples of lcm(6,15)=30 → 33; of lcm(10,15)=30 → 33; but these 30s already subtracted properly? We need exclude numbers counted in N that are multiples of 15: Let S6 = multiples of 6 not of 10; S10 = multiples of 10 not of 6; S30 = multiples of 30. All included in N. Multiples of 15 within N are multiples of 30 (since multiples of 15 that are multiples of 6 or 10 must be multiples of 30). Count of 30s is 33. Therefore answer = 233 − 33 = 200.",
+    "answer": "200",
+    "subject": "Number Theory",
+    "level": 5,
+    "unique_id": "gen/number_theory/049.json"
+  },
+  {
+    "problem": "A box contains 3 red, 2 blue, and 1 yellow ball. Three balls are drawn without replacement. What is the probability all three are different colors?",
+    "solution": "Total ways: C(6,3)=20. Favorable: choose 1 red from 3, 1 blue from 2, 1 yellow from 1 → 3·2·1 = 6. Probability = 6/20 = 3/10.",
+    "answer": "3/10",
+    "subject": "Counting & Probability",
+    "level": 3,
+    "unique_id": "gen/counting_and_probability/050.json"
+  }
+]
