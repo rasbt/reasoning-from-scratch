@@ -1,7 +1,7 @@
-# Chapter 2: Generating text with a pre-trained LLM
+# Chapter 2: Generating Text with a Pre-Trained LLM
 
 &nbsp;
-## Main Chapter Code
+## Main chapter code
 
 - [01_main-chapter-code](01_main-chapter-code): main chapter code and exercise solutions
 
