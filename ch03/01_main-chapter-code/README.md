@@ -1,4 +1,4 @@
-# Chapter 3: Evaluating reasoning models
+# Chapter 3: Evaluating Reasoning Models
 
 &nbsp;
 ## Main chapter code

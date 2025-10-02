@@ -1,4 +1,4 @@
-# Chapter 1: Understanding reasoning models
+# Chapter 1: Understanding Reasoning Models
 
 
 &nbsp;

@@ -1,4 +1,4 @@
-# Chapter 2: Generating text with a pre-trained LLM
+# Chapter 2: Generating Text with a Pre-Trained LLM
 
 
 &nbsp;

@@ -51,16 +51,19 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 
 | Chapter Title                                                | Main Code                                                    |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Ch 1: Understanding reasoning models                         | No code                                                      |
-| Ch 2: Generating text with a pre-trained LLM                 | - [ch02_main.ipynb](ch02/01_main-chapter-code/ch02_main.ipynb)<br/>- [ch02_exercise-solutions.ipynb](ch02/01_main-chapter-code/ch02_exercise-solutions.ipynb) |
-| Ch 3: Evaluating reasoning models                            | - [ch03_main.ipynb](ch03/01_main-chapter-code/ch03_main.ipynb)<br/>- [ch03_exercise-solutions.ipynb](ch03/01_main-chapter-code/ch03_exercise-solutions.ipynb) |
-| Ch 4: Improving reasoning with inference-time scaling        | TBA                                                          |
-| Ch 5: Training reasoning models with reinforcement learning  | TBA                                                          |
-| Ch 6: Distilling reasoning models for efficient reasoning    | TBA                                                          |
-| Ch 7: Improving the reasoning pipeline and future directions | TBA                                                          |
-| Appendix A: References and further reading                   | No code                                                      |
-| Appendix B: Exercise solutions                               | Code and solutions are in each chapter's subfolder           |
-| Appendix C: Qwen3 LLM source code                            | - [chC_main.ipynb](chC/01_main-chapter-code/chC_main.ipynb)  |
+| Ch 1: Understanding reasoning Models                         | No code                                                      |
+| Ch 2: Generating Text with a Pre-trained LLM                 | - [ch02_main.ipynb](ch02/01_main-chapter-code/ch02_main.ipynb)<br/>- [ch02_exercise-solutions.ipynb](ch02/01_main-chapter-code/ch02_exercise-solutions.ipynb) |
+| Ch 3: Evaluating Reasoning Models                            | - [ch03_main.ipynb](ch03/01_main-chapter-code/ch03_main.ipynb)<br/> |
+| Ch 4: Improving Reasoning with Inference-Time Scaling        | TBA                                                          |
+| Ch 5: Training Reasoning Models with Reinforcement Learning  | TBA                                                          |
+| Ch 6: Distilling Reasoning Models for Efficient Reasoning    | TBA                                                          |
+| Ch 7: Improving the Reasoning Pipeline and Future Directions | TBA                                                          |
+| Appendix A: References and Further Reading                   | No code                                                      |
+| Appendix B: Exercise Solutions                               | Code and solutions are in each chapter's subfolder           |
+| Appendix C: Qwen3 LLM Source Code                            | - [chC_main.ipynb](chC/01_main-chapter-code/chC_main.ipynb)  |
+| Appendix D                                                   | TBA                                                          |
+| Appendix E                                                   | TBA                                                          |
+| Appendix F: Common Approaches to LLM Evaluation              | - [chF_main.ipynb](chF/01_main-chapter-code/chF_main.ipynb)  |
 
 <br>
 &nbsp;
