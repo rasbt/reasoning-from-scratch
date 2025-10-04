@@ -118,6 +118,8 @@ Several folders contain optional materials as a bonus for interested readers:
 - **Chapter 2: Generating Text with a Pre-trained LLM**
   - [Optional Python Setup and Cloud GPU Recommendations](ch02/02_setup-tips)
   - [Using a GPU-optimized version of the LLM](ch02/03_optimized-LLM)
+- **Chapter 3: Evaluating LLMs**
+  - [MATH-500 Verifier Scripts](ch03/02_math500-verifier-scripts)
 - **Appendix F: Common Approaches to LLM Evaluation**
   - [MMLU Evaluation Methods](chF/02_mmlu)
 
