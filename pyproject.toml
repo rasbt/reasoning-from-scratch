@@ -49,6 +49,10 @@ dev = [
     "build>=1.2.2.post1",
 ]
 
+extra = [
+    "datasets>=4.1.1",  # Appendix F, MMLU
+]
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["reasoning_from_scratch"]
