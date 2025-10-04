@@ -11,12 +11,7 @@ import torch
 
 from reasoning_from_scratch.ch02 import get_device
 from reasoning_from_scratch.ch03 import evaluate_math500_stream
-from reasoning_from_scratch.qwen3 import (
-    download_qwen3_small,
-    Qwen3Tokenizer,
-    Qwen3Model,
-    QWEN_CONFIG_06_B
-)
+from reasoning_from_scratch.qwen3 import get_model
 
 
 def get_data():
@@ -34,47 +29,6 @@ def get_data():
             math_data = json.load(f)
 
     return math_data
-
-
-def get_model(which_model, device, use_compile):
-    if which_model == "base":
-
-        download_qwen3_small(
-            kind="base", tokenizer_only=False, out_dir="qwen3"
-        )
-
-        tokenizer_path = Path("qwen3") / "tokenizer-base.json"
-        model_path = Path("qwen3") / "qwen3-0.6B-base.pth"
-        tokenizer = Qwen3Tokenizer(tokenizer_file_path=tokenizer_path)
-
-    elif which_model == "reasoning":
-
-        download_qwen3_small(
-            kind="reasoning", tokenizer_only=False, out_dir="qwen3"
-        )
-
-        tokenizer_path = Path("qwen3") / "tokenizer-reasoning.json"
-        model_path = Path("qwen3") / "qwen3-0.6B-reasoning.pth"
-        tokenizer = Qwen3Tokenizer(
-            tokenizer_file_path=tokenizer_path,
-            apply_chat_template=True,
-            add_generation_prompt=True,
-            add_thinking=True,
-        )
-
-    else:
-        raise ValueError(f"Invalid choice: WHICH_MODEL={which_model}")
-
-    model = Qwen3Model(QWEN_CONFIG_06_B)
-    model.load_state_dict(torch.load(model_path))
-
-    model.to(device)
-
-    if use_compile:
-        torch._dynamo.config.allow_unspec_int_on_nn_module = True
-        model = torch.compile(model)
-
-    return model, tokenizer
 
 
 def parse_args():
@@ -142,6 +96,8 @@ if __name__ == "__main__":
 
     math_data = get_data()
     model, tokenizer = get_model(which_model, device, use_compile)
+    model.eval()
+    torch.set_float32_matmul_precision("high")
 
     num_correct, num_examples, acc = evaluate_math500_stream(
         model=model,

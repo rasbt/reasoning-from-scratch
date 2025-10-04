@@ -109,6 +109,19 @@ The code in the main chapters of this book is designed to mostly run on consumer
 
 Each chapter of the book includes several exercises. The solutions are summarized in Appendix B, and the corresponding code notebooks are available in the main chapter folders of this repository (for example,  [`ch02/01_main-chapter-code/ch02_exercise-solutions.ipynb`](ch02/01_main-chapter-code/ch02_exercise-solutions.ipynb)).
 
+
+&nbsp;
+## Bonus Material
+
+Several folders contain optional materials as a bonus for interested readers:
+
+- **Chapter 2: Generating Text with a Pre-trained LLM**
+  - [Optional Python Setup and Cloud GPU Recommendations](ch02/02_setup-tips)
+  - [Using a GPU-optimized version of the LLM](ch02/03_optimized-LLM)
+- **Appendix F: Common Approaches to LLM Evaluation**
+  - [MMLU Evaluation Methods](chF/02_mmlu)
+
+
 &nbsp;
 ## Questions, Feedback, and Contributing to This Repository
 
