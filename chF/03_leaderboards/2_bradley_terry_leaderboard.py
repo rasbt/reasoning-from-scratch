@@ -12,7 +12,7 @@ from reasoning_from_scratch.ch02 import get_device
 def bradley_terry_torch(vote_pairs, device):
 
     # Collect all unique model names
-    models = sorted({m for w, l in vote_pairs for m in (w, l)})
+    models = sorted({m for winner, loser in vote_pairs for m in (winner, loser)})
     n = len(models)
     idx = {m: i for i, m in enumerate(models)}
 
