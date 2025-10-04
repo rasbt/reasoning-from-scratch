@@ -1,7 +1,7 @@
 
 # MMLU Benchmarking
 
-This bonus notebook implements three different methods for evaluating models on MMLU. 
+This bonus material implements three different methods for evaluating models on MMLU. 
 - Method 1 is meant as an intuitive introduction
 - Method 2 is the most widely used method in practice
 - Method 3 is a more robust method that is better suited for reasoning models
