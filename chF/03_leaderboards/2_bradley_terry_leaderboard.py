@@ -6,11 +6,10 @@ import json
 import math
 import argparse
 import torch
+from reasoning_from_scratch.ch02 import get_device
 
 
-def bradley_terry_torch(vote_pairs):
-    """Fit a simple Bradley–Terry model with PyTorch (Adam optimizer)."""
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+def bradley_terry_torch(vote_pairs, device):
 
     # Collect all unique model names
     models = sorted({m for w, l in vote_pairs for m in (w, l)})
@@ -18,8 +17,8 @@ def bradley_terry_torch(vote_pairs):
     idx = {m: i for i, m in enumerate(models)}
 
     # Convert to index tensors
-    winners = torch.tensor([idx[w] for w, _ in vote_pairs], dtype=torch.long)
-    losers = torch.tensor([idx[l] for _, l in vote_pairs], dtype=torch.long)
+    winners = torch.tensor([idx[winner] for winner, _ in vote_pairs], dtype=torch.long)
+    losers = torch.tensor([idx[loser] for _, loser in vote_pairs], dtype=torch.long)
 
     # Learnable parameters
     theta = torch.nn.Parameter(torch.zeros(n - 1, device=device))
@@ -54,7 +53,9 @@ def main():
 
     with open(args.path, "r", encoding="utf-8") as f:
         votes = json.load(f)
-    ratings = bradley_terry_torch(votes)
+
+    device = get_device()
+    ratings = bradley_terry_torch(votes, device)
 
     leaderboard = sorted(ratings.items(),
                          key=lambda x: -x[1])

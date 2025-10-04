@@ -23,7 +23,7 @@ Both implementations take in a list of pairwise preferences (left: winner, right
 ## Method 1: Elo ratings
 
 - Implements the popular Elo rating method (inspired by chess rankings) that was originally used by LM Arena
-- See the [main notebook](../01_main_chapter_code/chF_main.ipynb) for details
+- See the [main notebook](../01_main-chapter-code/chF_main.ipynb) for details
 
 ```bash
 ➜  03_leaderboards git:(main) ✗ uv run 1_elo_leaderboard.py --path votes.json
