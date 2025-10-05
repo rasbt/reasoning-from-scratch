@@ -123,7 +123,7 @@ Several folders contain optional materials as a bonus for interested readers:
 - **Appendix F: Common Approaches to LLM Evaluation**
   - [MMLU Evaluation Methods](chF/02_mmlu)
   - [LLM leaderboards](chF/03_leaderboards)
-  - [LLM-as-a-judge](chF/03_llm-judge)
+  - [LLM-as-a-judge](chF/04_llm-judge)
 
 
 &nbsp;
