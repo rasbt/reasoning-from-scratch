@@ -30,6 +30,14 @@ uv add datasets
 
 (Not that for simplicity and code readability, we focus on a zero-shot, as opposed to a 5-shot, setting.)
 
+<br>
+
+---
+
+**Note**: If you are not a `uv` user, replace `uv run ...py` with `python ...py` in the examples below.
+
+---
+
 &nbsp;
 
 ## Method 1: MMLU letter matching
