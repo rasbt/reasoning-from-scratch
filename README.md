@@ -122,7 +122,8 @@ Several folders contain optional materials as a bonus for interested readers:
   - [MATH-500 Verifier Scripts](ch03/02_math500-verifier-scripts)
 - **Appendix F: Common Approaches to LLM Evaluation**
   - [MMLU Evaluation Methods](chF/02_mmlu)
-  - [LLM Leaderboards](chF/03_leaderboards)
+  - [LLM leaderboards](chF/03_leaderboards)
+  - [LLM-as-a-judge](chF/03_llm-judge)
 
 
 &nbsp;
