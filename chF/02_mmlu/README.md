@@ -1,7 +1,7 @@
 
 # MMLU Benchmarking
 
-This bonus material implements three different methods for evaluating models on MMLU. 
+This bonus notebook implements three different methods for evaluating models on MMLU. 
 - Method 1 is meant as an intuitive introduction
 - Method 2 is the most widely used method in practice
 - Method 3 is a more robust method that is better suited for reasoning models
@@ -29,14 +29,6 @@ uv add datasets
   - Use `--subsets "all"` to evaluate on all subsets
 
 (Not that for simplicity and code readability, we focus on a zero-shot, as opposed to a 5-shot, setting.)
-
-<br>
-
----
-
-**Note**: If you are not a `uv` user, replace `uv run ...py` with `python ...py` in the examples below.
-
----
 
 &nbsp;
 
