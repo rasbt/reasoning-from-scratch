@@ -17,7 +17,13 @@ Both implementations take in a list of pairwise preferences (left: winner, right
 
 
 
+<br>
 
+---
+
+**Note**: If you are not a `uv` user, replace `uv run ...py` with `python ...py` in the examples below.
+
+---
 
 &nbsp;
 ## Method 1: Elo ratings

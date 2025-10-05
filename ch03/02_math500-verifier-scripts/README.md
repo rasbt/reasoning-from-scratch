@@ -11,7 +11,20 @@
 
 Both evaluation scripts import functionality from the [`reasoning_from_scratch`](../../reasoning_from_scratch) package to avoid code duplication. (See [chapter 2 setup instructions](../../ch02/02_setup-tips/python-instructions.md) for installation details.)
 
+
+
+<br>
+
+---
+
+**Note**: If you are not a `uv` user, replace `uv run ...py` with `python ...py` in the examples below.
+
+---
+
+
+
 &nbsp;
+
 ## `evaluate_math500.py` usage
 
 Run with:
