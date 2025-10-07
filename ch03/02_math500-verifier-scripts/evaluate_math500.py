@@ -5,7 +5,7 @@
 import argparse
 import json
 from pathlib import Path
-from urllib.request import urlopen
+import requests
 
 import torch
 
@@ -25,8 +25,9 @@ def get_data():
         with local_path.open("r", encoding="utf-8") as f:
             math_data = json.load(f)
     else:
-        with urlopen(url) as f:
-            math_data = json.load(f)
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        math_data = r.json()
 
     return math_data
 
