@@ -18,7 +18,7 @@ To implement this user interface, we use the open-source [Chainlit Python packag
 First, we install the `chainlit` package and dependency:
 
 ```bash
-pip install install chainlit
+pip install chainlit
 ```
 
 Or, if you are using `uv`:
@@ -35,7 +35,7 @@ uv add chainlit
 
 This folder contains 2 files:
 
-1. [`qwen3_chat_interface.py`](qwen3_chat_interface.py): This file loads and uses the Qwen3 0.6B model in thinking mode. 
+1. [`qwen3_chat_interface.py`](qwen3_chat_interface.py): This file loads and uses the Qwen3 0.6B model in thinking mode.
 2. [`qwen3_chat_interface_multiturn.py`](qwen3_chat_interface_multiturn.py): The same as above, but configured to remember the message history.
 
 (Open and inspect these files to learn more.)
