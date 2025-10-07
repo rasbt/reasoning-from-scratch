@@ -7,8 +7,7 @@ import json
 import re
 from pathlib import Path
 import psutil
-from urllib.request import urlopen
-import urllib.request
+import requests
 
 import torch
 from reasoning_from_scratch.ch02 import get_device
@@ -35,12 +34,13 @@ def get_data():
 
     if local_path.exists():
         with local_path.open("r", encoding="utf-8") as f:
-            data = json.load(f)
+            math_data = json.load(f)
     else:
-        with urlopen(url) as f:
-            data = json.load(f)
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        math_data = r.json()
 
-    return data
+    return math_data
 
 
 def prepare_math500_pairs(math_items):
@@ -82,31 +82,16 @@ def query_model(
         }
     }
 
-    payload = json.dumps(data).encode("utf-8")
-
-    request = urllib.request.Request(
-        url,
-        data=payload,
-        method="POST"
-    )
-    request.add_header("Content-Type", "application/json")
-
-    response_data = ""
-    with urllib.request.urlopen(request) as response:
-        while True:
-            line = response.readline().decode("utf-8")
-            if not line:
-                break
-            line = line.strip()
+    # Send the POST request
+    with requests.post(url, json=data, stream=True, timeout=30) as r:
+        r.raise_for_status()
+        response_data = ""
+        for line in r.iter_lines(decode_unicode=True):
             if not line:
                 continue
-            try:
-                response_json = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            msg = response_json.get("message", {})
-            chunk = msg.get("content", "")
-            response_data += chunk
+            response_json = json.loads(line)
+            if "message" in response_json:
+                response_data += response_json["message"]["content"]
 
     return response_data
 
