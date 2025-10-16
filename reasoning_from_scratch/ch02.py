@@ -67,7 +67,8 @@ def generate_text_basic_cache(
     return token_ids[:, input_length:]
 
 
-def generate_stats(output_token_ids, tokenizer, start_time, end_time):
+def generate_stats(output_token_ids, tokenizer, start_time,
+                   end_time, print_tokens=True):
     total_time = end_time - start_time
     print(f"Time: {total_time:.2f} sec")
     print(f"{int(output_token_ids.numel() / total_time)} tokens/sec")
@@ -80,5 +81,6 @@ def generate_stats(output_token_ids, tokenizer, start_time, end_time):
             print(f"Max {name} memory allocated: {max_mem_gb:.2f} GB")
             backend.reset_peak_memory_stats()
 
-    output_text = tokenizer.decode(output_token_ids.squeeze(0).tolist())
-    print(f"\n{output_text}")
+    if print_tokens:
+        output_text = tokenizer.decode(output_token_ids.squeeze(0).tolist())
+        print(f"\n{output_text}")
