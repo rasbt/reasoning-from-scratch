@@ -119,6 +119,7 @@ Several folders contain optional materials as a bonus for interested readers:
   - [Optional Python Setup and Cloud GPU Recommendations](ch02/02_setup-tips)
   - [Using a GPU-optimized version of the LLM](ch02/03_optimized-LLM)
   - [Using `torch.compile()` on Windows](ch02/04_torch-compile-windows)
+  - [Run inference and chat with the model]()
 - **Chapter 3: Evaluating LLMs**
   - [MATH-500 Verifier Scripts](ch03/02_math500-verifier-scripts)
 - **Appendix F: Common Approaches to LLM Evaluation**
