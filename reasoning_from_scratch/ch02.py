@@ -33,7 +33,7 @@ def generate_text_basic(model, token_ids, max_new_tokens, eos_token_id=None):
 
         # Stop if all sequences in the batch have generated EOS
         if (eos_token_id is not None
-                and torch.all(next_token == eos_token_id)):
+                and next_token.item() == eos_token_id):
             break
 
         token_ids = torch.cat([token_ids, next_token], dim=1)
@@ -58,7 +58,7 @@ def generate_text_basic_cache(
         next_token = torch.argmax(out, dim=-1, keepdim=True)
 
         if (eos_token_id is not None
-                and torch.all(next_token == eos_token_id)):
+                and next_token.item() == eos_token_id):
             break
 
         token_ids = torch.cat([token_ids, next_token], dim=1)
