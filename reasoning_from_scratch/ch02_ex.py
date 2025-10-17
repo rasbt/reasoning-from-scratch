@@ -21,7 +21,7 @@ def generate_text_basic_stream(
         next_token = torch.argmax(out, dim=-1, keepdim=True)
 
         if (eos_token_id is not None
-                and torch.all(next_token == eos_token_id)):
+                and next_token.item() == eos_token_id):
             break
 
         yield next_token  # New: Yield each token as it's generated
@@ -47,7 +47,7 @@ def generate_text_basic_stream_cache(
         next_token = torch.argmax(out, dim=-1, keepdim=True)
 
         if (eos_token_id is not None
-                and torch.all(next_token == eos_token_id)):
+                and next_token.item() == eos_token_id):
             break
 
         yield next_token  # New: Yield each token as it's generated
