@@ -77,7 +77,15 @@ class Qwen3Model(nn.Module):
                 torch.full((num_tokens, num_tokens), -torch.inf, device=x.device, dtype=self.cfg["dtype"]),
                 diagonal=1,
             )
-        # Shape (1, 1, num_tokens, num_tokens) to broadcast across batch and heads
+        # Prefill (no cache): mask starts as (num_tokens, num_tokens)
+        # Cached decoding: mask starts as (num_tokens, prev_k_number_tokens + num_tokens)
+        #
+        # We add two leading dimensions so the mask becomes
+        # (1, 1, num_tokens, num_tokens) during prefill and
+        # (1, 1, num_tokens, total_key_tokens) during cached decoding.
+        # These extra dimensions let PyTorch broadcast the same mask
+        # across all batches and attention heads when applying it to
+        # attn_scores of shape (batch, num_heads, num_tokens, total_key_tokens).
         mask = mask[None, None, :, :]  # broadcast mask
 
         for i, block in enumerate(self.trf_blocks):
