@@ -162,7 +162,7 @@ def parse_args():
         "--url",
         type=str,
         default="http://localhost:11434/api/chat",
-        help="Ollama chat endpoint for the judge. Default:
+        help="Ollama chat endpoint for the judge. Default: 'http://localhost:11434/api/chat'"
     )
     parser.add_argument(
         "--judge_model",
