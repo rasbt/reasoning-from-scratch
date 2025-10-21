@@ -38,14 +38,14 @@ def parse_args():
         "--device",
         type=str,
         default="auto",
-        help='Device to use: "auto" (default), or any torch device string like "cpu", "cuda", "cuda:0", "mps".',
+        help="Device to use: 'auto' (default), or any torch device string like 'cpu', 'cuda', 'cuda:0', 'mps'.",
     )
     parser.add_argument(
         "--which_model",
         type=str,
         default="base",
         choices=["base", "reasoning"],
-        help='Model variant to load. Defaults to "base".',
+        help="Model variant to load. Defaults to 'base'.",
     )
     parser.add_argument(
         "--dataset_size",

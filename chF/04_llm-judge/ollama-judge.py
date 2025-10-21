@@ -137,14 +137,14 @@ def parse_args():
         "--device",
         type=str,
         default="auto",
-        help='Device e.g., "cpu", "cuda", "cuda:0", "mps".',
+        help="Device e.g., 'cpu', 'cuda', 'cuda:0', 'mps'.",
     )
     parser.add_argument(
         "--which_model",
         type=str,
         default="base",
         choices=["base", "reasoning"],
-        help='Candidate variant to use. Defaults to "base".',
+        help="Candidate variant to use. Defaults to 'base'.",
     )
     parser.add_argument(
         "--dataset_size",
@@ -162,13 +162,13 @@ def parse_args():
         "--url",
         type=str,
         default="http://localhost:11434/api/chat",
-        help='Ollama chat endpoint for the judge. Default: "http://localhost:11434/api/chat"',
+        help="Ollama chat endpoint for the judge. Default: 'http://localhost:11434/api/chat'"
     )
     parser.add_argument(
         "--judge_model",
         type=str,
         default="gpt-oss:20b",
-        help='Judge model name (Ollama). Used only for scoring. Default: "gpt-oss:20b"',
+        help="Judge model name (Ollama). Used only for scoring. Default: 'gpt-oss:20b'",
     )
     return parser.parse_args()
 

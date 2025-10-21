@@ -132,22 +132,22 @@ def main():
         "--device",
         type=str,
         default="auto",
-        help='Device to use: "auto" (default), or any torch device string like '
-             '"cpu", "cuda", "cuda:0", "mps".',
+        help="Device to use: 'auto' (default), or any torch device string like "
+             "'cpu', 'cuda', 'cuda:0', 'mps'.",
     )
     parser.add_argument(
         "--which_model",
         type=str,
         default="base",
         choices=["base", "reasoning"],
-        help='Model variant to load. Defaults to "base".',
+        help="Model variant to load. Defaults to 'base'.",
     )
     parser.add_argument(
         "--subsets",
         type=str,
         default="high_school_mathematics",
-        help='Comma-separated subset names or "all". '
-             'Default: "high_school_mathematics".',
+        help="Comma-separated subset names or 'all'. "
+             "Default: 'high_school_mathematics'.",
     )
     args = parser.parse_args()
 

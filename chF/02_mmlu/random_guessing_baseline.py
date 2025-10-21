@@ -26,7 +26,7 @@ def main():
         "--subset",
         type=str,
         default="high_school_mathematics",
-        help='MMLU subset name (default: "high_school_mathematics").',
+        help="MMLU subset name (default: 'high_school_mathematics').",
     )
     parser.add_argument(
         "--seed",
