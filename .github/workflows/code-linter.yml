@@ -47,4 +47,4 @@ jobs:
     - name: Run quote style check
       run: |
         source .venv/bin/activate
-        uv run .github/scripts/check_double_quotes.
+        uv run .github/scripts/check_double_quotes.py
