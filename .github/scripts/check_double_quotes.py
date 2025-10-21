@@ -4,6 +4,7 @@
 
 # Verify that Python source files and notebooks use double quotes for strings.
 
+import ast
 import io
 import json
 import sys
@@ -37,11 +38,48 @@ def should_skip(path):
     return bool(EXCLUDED_DIRS & parts)
 
 
+def collect_fstring_expr_string_positions(source):
+    """
+    Return set of (lineno, col_offset) for string literals that appear inside
+    formatted expressions of f-strings. These should be exempt from the double
+    quote check, since enforcing double quotes there is unnecessarily strict.
+    """
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return set()
+
+    positions = set()
+
+    class Collector(ast.NodeVisitor):
+        def visit_JoinedStr(self, node):
+            for value in node.values:
+                if isinstance(value, ast.FormattedValue):
+                    self._collect_from_expr(value.value)
+            # Continue walking to catch nested f-strings within expressions
+            self.generic_visit(node)
+
+        def _collect_from_expr(self, node):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                positions.add((node.lineno, node.col_offset))
+            elif isinstance(node, ast.Str):  # Python <3.8 compatibility
+                positions.add((node.lineno, node.col_offset))
+            else:
+                for child in ast.iter_child_nodes(node):
+                    self._collect_from_expr(child)
+
+    Collector().visit(tree)
+    return positions
+
+
 def check_quotes_in_source(source, path):
     violations = []
+    ignored_positions = collect_fstring_expr_string_positions(source)
     tokens = tokenize.generate_tokens(io.StringIO(source).readline)
     for tok_type, tok_str, start, _, _ in tokens:
         if tok_type == tokenize.STRING:
+            if start in ignored_positions:
+                continue
             lowered = tok_str.lower()
             # ignore triple-quoted strings
             if lowered.startswith((TRIPLE_DOUBLE, TRIPLE_SINGLE)):
