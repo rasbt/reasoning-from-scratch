@@ -27,6 +27,14 @@ import torch
 import torch.nn as nn
 
 
+# Make CI more reproducible & robust
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+torch.backends.mkldnn.enabled = False
+torch.set_num_threads(1)
+torch.use_deterministic_algorithms(True)
+
+
 class Qwen3RMSNorm(nn.Module):
     # Source: https://github.com/huggingface/transformers/blob/main/src/transformers/models/qwen3/modeling_qwen3.py
     # License: Apache License, Version 2.0 (see file above)
