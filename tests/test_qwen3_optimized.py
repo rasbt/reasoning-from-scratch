@@ -28,6 +28,13 @@ from reasoning_from_scratch.qwen3_optimized import (
 skip_expensive = os.environ.get("SKIP_EXPENSIVE", "0") == "1"
 transformers_installed = importlib.util.find_spec("transformers") is not None
 
+# Make CI more reproducible & robust
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+torch.backends.mkldnn.enabled = False
+torch.set_num_threads(1)
+torch.use_deterministic_algorithms(True)
+
 
 @torch.inference_mode()
 @pytest.mark.skipif(not transformers_installed, reason="transformers not installed")
