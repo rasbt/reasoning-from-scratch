@@ -65,12 +65,6 @@ def parse_args():
         help="Enable torch.compile for the model.",
     )
     parser.add_argument(
-        "--batch_size",
-        type=int,
-        default=4,
-        help="Batch size for batched generation. Default: 4",
-    )
-    parser.add_argument(
         "--verbose",
         action="store_true",
         help="Print per-sample correctness while evaluating.",
