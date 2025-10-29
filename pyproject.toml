@@ -25,7 +25,7 @@ dependencies = [
     "torch>=2.7.1",
     "tokenizers>=0.21.2",
     "nbformat>=5.10.4",
-    "sympy>=1.14.0",  # For verifier in ch03
+    "sympy>=1.14.0", # For verifier in ch03
 ]
 
 classifiers = [
@@ -51,6 +51,7 @@ dev = [
 
 extra = [
     "datasets>=4.1.1",  # Appendix F, MMLU
+    "chainlit>=2.8.3",  # Appendix G, Chat UI
 ]
 
 [tool.setuptools.packages.find]
