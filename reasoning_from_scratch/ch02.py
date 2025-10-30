@@ -28,7 +28,7 @@ def get_device(enable_tensor_cores=True):
 
     elif torch.xpu.is_available():
         device = torch.device("xpu")
-        print("Intel GPU")
+        print("Using Intel GPU")
 
     else:
         device = torch.device("cpu")
