@@ -80,6 +80,7 @@ Extra options:
 
 &nbsp;
 
+
 **Implementation note:**
 By default, batched generation halts for sequences that emit a stop token. With `--disable_efficient_mode`, all sequences continue until the longest finishes. This affects compute efficiency only, not qualitative results, since tokens after the stop token are discarded.
 
@@ -98,11 +99,28 @@ Some PyTorch ops used in efficient batched inference are not yet supported on MP
 
 &nbsp;
 
-| Device / Dataset size                                        | Base model | Reasoning model | Notes                                                        |
-| ------------------------------------------------------------ | ---------- | --------------- | ------------------------------------------------------------ |
-| **M4 Mac Mini** (10 examples)                                | ~0.7 min   | ~7 min          | `evaluate_math500.py`<br>Sequential mode                     |
-| **H100 GPU** (500 examples, single-script)                   | ~13.3 min  | ~185.4 min      | `evaluate_math500.py`<br>Sequential mode                     |
-| **H100 GPU** (500 examples, batched, `--batch_size 128`)     | ~3.3 min   | ~14.6 min       | `evaluate_math500_batch.py`<br>Efficient batched mode        |
-| **H100 GPU** (500 examples, batched, `--batch_size 128 --disable_efficient_mode`) | ~21.3 min  | ~21.3 min       | `evaluate_math500_batch.py`<br>Simpler but less efficient batched mode |
+- `evaluate_math500.py --dataset_size 500`
 
-The accuracy of the base model  is 15.6% (78/500); the accuracy of the reasoning model is 50.8% (254/500).
+
+| Device / Dataset size                       | Base model | Reasoning model |
+| ------------------------------------------- | ---------- | --------------- |
+| **Mac Mini M4 CPU** (500 examples, sequential | 43.6 min | Didn't run (too hot)           |
+| **Mac Mini M4 GPU** (500 examples, sequential) | 37.5 min | Didn't run (too hot) |
+| **DGX Spark** (500 examples, sequential) | 10.0 min  | 182.2 min      |
+| **H100 GPU** (500 examples, sequential) | 13.3 min  | 185.4 min      |
+
+<br>
+<br>
+
+- `evaluate_math500_batched.py --dataset_size 500 --batch_size 128`
+
+| Device / Dataset size                                        | Base model | Reasoning model |
+| ------------------------------------------------------------ | ---------- | --------------- |
+| **Mac Mini M4 CPU** (500 examples, batched, `--batch_size 128`) | 167.2 min | Didn't run (too hot)           |
+| **Mac Mini M4 GPU** (500 examples, batched, `--batch_size 128`) | Error*     | Error           |
+| **DGX Spark** (500 examples, batched, `--batch_size 128`)    | 16.3 min  | 119.3 min      |
+| **H100 GPU** (500 examples, batched, `--batch_size 128`)     | 3.3 min   | 14.6 min       |
+
+
+
+- The accuracy of the base model  is 15.6% (78/500); the accuracy of the reasoning model is 50.8% (254/500).
