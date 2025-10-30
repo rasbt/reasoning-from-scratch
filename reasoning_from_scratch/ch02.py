@@ -9,18 +9,18 @@ import torch
 
 
 
-def get_device():
+def get_device(enable_tensor_cores=True):
     if torch.cuda.is_available():
         device = torch.device("cuda")
         print("Using NVIDIA CUDA GPU")
-
-        # Enable tensor core usage on newer GPUs
-        if version.parse(torch.__version__) >= version.parse("2.9.0"):
-            torch.backends.cuda.matmul.fp32_precision = "tf32"
-            torch.backends.cudnn.conv.fp32_precision = "tf32"
-        else:
-            torch.backends.cuda.matmul.allow_tf32 = True
-            torch.backends.cudnn.allow_tf32 = True
+        
+        if enable_tensor_cores:
+            if version.parse(torch.__version__) >= version.parse("2.9.0"):
+                torch.backends.cuda.matmul.fp32_precision = "tf32"
+                torch.backends.cudnn.conv.fp32_precision = "tf32"
+            else:
+                torch.backends.cuda.matmul.allow_tf32 = True
+                torch.backends.cudnn.allow_tf32 = True
 
     elif torch.backends.mps.is_available():
         device = torch.device("mps")
