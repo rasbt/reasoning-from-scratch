@@ -594,7 +594,7 @@ def get_model(which_model, device, use_compile):
         model_path = Path("qwen3") / "qwen3-0.6B-base.pth"
         tokenizer = Qwen3Tokenizer(tokenizer_file_path=tokenizer_path)
 
-    elif which_model == "reasoning":
+    elif which_model in ("reasoning", "instruct"):
 
         download_qwen3_small(
             kind="reasoning", tokenizer_only=False, out_dir="qwen3"
@@ -606,7 +606,7 @@ def get_model(which_model, device, use_compile):
             tokenizer_file_path=tokenizer_path,
             apply_chat_template=True,
             add_generation_prompt=True,
-            add_thinking=True,
+            add_thinking=which_model == "reasoning",
         )
 
     else:
