@@ -606,7 +606,7 @@ def get_model(which_model, device, use_compile):
             tokenizer_file_path=tokenizer_path,
             apply_chat_template=True,
             add_generation_prompt=True,
-            add_thinking=which_model == "reasoning,
+            add_thinking=which_model == "reasoning",
         )
 
     else:
