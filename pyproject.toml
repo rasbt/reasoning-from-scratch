@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "reasoning_from_scratch"
 
-version = "0.1.7"
+version = "0.1.8"
 description = "Reasoning Models From Scratch"
 readme = "README.md"
 
@@ -22,7 +22,6 @@ requires-python = ">=3.10"
 
 dependencies = [
     "jupyterlab>=4.4.7",
-    "torch>=2.7.1",
     "tokenizers>=0.21.2",
     "nbformat>=5.10.4",
     "sympy>=1.14.0", # For verifier in ch03
