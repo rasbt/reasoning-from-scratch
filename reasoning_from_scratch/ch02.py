@@ -3,7 +3,6 @@
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
 from .qwen3 import KVCache
-from packaging import version
 import torch
 
 
@@ -15,7 +14,8 @@ def get_device(enable_tensor_cores=True):
         print("Using NVIDIA CUDA GPU")
         
         if enable_tensor_cores:
-            if version.parse(torch.__version__) >= version.parse("2.9.0"):
+            major, minor = map(int, torch.__version__.split(".")[:2])
+            if (major, minor) >= (2, 9):
                 torch.backends.cuda.matmul.fp32_precision = "tf32"
                 torch.backends.cudnn.conv.fp32_precision = "tf32"
             else:
