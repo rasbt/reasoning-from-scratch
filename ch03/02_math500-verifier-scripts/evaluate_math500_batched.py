@@ -14,14 +14,7 @@ import requests
 import torch
 
 from reasoning_from_scratch.ch02 import get_device
-from reasoning_from_scratch.qwen3 import (
-    download_qwen3_small,
-    Qwen3Tokenizer,
-    QWEN_CONFIG_06_B,
-)
-from reasoning_from_scratch.qwen3_batched import (
-    Qwen3Model as Qwen3ModelBatched,
-)
+from reasoning_from_scratch.qwen3_batched import get_model
 from reasoning_from_scratch.ch03 import (
     render_prompt,
     extract_final_candidate,
@@ -45,46 +38,6 @@ def get_data():
         math_data = r.json()
 
     return math_data
-
-
-def get_model(which_model, device, use_compile):
-    if which_model == "base":
-
-        download_qwen3_small(
-            kind="base", tokenizer_only=False, out_dir="qwen3"
-        )
-
-        tokenizer_path = Path("qwen3") / "tokenizer-base.json"
-        model_path = Path("qwen3") / "qwen3-0.6B-base.pth"
-        tokenizer = Qwen3Tokenizer(tokenizer_file_path=tokenizer_path)
-
-    elif which_model in ("reasoning", "instruct"):
-
-        download_qwen3_small(
-            kind="reasoning", tokenizer_only=False, out_dir="qwen3"
-        )
-
-        tokenizer_path = Path("qwen3") / "tokenizer-reasoning.json"
-        model_path = Path("qwen3") / "qwen3-0.6B-reasoning.pth"
-        tokenizer = Qwen3Tokenizer(
-            tokenizer_file_path=tokenizer_path,
-            apply_chat_template=True,
-            add_generation_prompt=True,
-            add_thinking=which_model == "reasoning",
-        )
-
-    else:
-        raise ValueError(f"Invalid choice: WHICH_MODEL={which_model}")
-
-    model = Qwen3ModelBatched(QWEN_CONFIG_06_B)
-    model.load_state_dict(torch.load(model_path, map_location="cpu"))
-    model.to(device)
-
-    if use_compile:
-        torch._dynamo.config.allow_unspec_int_on_nn_module = True
-        model = torch.compile(model)
-
-    return model, tokenizer
 
 
 def evaluate_math500_batched(
@@ -201,7 +154,7 @@ def parse_args():
         "--which_model",
         type=str,
         default="base",
-        choices=["base", "reasoning"],
+        choices=["base", "reasoning", "instruct"],
         help="Model variant to load. Defaults to 'base'.",
     )
     parser.add_argument(

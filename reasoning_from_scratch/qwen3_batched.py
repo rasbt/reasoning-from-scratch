@@ -2,7 +2,9 @@
 # Source for "Build a Reasoning Model (From Scratch)": https://mng.bz/lZ5B
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
-from .qwen3 import KVCache
+from .qwen3 import KVCache, download_qwen3_small, Qwen3Tokenizer
+
+from pathlib import Path
 
 import torch
 import torch.nn as nn
@@ -583,3 +585,44 @@ def generate_text_basic_batched_stream_cache_stop(
         shrink_kv_cache_inplace(cache, keep_mask_active, model.cfg["n_layers"])
 
         out = model(next_token_survivors, cache=cache, attn_mask=cur_attn_active)[:, -1]
+
+
+def get_model(which_model, device, use_compile):
+    if which_model == "base":
+
+        download_qwen3_small(
+            kind="base", tokenizer_only=False, out_dir="qwen3"
+        )
+
+        tokenizer_path = Path("qwen3") / "tokenizer-base.json"
+        model_path = Path("qwen3") / "qwen3-0.6B-base.pth"
+        tokenizer = Qwen3Tokenizer(tokenizer_file_path=tokenizer_path)
+
+    elif which_model in ("reasoning", "instruct"):
+
+        download_qwen3_small(
+            kind="reasoning", tokenizer_only=False, out_dir="qwen3"
+        )
+
+        tokenizer_path = Path("qwen3") / "tokenizer-reasoning.json"
+        model_path = Path("qwen3") / "qwen3-0.6B-reasoning.pth"
+        tokenizer = Qwen3Tokenizer(
+            tokenizer_file_path=tokenizer_path,
+            apply_chat_template=True,
+            add_generation_prompt=True,
+            add_thinking=which_model == "reasoning",
+        )
+
+    else:
+        raise ValueError(f"Invalid choice: WHICH_MODEL={which_model}")
+
+    model = Qwen3Model(QWEN_CONFIG_06_B)
+    model.load_state_dict(torch.load(model_path))
+
+    model.to(device)
+
+    if use_compile:
+        torch._dynamo.config.allow_unspec_int_on_nn_module = True
+        model = torch.compile(model)
+
+    return model, tokenizer
