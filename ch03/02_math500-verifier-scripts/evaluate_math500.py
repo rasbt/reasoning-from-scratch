@@ -44,7 +44,7 @@ def parse_args():
         "--which_model",
         type=str,
         default="base",
-        choices=["base", "reasoning"],
+        choices=["base", "reasoning", "instruct"],
         help="Model variant to load. Defaults to 'base'.",
     )
     parser.add_argument(
