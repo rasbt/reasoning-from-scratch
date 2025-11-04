@@ -58,9 +58,20 @@ extra = [
 where = ["."]
 include = ["reasoning_from_scratch"]
 
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
 [tool.uv.sources]
 reasoning = { workspace = true }
 reasoning-from-scratch = { workspace = true }
+
+# Explicitly install CUDA-enabled torch on Windows
+# (Linux automatically downloads a CUDA-enabled version from PyPI)
+torch = [
+  { index = "pytorch-cu130", marker = "sys_platform == 'win32'" },
+]
 
 [tool.uv.workspace]
 members = [
