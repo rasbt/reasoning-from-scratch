@@ -225,7 +225,11 @@ if __name__ == "__main__":
     else:
         which_model = args.which_model
 
-    model, tokenizer = load_model_and_tokenizer(which_model, device, use_compile)
+    model, tokenizer = load_model_and_tokenizer(
+        which_model=which_model,
+        device=device,
+        use_compile=args.compile
+    )
     if args.which_model == "instruct":
         tokenizer.add_thinking = False
 
