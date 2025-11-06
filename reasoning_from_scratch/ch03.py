@@ -68,7 +68,7 @@ def load_model_and_tokenizer(which_model, device, use_compile, local_dir="qwen3"
         )
 
     else:
-        raise ValueError(f"Invalid choice: WHICH_MODEL={which_model}")
+        raise ValueError(f"Invalid choice: which_model={which_model}")
 
     model = Qwen3Model(QWEN_CONFIG_06_B)
     model.load_state_dict(torch.load(model_path))
