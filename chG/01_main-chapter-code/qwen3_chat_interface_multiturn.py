@@ -3,7 +3,6 @@
 #   - https://www.manning.com/books/build-a-large-language-model-from-scratch
 # Code: https://github.com/rasbt/LLMs-from-scratch
 
-from pathlib import Path
 
 import torch
 import chainlit
@@ -12,17 +11,12 @@ from reasoning_from_scratch.ch02 import (
     get_device,
 )
 from reasoning_from_scratch.ch02_ex import generate_text_basic_stream_cache
-from reasoning_from_scratch.qwen3 import (
-    download_qwen3_small,
-    Qwen3Model,
-    Qwen3Tokenizer,
-    QWEN_CONFIG_06_B
-)
+from reasoning_from_scratch.ch03 import load_model_and_tokenizer
 
 # ============================================================
 # EDIT ME: Simple configuration
 # ============================================================
-REASONING = True          # True = "thinking" chat model, False = Base
+WHICH_MODEL = "reasoning"  # "base" for base model
 MAX_NEW_TOKENS = 38912
 LOCAL_DIR = "qwen3"
 COMPILE = False
@@ -38,33 +32,6 @@ def trim_input_tensor(input_ids_tensor, context_len, max_new_tokens):
         input_ids_tensor = input_ids_tensor[:, -keep_len:]
 
     return input_ids_tensor
-
-
-def get_model_and_tokenizer(qwen3_config, local_dir, device, use_compile, use_reasoning):
-    if use_reasoning:
-        download_qwen3_small(kind="reasoning", tokenizer_only=False, out_dir=local_dir)
-        tokenizer_path = Path(local_dir) / "tokenizer-reasoning.json"
-        model_path = Path(local_dir) / "qwen3-0.6B-reasoning.pth"
-        tokenizer = Qwen3Tokenizer(
-            tokenizer_file_path=tokenizer_path,
-            apply_chat_template=True,
-            add_generation_prompt=True,
-            add_thinking=True
-        )
-
-    else:
-        download_qwen3_small(kind="base", tokenizer_only=False, out_dir=local_dir)
-        tokenizer_path = Path(local_dir) / "tokenizer-base.json"
-        model_path = Path(local_dir) / "qwen3-0.6B-base.pth"
-        tokenizer = Qwen3Tokenizer(tokenizer_file_path=tokenizer_path)
-
-    model = Qwen3Model(qwen3_config)
-    model.load_state_dict(torch.load(model_path, map_location=device))
-    model.to(device)
-    if use_compile:
-        model = torch.compile(model)
-
-    return model, tokenizer
 
 
 def build_prompt_from_history(history, add_assistant_header=True):
@@ -83,12 +50,11 @@ def build_prompt_from_history(history, add_assistant_header=True):
 
 
 DEVICE = get_device()
-MODEL, TOKENIZER = get_model_and_tokenizer(
-    qwen3_config=QWEN_CONFIG_06_B,
-    local_dir=LOCAL_DIR,
+MODEL, TOKENIZER = load_model_and_tokenizer(
+    which_model=WHICH_MODEL,
     device=DEVICE,
     use_compile=COMPILE,
-    use_reasoning=REASONING
+    local_dir=LOCAL_DIR
 )
 
 # Even though the official TOKENIZER.eos_token_id is either <|im_end|> (reasoning)

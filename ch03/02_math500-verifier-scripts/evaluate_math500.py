@@ -10,8 +10,10 @@ import requests
 import torch
 
 from reasoning_from_scratch.ch02 import get_device
-from reasoning_from_scratch.ch03 import evaluate_math500_stream
-from reasoning_from_scratch.qwen3 import get_model
+from reasoning_from_scratch.ch03 import (
+    evaluate_math500_stream,
+    load_model_and_tokenizer
+)
 
 
 def get_data():
@@ -90,7 +92,16 @@ if __name__ == "__main__":
     dev_name = str(device).replace(":", "-")
 
     math_data = get_data()
-    model, tokenizer = get_model(which_model, device, use_compile)
+
+    if args.which_model == "instruct":
+        which_model = "reasoning"
+    else:
+        which_model = args.which_model
+
+    model, tokenizer = load_model_and_tokenizer(which_model, device, use_compile)
+    if args.which_model == "instruct":
+        tokenizer.add_thinking = False
+
     model.eval()
     torch.set_float32_matmul_precision("high")
 
