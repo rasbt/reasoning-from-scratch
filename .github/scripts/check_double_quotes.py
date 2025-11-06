@@ -62,8 +62,6 @@ def collect_fstring_expr_string_positions(source):
         def _collect_from_expr(self, node):
             if isinstance(node, ast.Constant) and isinstance(node.value, str):
                 positions.add((node.lineno, node.col_offset))
-            elif isinstance(node, ast.Str):  # Python <3.8 compatibility
-                positions.add((node.lineno, node.col_offset))
             else:
                 for child in ast.iter_child_nodes(node):
                     self._collect_from_expr(child)

@@ -30,16 +30,23 @@ def parse_args():
 
 
 def strip_inline_comment(line):
-    """Return line without inline comment content."""
+    """Return line with any trailing #... comment removed, but keep # inside quotes."""
     in_quote = None
+    escaped = False
     for i, ch in enumerate(line):
-        if ch in ('"', "'"):
+        if escaped:
+            escaped = False
+            continue
+        if ch == "\\":
+            escaped = True
+            continue
+        if ch in ("'", '"'):
             if in_quote is None:
                 in_quote = ch
             elif in_quote == ch:
                 in_quote = None
-        elif ch == "#" and in_quote is None:
-            # Start of comment outside quotes
+            continue
+        if ch == "#" and in_quote is None:
             return line[:i].rstrip()
     return line.rstrip()
 
