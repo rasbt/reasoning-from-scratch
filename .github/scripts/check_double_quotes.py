@@ -62,8 +62,6 @@ def collect_fstring_expr_string_positions(source):
         def _collect_from_expr(self, node):
             if isinstance(node, ast.Constant) and isinstance(node.value, str):
                 positions.add((node.lineno, node.col_offset))
-            elif isinstance(node, ast.Str):  # Python <3.8 compatibility
-                positions.add((node.lineno, node.col_offset))
             else:
                 for child in ast.iter_child_nodes(node):
                     self._collect_from_expr(child)
@@ -76,27 +74,35 @@ def check_quotes_in_source(source, path):
     violations = []
     ignored_positions = collect_fstring_expr_string_positions(source)
     tokens = tokenize.generate_tokens(io.StringIO(source).readline)
+    lines = source.splitlines()
+
     for tok_type, tok_str, start, _, _ in tokens:
         if tok_type == tokenize.STRING:
+            line_no, col = start
+
+            # Skip if the line contains both quote types (e.g. if ch in ("'", '"'))
+            if line_no - 1 < len(lines):
+                line_text = lines[line_no - 1]
+                if "'" in line_text and '"' in line_text:
+                    continue
+
             if start in ignored_positions:
                 continue
+
             lowered = tok_str.lower()
             # ignore triple-quoted strings
             if lowered.startswith((TRIPLE_DOUBLE, TRIPLE_SINGLE)):
                 continue
 
             # find the prefix and quote type
-            # prefix = ""
             for c in PREFIX_CHARS:
                 if lowered.startswith(c):
-                    # prefix = c
                     lowered = lowered[1:]
                     break
 
             # report if not using double quotes
             if lowered.startswith(SINGLE_QUOTE):
-                line, col = start
-                violations.append(f"{path}:{line}:{col}: uses single quotes")
+                violations.append(f"{path}:{line_no}:{col}: uses single quotes")
     return violations
 
 
