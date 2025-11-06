@@ -48,3 +48,12 @@ jobs:
       run: |
         source .venv/bin/activate
         uv run .github/scripts/check_double_quotes.py
+
+    - name: Run line length check on main chapter notebooks
+      run: |
+        source .venv/bin/activate
+        uv run .github/scripts/check_notebook_line_length.py \
+          ch02/01_main-chapter-code/ch02_main.ipynb \
+          ch03/01_main-chapter-code/ch03_main.ipynb \
+          chC/01_main-chapter-code/chC_main.ipynb \
+          chF/01_main-chapter-code/chF_main.ipynb
