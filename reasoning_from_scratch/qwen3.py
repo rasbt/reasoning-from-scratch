@@ -2,7 +2,6 @@
 # Source for "Build a Reasoning Model (From Scratch)": https://mng.bz/lZ5B
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
-from .ch03 import load_model_and_tokenizer  # noqa: F401
 from .utils import download_file
 
 from pathlib import Path
