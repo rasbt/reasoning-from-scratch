@@ -14,12 +14,12 @@ import requests
 import torch
 
 from reasoning_from_scratch.ch02 import get_device
-from reasoning_from_scratch.qwen3_batched import get_model
 from reasoning_from_scratch.ch03 import (
     render_prompt,
     extract_final_candidate,
     grade_answer,
 )
+from reasoning_from_scratch.qwen3_batched import load_model_and_tokenizer
 
 
 def get_data():
@@ -220,7 +220,18 @@ if __name__ == "__main__":
     print("Batch size:", batch_size)
 
     math_data = get_data()[:dataset_size]
-    model, tokenizer = get_model(which_model, device, args.compile)
+    if args.which_model == "instruct":
+        which_model = "reasoning"
+    else:
+        which_model = args.which_model
+
+    model, tokenizer = load_model_and_tokenizer(
+        which_model=which_model,
+        device=device,
+        use_compile=args.compile
+    )
+    if args.which_model == "instruct":
+        tokenizer.add_thinking = False
 
     out_path = f"math500_{which_model}-{dev_name}-batched-bs{batch_size}.jsonl"
     num_correct, num_examples, acc = evaluate_math500_batched(

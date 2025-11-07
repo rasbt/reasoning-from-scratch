@@ -11,8 +11,8 @@ import requests
 
 import torch
 from reasoning_from_scratch.ch02 import get_device
-from reasoning_from_scratch.qwen3 import get_model
 from reasoning_from_scratch.ch02_ex import generate_text_basic_stream_cache
+from reasoning_from_scratch.ch03 import load_model_and_tokenizer
 
 
 def check_if_running(process_name):
@@ -217,7 +217,7 @@ if __name__ == "__main__":
     pairs = pairs[:dataset_size]
     total = len(pairs)
 
-    candidate_model, tokenizer = get_model(which_model, device, use_compile=False)
+    candidate_model, tokenizer = load_model_and_tokenizer(which_model, device, use_compile=False)
     candidate_model.eval()
     torch.set_float32_matmul_precision("high")
 

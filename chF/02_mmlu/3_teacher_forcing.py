@@ -8,7 +8,7 @@ import time
 import torch
 from datasets import load_dataset, get_dataset_config_names
 from reasoning_from_scratch.ch02 import get_device
-from reasoning_from_scratch.qwen3 import get_model
+from reasoning_from_scratch.ch03 import load_model_and_tokenizer
 
 
 # Same as before
@@ -154,7 +154,7 @@ def main():
     device = get_device() if args.device == "auto" else torch.device(args.device)
     print(f"Using device: {device}")
 
-    model, tokenizer = get_model(args.which_model, device, use_compile=False)
+    model, tokenizer = load_model_and_tokenizer(args.which_model, device, use_compile=False)
     model.eval()
     torch.set_float32_matmul_precision("high")
 
