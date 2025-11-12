@@ -230,20 +230,19 @@ class GroupedQueryAttention(nn.Module):
 #
 # 1) Split-halves style (this repo, Hugging Face Transformers):
 #
-#   For hidden dim d = 8 (example):
+#   For hidden dim d = 4 (example):
 #
-#       [ x0   x1   x2   x3   x4   x5   x6   x7 ]
-#         │    │    │    │    │    │    │    │
-#         ▼    ▼    ▼    ▼    ▼    ▼    ▼    ▼
-#        cos  cos  cos  cos  sin  sin  sin  sin
+#       [ x0   x1 | x2   x3 ]
+#         │    │    │    │
+#         ▼    ▼    ▼    ▼
+#        cos  cos  sin  sin
 #
 #   Rotation matrix:
 #
-#       [ cosθ   -sinθ    0      0   ... ]
-#       [ sinθ    cosθ    0      0   ... ]
-#       [  0       0    cosθ   -sinθ ... ]
-#       [  0       0    sinθ    cosθ ... ]
-#        ...
+#       [ cosθ0   0    -sinθ0   0   ]
+#       [  0    cosθ1    0    -sinθ1]
+#       [ sinθ0   0     cosθ0   0   ]
+#       [  0    sinθ1    0     cosθ1]
 #
 #   Here, the embedding dims are split into two halves and then
 #   each one is rotated in blocks.
@@ -251,19 +250,20 @@ class GroupedQueryAttention(nn.Module):
 #
 # 2) Interleaved (even/odd) style (original paper, Llama repo):
 #
-#   For hidden dim d = 8 (example):
+#   For hidden dim d = 4 (example):
 #
-#       [ x0   x1   x2   x3   x4   x5   x6   x7 ]
-#         │    │    │    │    │    │    │    │
-#         ▼    ▼    ▼    ▼    ▼    ▼    ▼    ▼
-#        cos  sin  cos  sin  cos  sin  cos  sin
+#       [ x0   x1   x2   x3 ]
+#         │    │    │    │
+#         ▼    ▼    ▼    ▼
+#        cos  sin  cos  sin
 #
 #   Rotation matrix:
-#       [ cosθ  -sinθ    0      0   ... ]
-#       [ sinθ   cosθ    0      0   ... ]
-#       [  0      0    cosθ   -sinθ ... ]
-#       [  0      0    sinθ    cosθ ... ]
-#        ...
+#
+#       [ cosθ0  -sinθ0   0       0    ]
+#       [ sinθ0   cosθ0   0       0    ]
+#       [  0        0    cosθ1  -sinθ1 ]
+#       [  0        0    sinθ1   cosθ1 ]
+#
 #
 #   Here, embedding dims are interleaved as even/odd cosine/sine pairs.
 #
