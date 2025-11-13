@@ -116,6 +116,6 @@ if __name__ == "__main__":
         device=device,
         math_data=math_data[:dataset_size],
         max_new_tokens=max_new_tokens,
-
-        verbose=args.verbose
+        verbose=args.verbose,
+        show_eta=True,
     )

@@ -21,6 +21,7 @@ from .qwen3 import (
 from .ch02_ex import (
     generate_text_basic_stream_cache
 )
+from .utils import eta_progress_message
 
 RE_NUMBER = re.compile(
     r"-?(?:\d+/\d+|\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)"
@@ -384,6 +385,7 @@ def evaluate_math500_stream(
     out_path=None,
     max_new_tokens=512,
     verbose=False,
+    show_eta=False,
 ):
 
     if out_path is None:
@@ -392,10 +394,20 @@ def evaluate_math500_stream(
 
     num_examples = len(math_data)
     num_correct = 0
-    print(f"MATH-500: 0/{num_examples}", end="\r", flush=True)
-
     start_time = time.time()
 
+    # print(f"MATH-500: 0/{num_examples}", end="\r", flush=True)
+    print(
+        eta_progress_message(
+            processed=0,
+            total=num_examples,
+            start_time=start_time,
+            show_eta=show_eta,
+            label="MATH-500",
+        ),
+        end="\r",
+        flush=True,
+    )
     with open(out_path, "w", encoding="utf-8") as f:  # Save results for inspection
         for i, row in enumerate(math_data, start=1):
             prompt = render_prompt(row["problem"])    # 1. Apply prompt template
@@ -423,18 +435,27 @@ def evaluate_math500_stream(
             }
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
+            progress_msg = eta_progress_message(
+                processed=i,
+                total=num_examples,
+                start_time=start_time,
+                show_eta=show_eta,
+                label="MATH-500",
+            )
             if verbose:  # Print responses during the generation process
                 print(
+                    # f"\n\n{'='*50}\n{progress_msg}\n"
                     f"\n\n{'='*50}\nMATH-500: {i}/{num_examples}\n"
                     f"{'='*50}\nExtracted: {extracted}\n"
                     f"Expected:  {row['answer']}\n"
                     f"Correct so far: {num_correct}\n{'-'*50}"
                 )
             else:
-                print(
-                    f"MATH-500: {i}/{num_examples}",
-                    end="\r", flush=True
-                )
+                # print(
+                #     f"MATH-500: {i}/{num_examples}",
+                #     end="\r", flush=True
+                # )
+                print(progress_msg, end="\r", flush=True)
 
     # Print summary information
     seconds_elapsed = time.time() - start_time

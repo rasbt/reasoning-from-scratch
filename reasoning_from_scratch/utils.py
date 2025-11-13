@@ -4,6 +4,7 @@
 
 from pathlib import Path
 import sys
+import time
 import requests
 from urllib.parse import urlparse
 
@@ -59,3 +60,38 @@ def download_file(url, out_dir=".", backup_url=None):
             return dest
 
     raise RuntimeError(f"Failed to download {filename} from both mirrors.")
+
+
+def format_eta(seconds):
+    seconds = max(int(round(seconds)), 0)
+    minutes, rem_seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    if hours:
+        return f"{hours}h {minutes:02d}m {rem_seconds:02d}s"
+    if minutes:
+        return f"{minutes:02d}m {rem_seconds:02d}s"
+    return f"{rem_seconds:02d}s"
+
+
+def eta_progress_message(
+    processed,
+    total,
+    start_time,
+    show_eta=False,
+    label="Progress",
+):
+    progress = f"{label}: {processed}/{total}"
+    if not show_eta or processed <= 0:
+        return progress
+
+    elapsed = time.time() - start_time
+    if elapsed <= 0:
+        return progress
+
+    remaining = max(total - processed, 0)
+    if processed and remaining:
+        eta_seconds = (elapsed / processed) * remaining
+    else:
+        eta_seconds = 0
+
+    return f"{progress} | ETA: {format_eta(eta_seconds)}"

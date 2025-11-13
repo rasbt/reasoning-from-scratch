@@ -20,6 +20,7 @@ from reasoning_from_scratch.ch03 import (
     grade_answer,
 )
 from reasoning_from_scratch.qwen3_batched import load_model_and_tokenizer
+from reasoning_from_scratch.utils import eta_progress_message
 
 
 def get_data():
@@ -49,6 +50,7 @@ def evaluate_math500_batched(
     max_new_tokens=512,
     verbose=False,
     batch_size=4,
+    show_eta=False,
 ):
     model.eval()
 
@@ -59,9 +61,21 @@ def evaluate_math500_batched(
 
     num_examples = len(math_data)
     num_correct = 0
-    print(f"MATH-500: 0/{num_examples}", end="\r", flush=True)
 
     start_time = time.time()
+    # print(f"MATH-500: 0/{num_examples}", end="\r", flush=True)
+
+    print(
+        eta_progress_message(
+            processed=0,
+            total=num_examples,
+            start_time=start_time,
+            show_eta=show_eta,
+            label="MATH-500",
+        ),
+        end="\r",
+        flush=True,
+    )
 
     eos_id = getattr(tokenizer, "eos_token_id", None)
     pad_id = getattr(tokenizer, "pad_token_id", None)
@@ -120,18 +134,27 @@ def evaluate_math500_batched(
                 }
                 f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
+                progress_msg = eta_progress_message(
+                    processed=i,
+                    total=num_examples,
+                    start_time=start_time,
+                    show_eta=show_eta,
+                    label="MATH-500",
+                )
                 if verbose:  # Print responses during the generation process
                     print(
-                        f"\n\n{'='*50}\nMATH-500: {i}/{num_examples}\n"
+                        # f"\n\n{'='*50}\nMATH-500: {i}/{num_examples}\n"
+                        f"\n\n{'='*50}\n{progress_msg}\n"
                         f"{'='*50}\nExtracted: {extracted}\n"
                         f"Expected:  {row['answer']}\n"
                         f"Correct so far: {num_correct}\n{'-'*50}"
                     )
                 else:
-                    print(
-                        f"MATH-500: {i}/{num_examples}",
-                        end="\r", flush=True
-                    )
+                    # print(
+                    #     f"MATH-500: {i}/{num_examples}",
+                    #     end="\r", flush=True
+                    # )
+                    print(progress_msg, end="\r", flush=True)
 
     # Print summary information
     seconds_elapsed = time.time() - start_time
@@ -243,4 +266,5 @@ if __name__ == "__main__":
         max_new_tokens=max_new_tokens,
         out_path=out_path,
         verbose=args.verbose,
+        show_eta=True,
     )
