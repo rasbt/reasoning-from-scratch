@@ -392,7 +392,13 @@ def eta_progress_message(
         return progress
 
     remaining = max(total - processed, 0)
-    eta_seconds = (elapsed / processed) * remaining if processed and remaining else 0
+
+    if processed:
+        avg_time = elapsed / processed
+        eta_seconds = avg_time * remaining
+    else:
+        eta_seconds = 0
+
     eta_seconds = max(int(round(eta_seconds)), 0)
     minutes, rem_seconds = divmod(eta_seconds, 60)
     hours, minutes = divmod(minutes, 60)
