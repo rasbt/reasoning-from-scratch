@@ -376,6 +376,42 @@ def mini_eval_demo(model, tokenizer, device):
     print(f"Correct: {is_correct}")
 
 
+def eta_progress_message(
+    processed,
+    total,
+    start_time,
+    show_eta=False,
+    label="Progress",
+):
+    progress = f"{label}: {processed}/{total}"
+    if not show_eta or processed <= 0:
+        return progress
+
+    elapsed = time.time() - start_time
+    if elapsed <= 0:
+        return progress
+
+    remaining = max(total - processed, 0)
+
+    if processed:
+        avg_time = elapsed / processed
+        eta_seconds = avg_time * remaining
+    else:
+        eta_seconds = 0
+
+    eta_seconds = max(int(round(eta_seconds)), 0)
+    minutes, rem_seconds = divmod(eta_seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    if hours:
+        eta = f"{hours}h {minutes:02d}m {rem_seconds:02d}s"
+    elif minutes:
+        eta = f"{minutes:02d}m {rem_seconds:02d}s"
+    else:
+        eta = f"{rem_seconds:02d}s"
+
+    return f"{progress} | ETA: {eta}"
+
+
 def evaluate_math500_stream(
     model,
     tokenizer,
@@ -392,8 +428,6 @@ def evaluate_math500_stream(
 
     num_examples = len(math_data)
     num_correct = 0
-    print(f"MATH-500: 0/{num_examples}", end="\r", flush=True)
-
     start_time = time.time()
 
     with open(out_path, "w", encoding="utf-8") as f:  # Save results for inspection
@@ -423,17 +457,20 @@ def evaluate_math500_stream(
             }
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
+            progress_msg = eta_progress_message(
+                processed=i,
+                total=num_examples,
+                start_time=start_time,
+                show_eta=True,
+                label="MATH-500",
+            )
+            print(progress_msg, end="\r", flush=True)
             if verbose:  # Print responses during the generation process
                 print(
-                    f"\n\n{'='*50}\nMATH-500: {i}/{num_examples}\n"
+                    f"\n\n{'='*50}\n{progress_msg}\n"
                     f"{'='*50}\nExtracted: {extracted}\n"
                     f"Expected:  {row['answer']}\n"
                     f"Correct so far: {num_correct}\n{'-'*50}"
-                )
-            else:
-                print(
-                    f"MATH-500: {i}/{num_examples}",
-                    end="\r", flush=True
                 )
 
     # Print summary information
