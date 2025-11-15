@@ -5,7 +5,7 @@
 ## Bonus materials
 
 - [cot_prompting_math500.py](cot_prompting_math500.py): standalone script to evaluate models with chain-of-thought prompting on the MATH-500 dataset
-- [self_consistency_math500.py](evaluate_math500_batched.py): standalone script to evaluate models with self-consistency sampling on the MATH-500 dataset
+- [self_consistency_math500.py](self_consistency_math500.py): standalone script to evaluate models with self-consistency sampling on the MATH-500 dataset
 
 Both evaluation scripts import functionality from the [`reasoning_from_scratch`](../../reasoning_from_scratch) package to avoid code duplication. (See [chapter 2 setup instructions](../../ch02/02_setup-tips/python-instructions.md) for installation details.)
 

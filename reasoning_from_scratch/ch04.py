@@ -274,7 +274,7 @@ def self_consistency_vote(
         if seed is not None:
             torch.manual_seed(seed + i + 1)
 
-        ans = generate_text_stream_concat_flex(
+        answer = generate_text_stream_concat_flex(
             model=model, tokenizer=tokenizer, prompt=prompt, device=device,
             max_new_tokens=max_new_tokens, verbose=show_long_answer,
             generate_func=generate_text_top_p_stream_cache,
@@ -282,8 +282,10 @@ def self_consistency_vote(
         )
 
         # 2) Extract the final (short) answer from each answer
-        short = extract_final_candidate(ans, fallback="number_then_full")
-        full_answers.append(ans)
+        short = extract_final_candidate(
+            answer, fallback="number_then_full"
+        )
+        full_answers.append(answer)
         short_answers.append(short)
         if show_progress:
             print(f"[Sample {i+1}/{num_samples}] → {short!r}")
