@@ -53,8 +53,8 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | Ch 1: Understanding reasoning Models                         | No code                                                      |
 | Ch 2: Generating Text with a Pre-trained LLM                 | - [ch02_main.ipynb](ch02/01_main-chapter-code/ch02_main.ipynb)<br/>- [ch02_exercise-solutions.ipynb](ch02/01_main-chapter-code/ch02_exercise-solutions.ipynb) |
-| Ch 3: Evaluating Reasoning Models                            | - [ch03_main.ipynb](ch03/01_main-chapter-code/ch03_main.ipynb)<br/> |
-| Ch 4: Improving Reasoning with Inference-Time Scaling        | TBA                                                          |
+| Ch 3: Evaluating Reasoning Models                            | - [ch03_main.ipynb](ch03/01_main-chapter-code/ch03_main.ipynb)<br/>- [ch03_exercise-solutions.ipynb](ch03/01_main-chapter-code/ch03_exercise-solutions.ipynb) |
+| Ch 4: Improving Reasoning with Inference-Time Scaling        | - [ch04_main.ipynb](ch04/01_main-chapter-code/ch04_main.ipynb)<br/>- [ch04_exercise-solutions.ipynb](ch04/01_main-chapter-code/ch04_exercise-solutions.ipynb) |
 | Ch 5: Training Reasoning Models with Reinforcement Learning  | TBA                                                          |
 | Ch 6: Distilling Reasoning Models for Efficient Reasoning    | TBA                                                          |
 | Ch 7: Improving the Reasoning Pipeline and Future Directions | TBA                                                          |
@@ -122,6 +122,10 @@ Several folders contain optional materials as a bonus for interested readers:
   - [Run inference and chat with the model](ch02/05_use_model)
 - **Chapter 3: Evaluating LLMs**
   - [MATH-500 Verifier Scripts](ch03/02_math500-verifier-scripts)
+
+- **Chapter 4: Improving Reasoning with Inference-Time Scaling**
+  - [Inference Scaling on MATH-500 ](ch04/02_math500-inference-scaling-scripts)
+
 - **Appendix F: Common Approaches to LLM Evaluation**
   - [MMLU Evaluation Methods](chF/02_mmlu)
   - [LLM leaderboards](chF/03_leaderboards)
