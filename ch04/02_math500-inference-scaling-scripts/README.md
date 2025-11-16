@@ -72,20 +72,20 @@ The `self_consistency_math500.py` script implements the sampling method from cha
 
 The table below compares this approach (row 4-12) with the baselines from chapter 3 (rows 1-2):
 
-|    | Method                                       | Model     | Accuracy | Time       |
-|----|----------------------------------------------|-----------|----------|------------|
-| 1  | Baseline (chapter 3), greedy decoding        | Base      | 15.2%    | 10.1 min   |
-| 2  | Baseline (chapter 3), greedy decoding        | Reasoning | 48.2%    | 182.1 min  |
-| 3  | Chain-of-thought prompting ("CoT")           | Base      | 40.6%    | 84.5 min   |
-| 4  | Temperature and top-p ("Top-p")              | Base      | 17.8%    | 30.7 min   |
-| 5  | "Top-p" + Self-consistency (n=3)             | Base      | 29.6%    | 97.6 min   |
-| 6  | "Top-p" + Self-consistency (n=5)             | Base      | 27.8%    | 116.8 min  |
-| 7  | "Top-p" + Self-consistency (n=10)            | Base      | 31.6%    | 300.4 min  |
-| 8  | "Top-p" + "CoT"                              | Base      | 33.4%    | 129.2 min  |
-| 9  | Self-consistency (n=3) + "Top-p" + "CoT"     | Base      | 42.2%    | 211.6 min  |
-| 10 | Self-consistency (n=5) + "Top-p" + "CoT"     | Base      | 48.0%    | 452.9 min  |
-| 11 | Self-consistency (n=10) + "Top-p" + "CoT"    | Base      | 52.0%    | 862.6 min  |
-| 12 | Self-consistency (n=3) + "Top-p" + "CoT"     | Reasoning | 55.2%    | 544.4 min  |
+|      | Method                                    | Model     | Accuracy | Time      |
+| ---- | ----------------------------------------- | --------- | -------- | --------- |
+| 1    | Baseline (chapter 3), greedy decoding     | Base      | 15.2%    | 10.1 min  |
+| 2    | Baseline (chapter 3), greedy decoding     | Reasoning | 48.2%    | 182.1 min |
+| 3    | Chain-of-thought prompting ("CoT")        | Base      | 40.6%    | 84.5 min  |
+| 4    | Temperature and top-p ("Top-p")           | Base      | 17.8%    | 30.7 min  |
+| 5    | "Top-p" + Self-consistency (n=3)          | Base      | 29.6%    | 97.6 min  |
+| 6    | "Top-p" + Self-consistency (n=5)          | Base      | 27.8%    | 116.8 min |
+| 7    | "Top-p" + Self-consistency (n=10)         | Base      | 31.6%    | 300.4 min |
+| 8    | "Top-p" + "CoT"                           | Base      | 33.4%    | 129.2 min |
+| 9    | Self-consistency (n=3) + "Top-p" + "CoT"  | Base      | 42.2%    | 211.6 min |
+| 10   | Self-consistency (n=5) + "Top-p" + "CoT"  | Base      | 48.0%    | 452.9 min |
+| 11   | Self-consistency (n=10) + "Top-p" + "CoT" | Base      | 52.0%    | 862.6 min |
+| 12   | Self-consistency (n=3) + "Top-p" + "CoT"  | Reasoning | 55.2%    | 544.4 min |
 
 
 The following codes give instructions on how to run the self-consistency experiments in rows 4-12 (replace `uv run` with `python` if you are not a `uv` user).
