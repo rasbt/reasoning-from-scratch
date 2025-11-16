@@ -66,12 +66,10 @@ def evaluate_math500_stream(
 
             # If final_answer was not determined (tie),
             # resolve it by first appearance
-            if results["final_answer"] is None and results["majority_winners"]:
-                for s in results["short_answers"]:
-                    if s in results["majority_winners"]:
-                        results["final_answer"] = s
-                        break
-            extracted = results["final_answer"]
+            if results["final_answer"] is None:
+                extracted = results["majority_winners"][0]
+            else:
+                extracted = results["final_answer"]
 
             # extracted = extract_final_candidate(
             #     gen_text
