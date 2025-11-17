@@ -9,15 +9,90 @@ import time
 import requests
 
 import torch
+from collections import Counter
 
 from reasoning_from_scratch.ch02 import get_device
 from reasoning_from_scratch.ch03 import (
     eta_progress_message,
     render_prompt,
     grade_answer,
-    load_model_and_tokenizer
+    load_model_and_tokenizer,
+    extract_final_candidate,
 )
-from reasoning_from_scratch.ch04 import self_consistency_vote
+from reasoning_from_scratch.ch04 import (
+    generate_text_stream_concat_flex,
+    generate_text_top_p_stream_cache,
+)
+
+
+def self_consistency_vote(
+    model,
+    tokenizer,
+    prompt,
+    device,
+    num_samples=10,
+    temperature=0.8,
+    top_p=0.9,
+    max_new_tokens=2048,
+    show_progress=True,
+    show_long_answer=False,
+    seed=None,
+    early_stop=True,   # NEW
+):
+    full_answers, short_answers = [], []
+    counts = Counter()
+    groups = {}
+    majority_winners, final_answer = [], None
+
+    for i in range(num_samples):
+        if seed is not None:
+            torch.manual_seed(seed + i + 1)
+
+        answer = generate_text_stream_concat_flex(
+            model=model,
+            tokenizer=tokenizer,
+            prompt=prompt,
+            device=device,
+            max_new_tokens=max_new_tokens,
+            verbose=show_long_answer,
+            generate_func=generate_text_top_p_stream_cache,
+            temperature=temperature,
+            top_p=top_p,
+        )
+
+        short = extract_final_candidate(answer, fallback="number_then_full")
+        full_answers.append(answer)
+        short_answers.append(short)
+        counts[short] += 1
+        groups.setdefault(short, []).append(i)
+
+        if show_progress:
+            print(f"[Sample {i+1}/{num_samples}] → {short!r}")
+
+        #########################################################
+        # NEW
+        # Early stop if one answer already meets >= 50% majority
+        if early_stop and counts[short] > num_samples / 2:
+            majority_winners = [short]
+            final_answer = short
+            break
+        #########################################################
+
+    if final_answer is None:
+        mc = counts.most_common()
+        if mc:
+            top_freq = mc[0][1]
+            majority_winners = [s for s, f in mc if f == top_freq]
+            final_answer = mc[0][0] if len(majority_winners) == 1 else None
+
+    return {
+        "full_answers": full_answers,
+        "short_answers": short_answers,
+        "counts": dict(counts),
+        "groups": groups,
+        "majority_winners": majority_winners,
+        "final_answer": final_answer,
+    }
 
 
 def evaluate_math500_stream(
@@ -33,6 +108,7 @@ def evaluate_math500_stream(
     top_p=1.0,           # NEW
     seed=None,           # NEW
     num_samples=10,      # NEW
+    early_stop=False,    # NEW
 ):
 
     if out_path is None:
@@ -62,16 +138,15 @@ def evaluate_math500_stream(
                 show_progress=False,
                 show_long_answer=False,
                 seed=seed,
+                early_stop=early_stop,
             )
 
             # If final_answer was not determined (tie),
             # resolve it by first appearance
-            if results["final_answer"] is None and results["majority_winners"]:
-                for s in results["short_answers"]:
-                    if s in results["majority_winners"]:
-                        results["final_answer"] = s
-                        break
-            extracted = results["final_answer"]
+            if results["final_answer"] is None:
+                extracted = results["majority_winners"][0]
+            else:
+                extracted = results["final_answer"]
 
             # extracted = extract_final_candidate(
             #     gen_text
@@ -210,6 +285,11 @@ def parse_args():
         default=3,
         help="Number of samples for self-consistency sampling",
     )
+    parser.add_argument(
+        "--early_stop",
+        action="store_true",
+        help="Enable early stopping when a strict majority is reached",
+    )
     return parser.parse_args()
 
 
@@ -260,5 +340,6 @@ if __name__ == "__main__":
         temperature=args.temperature,      # NEW
         top_p=args.top_p,                  # NEW
         seed=args.seed,                    # NEW
-        num_samples=args.num_samples       # NEW
+        num_samples=args.num_samples,      # NEW
+        early_stop=args.early_stop         # NEW
     )
