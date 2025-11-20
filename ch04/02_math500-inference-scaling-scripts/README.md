@@ -25,7 +25,7 @@ Both evaluation scripts import functionality from the [`reasoning_from_scratch`]
 
 ## Chain-of-thought prompting
 
-The [`cot_prompting_math500.py`](`self_consistency_math500.py`) script implements the chain-of-thought prompting method from chapter 3.
+The [`cot_prompting_math500.py`](self_consistency_math500.py) script implements the chain-of-thought prompting method from chapter 3.
 
 &nbsp;
 
@@ -65,9 +65,9 @@ For additional options, use the `--help` flag.
 &nbsp;
 ## Self-consistency sampling
 
-The [`self_consistency_math500.py`](`self_consistency_math500.py`) script implements the sampling method from chapter 3.
+The [`self_consistency_math500.py`](self_consistency_math500.py) script implements the sampling method from chapter 3.
 
-(Optionally, there is a [The `self_consistency_math500_batched.py`](The `self_consistency_math500_batched.py`) variant, which executes all `--num_samples` as a batch for faster processing. Note that this requires more compute memory though.)
+(Optionally, there is a [`self_consistency_math500_batched.py`](self_consistency_math500_batched.py) variant, which executes all `--num_samples` as a batch for faster processing. Note that this requires more compute memory though.)
 
 &nbsp;
 
