@@ -25,7 +25,7 @@ Both evaluation scripts import functionality from the [`reasoning_from_scratch`]
 
 ## Chain-of-thought prompting
 
-The `cot_prompting_math500.py` script implements the chain-of-thought prompting method from chapter 3.
+The [`cot_prompting_math500.py`](self_consistency_math500.py) script implements the chain-of-thought prompting method from chapter 3.
 
 &nbsp;
 
@@ -44,14 +44,18 @@ The table below compares this approach (row 3) with the baselines from chapter 3
 To run the experiment in row one, use:
 
 ```bash
-python cot_prompting_math500.py --which_model "base"
+python cot_prompting_math500.py \
+--which_model "base" \
+--dataset_size 500
 ```
 
 Or, with `uv:`
 
 
 ```bash
-uv run cot_prompting_math500.py --which_model "base"
+uv run cot_prompting_math500.py \
+--which_model "base" \
+--dataset_size 500
 ```
 
 For additional options, use the `--help` flag.
@@ -61,8 +65,9 @@ For additional options, use the `--help` flag.
 &nbsp;
 ## Self-consistency sampling
 
+The [`self_consistency_math500.py`](self_consistency_math500.py) script implements the sampling method from chapter 3.
 
-The `self_consistency_math500.py` script implements the sampling method from chapter 3.
+(Optionally, there is a [`self_consistency_math500_batched.py`](self_consistency_math500_batched.py) variant, which executes all `--num_samples` as a batch for faster processing. Note that this requires more compute memory though.)
 
 &nbsp;
 
@@ -97,7 +102,8 @@ uv run self_consistency_math500.py \
     --which_model "base" \
     --temperature 0.9 \
     --top_p 0.9 \
-    --num_samples 1
+    --num_samples 1 \
+    --dataset_size 500
 ```
 
 **Row 5:**
@@ -107,7 +113,8 @@ uv run self_consistency_math500.py \
     --which_model "base" \
     --temperature 0.9 \
     --top_p 0.9 \
-    --num_samples 3
+    --num_samples 3 \
+    --dataset_size 500
 ```
 
 **Row 6:**
@@ -117,7 +124,8 @@ uv run self_consistency_math500.py \
     --which_model "base" \
     --temperature 0.9 \
     --top_p 0.9 \
-    --num_samples 5
+    --num_samples 5 \
+    --dataset_size 500
 ```
 
 **Row 7:**
@@ -127,7 +135,8 @@ uv run self_consistency_math500.py \
     --which_model "base" \
     --temperature 0.9 \
     --top_p 0.9 \
-    --num_samples 10
+    --num_samples 10 \
+    --dataset_size 500
 ```
 
 **Row 8:**
@@ -138,6 +147,7 @@ uv run self_consistency_math500.py \
     --temperature 0.9 \
     --top_p 0.9 \
     --num_samples 1 \
+    --dataset_size 500 \
     --prompt_suffix "\n\nExplain step by step."
 ```
 
@@ -149,6 +159,7 @@ uv run self_consistency_math500.py \
     --temperature 0.9 \
     --top_p 0.9 \
     --num_samples 3 \
+    --dataset_size 500 \
     --prompt_suffix "\n\nExplain step by step."
 ```
 
@@ -160,6 +171,7 @@ uv run self_consistency_math500.py \
     --temperature 0.9 \
     --top_p 0.9 \
     --num_samples 5 \
+    --dataset_size 500 \
     --prompt_suffix "\n\nExplain step by step."
 ```
 
@@ -171,6 +183,7 @@ uv run self_consistency_math500.py \
     --temperature 0.9 \
     --top_p 0.9 \
     --num_samples 10 \
+    --dataset_size 500 \
     --prompt_suffix "\n\nExplain step by step."
 ```
 
@@ -182,8 +195,10 @@ uv run self_consistency_math500.py \
     --temperature 0.9 \
     --top_p 0.9 \
     --num_samples 3 \
+    --dataset_size 500 \
     --prompt_suffix "\n\nExplain step by step."
 ```
 
 
 For additional options, use the `--help` flag.
+
