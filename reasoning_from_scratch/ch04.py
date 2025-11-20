@@ -214,7 +214,7 @@ def top_p_filter(probas, top_p):
     filtered = torch.zeros_like(probas).scatter(1, sorted_idx, kept_sorted)
 
     # Step 4.4: Renormalize to sum to 1 (optional)
-    denom = torch.sum(filtered, dim=1).clamp_min(1e-12)
+    denom = torch.sum(filtered, dim=1).clamp_min(1e-12).unsqueeze(-1)
     return filtered / denom
 
 
