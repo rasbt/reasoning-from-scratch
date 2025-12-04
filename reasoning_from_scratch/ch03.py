@@ -39,7 +39,11 @@ LATEX_FIXES = [  # Latex formatting to be replaced
 ]
 
 RE_SPECIAL = re.compile(r"<\|[^>]+?\|>")  # strip chat special tokens like <|assistant|>
-
+SUPERSCRIPT_MAP = {
+    "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4",
+    "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9",
+    "⁺": "+", "⁻": "-", "⁽": "(", "⁾": ")",
+}
 
 def load_model_and_tokenizer(which_model, device, use_compile, local_dir="qwen3"):
     if which_model == "base":
@@ -190,6 +194,23 @@ def normalize_text(text):
     # light LaTeX canonicalization
     for pat, rep in LATEX_FIXES:
         text = re.sub(pat, rep, text)
+
+    # convert unicode superscripts into exponent form (e.g., 2² -> 2**2)
+    def convert_superscripts(s, base=None):
+        converted = "".join(
+            SUPERSCRIPT_MAP[ch] if ch in SUPERSCRIPT_MAP else ch
+            for ch in s
+        )
+        if base is None:
+            return converted
+        return f"{base}**{converted}"
+
+    text = re.sub(
+        r"([0-9A-Za-z\)\]\}])([⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻]+)",
+        lambda m: convert_superscripts(m.group(2), base=m.group(1)),
+        text,
+    )
+    text = convert_superscripts(text)
 
     # numbers/roots
     text = text.replace("\\%", "%").replace("$", "").replace("%", "")
