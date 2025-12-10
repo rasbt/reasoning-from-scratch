@@ -99,7 +99,7 @@ def test_generate_text_temp_stream_cache_stops_on_eos():
             token_ids=token_ids,
             max_new_tokens=5,
             eos_token_id=3,
-            temperature=1.0,
+            temperature=0.0,
         )
     )
 
