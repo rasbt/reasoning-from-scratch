@@ -2,14 +2,16 @@
 # Source for "Build a Reasoning Model (From Scratch)": https://mng.bz/lZ5B
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
+[tool.setuptools.dynamic]
+version = { attr = "reasoning_from_scratch.__version__" }
+
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "reasoning_from_scratch"
-
-version = "0.1.10"
+dynamic = ["version"]
 description = "Reasoning Models From Scratch"
 readme = "README.md"
 
