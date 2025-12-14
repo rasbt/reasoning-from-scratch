@@ -25,11 +25,11 @@ Both evaluation scripts import functionality from the [`reasoning_from_scratch`]
 
 ## Chain-of-thought prompting
 
-The [`cot_prompting_math500.py`](self_consistency_math500.py) script implements the chain-of-thought prompting method from chapter 3.
+The [`cot_prompting_math500.py`](self_consistency_math500.py) script implements the chain-of-thought prompting method from chapter 4.
 
 &nbsp;
 
-<img src="<img src="https://sebastianraschka.com/images/reasoning-from-scratch-images/ch04/CH04_F04_raschka.webp" width=600>
+<img src="https://sebastianraschka.com/images/reasoning-from-scratch-images/ch04/CH04_F04_raschka.webp" width=600>
 
 &nbsp;
 
@@ -40,6 +40,8 @@ The table below compares this approach (row 3) with the baselines from chapter 3
 | 1  | Baseline (chapter 3), greedy decoding        | Base      | 15.2%    | 10.1 min   |
 | 2  | Baseline (chapter 3), greedy decoding        | Reasoning | 48.2%    | 182.1 min  |
 | 3  | Chain-of-thought prompting ("CoT")           | Base      | 40.6%    | 84.5 min   |
+
+The accuracy values and runtimes shown in the table were computed on all 500 samples in the MATH-500 test set using a "cuda" GPU (DGX Spark).
 
 To run the experiment in row one, use:
 
@@ -65,7 +67,7 @@ For additional options, use the `--help` flag.
 &nbsp;
 ## Self-consistency sampling
 
-The [`self_consistency_math500.py`](self_consistency_math500.py) script implements the sampling method from chapter 3.
+The [`self_consistency_math500.py`](self_consistency_math500.py) script implements the sampling method from chapter 4.
 
 (Optionally, there is a [`self_consistency_math500_batched.py`](self_consistency_math500_batched.py) variant, which executes all `--num_samples` as a batch for faster processing. Note that this requires more compute memory though.)
 
@@ -92,6 +94,7 @@ The table below compares this approach (row 4-12) with the baselines from chapte
 | 11   | Self-consistency (n=10) + "Top-p" + "CoT" | Base      | 52.0%    | 862.6 min |
 | 12   | Self-consistency (n=3) + "Top-p" + "CoT"  | Reasoning | 55.2%    | 544.4 min |
 
+The accuracy values and runtimes shown in the table were computed on all 500 samples in the MATH-500 test set using a "cuda" GPU (DGX Spark).
 
 The following codes give instructions on how to run the self-consistency experiments in rows 4-12 (replace `uv run` with `python` if you are not a `uv` user).
 
