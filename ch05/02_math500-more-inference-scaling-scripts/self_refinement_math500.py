@@ -4,7 +4,6 @@
 
 import argparse
 import json
-import math
 import time
 from functools import partial
 from pathlib import Path

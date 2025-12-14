@@ -24,7 +24,7 @@ The script impors functionality from the [`reasoning_from_scratch`](../../reason
 
 ## Self-refinement
 
-The [`self_refinement_math500.py`](self_consistency_math500.py) script implements the self-refinement method from chapter 5.
+The [`self_refinement_math500.py`](self_refinement_math500.py) script implements the self-refinement method from chapter 5.
 
 
 &nbsp;
