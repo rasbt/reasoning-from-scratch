@@ -11,6 +11,7 @@ tokenizer.json
 tokenizer-base.json
 .chainlit
 chainlit.md
+math500_test.json
 math500_base-mps.jsonl
 math500_base-cpu.jsonl
 math500_base-cuda.jsonl

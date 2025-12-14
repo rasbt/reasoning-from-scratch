@@ -137,7 +137,7 @@ def test_self_refinement_loop_accepts_improving_revisions(monkeypatch):
         top_p=0.8,
     )
 
-    assert result["final"] == "draft with more detail"
+    assert result["final_extracted"] == "draft with more detail"
     assert len(result["steps"]) == 2
     assert result["steps"][0]["draft_full"] == "initial draft"
     assert result["steps"][0]["revised_full"] == "draft with more detail"

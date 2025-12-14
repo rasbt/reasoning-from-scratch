@@ -150,7 +150,7 @@ def evaluate_math500_stream(
                 "index": idx,
                 "problem": row["problem"],
                 "gtruth_answer": row["answer"],
-                "generated_text": result["final_cand"],
+                "generated_text": result["final_full"],
                 "extracted": extracted,
                 "correct": bool(is_correct),
                 "refinement": result,

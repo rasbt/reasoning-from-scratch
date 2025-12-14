@@ -262,4 +262,8 @@ def self_refinement_loop(
             current_extracted = revised_extracted
             current_score = revised_score
 
-    return {"final": current_extracted, "steps": steps}
+    return {
+        "final_full": current_full,
+        "final_extracted": current_extracted,
+        "steps": steps,
+    }
