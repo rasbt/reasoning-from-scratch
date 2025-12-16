@@ -33,7 +33,7 @@ The [`self_refinement_math500.py`](self_refinement_math500.py) script implements
 
 &nbsp;
 
-The table below compares this approach with the baselines from chapter 3:
+
 
 | #  | Method          | Scorer    | Iterations | Model     | Accuracy | Time      |
 |----|-----------------|-----------|------------|-----------|----------|-----------|
@@ -231,3 +231,129 @@ uv run self_refinement_math500.py \
     --iterations 2 \
     --scoring "logprob"
 ```
+
+
+
+
+&nbsp;
+
+## Self-consistency with scorer-based tie-breaker
+
+The [`self_consistency_scorer_math500.py`](self_consistency_scorer_math500.py) extends the self-consistency with tie-breaking based on the scorers implemented in chapter 5.
+
+
+&nbsp;
+
+<img src="https://sebastianraschka.com/images/reasoning-from-scratch-images/appendix-b/majority-vote.webp" width=600>
+
+&nbsp;
+
+
+
+|   | Method                                   | Model | Accuracy | Time      |
+|---|------------------------------------------|-------|----------|-----------|
+| 1 | Chapter 4 baseline with CoT prompting    | Base  | 33.4%    | 129.2 min |
+| 2 | Self-consistency (n=3) + majority vote   | Base  | 43.2%    | 328.2 min |
+| 3 | Self-consistency (n=3) + heuristic       | Base  | 43.4%    | 326.5 min |
+| 4 | Self-consistency (n=3) + avg. logprob    | Base  | 44.8%    | 327.7 min |
+
+
+The accuracy values and runtimes shown in the table were computed on all 500 samples in the MATH-500 test set using a "cuda" GPU (DGX Spark).
+
+The following codes give instructions on how to run the self-consistency experiments in rows 2-4 (replace `uv run` with `python` if you are not a `uv` user).
+
+**Row 2:**
+
+```bash
+uv run self_consistency_scorer_math500.py \
+    --which_model "base" \
+    --temperature 0.9 \
+    --top_p 0.9 \
+    --num_samples 3 \
+    --dataset_size 500 \
+    --prompt_suffix "\n\nExplain step by step." \
+    --scorer "none"
+```
+
+**Row 3:**
+
+```bash
+uv run self_consistency_scorer_math500.py \
+    --which_model "base" \
+    --temperature 0.9 \
+    --top_p 0.9 \
+    --num_samples 3 \
+    --dataset_size 500 \
+    --prompt_suffix "\n\nExplain step by step." \
+    --scorer "heuristic"
+```
+
+**Row 4:**
+
+```bash
+uv run self_consistency_scorer_math500.py \
+    --which_model "base" \
+    --temperature 0.9 \
+    --top_p 0.9 \
+    --num_samples 3 \
+    --dataset_size 500 \
+    --prompt_suffix "\n\nExplain step by step." \
+    --scorer "logprob"
+```
+
+&nbsp;
+
+## Best-of-N
+
+The [`self_consistency_scorer_math500.py`](self_consistency_scorer_math500.py)  implements the Best-of-N inference-scaling approach.
+
+Best-of-N is similar to self-consistency in that we generate multiple answers. However, instead of selecting the final answer via a majority vote, we score all generated answers using a scoring function.
+
+The [`best_of_n_math500.py`](best_of_n_math500.py) extends the self-consistency with tie-breaking based on the scorers implemented in chapter 5.
+
+
+&nbsp;
+
+<img src="https://sebastianraschka.com/images/reasoning-from-scratch-images/appendix-b/best-of-n.webp" width=600>
+
+&nbsp;
+
+|   | Method                                   | Model | Accuracy | Time      |
+|---|------------------------------------------|-------|----------|-----------|
+| 1 | Baseline with chain-of-thought prompting | Base  | 33.4%    | 129.2 min |
+| 2 | Best-of-N (n=3) + heuristic              | Base  | 40.6%    | 327.7 min |
+| 3 | Best-of-N (n=3) + avg. logprob           | Base  | 43.2%    | 330.2 min |
+
+
+The accuracy values and runtimes shown in the table were computed on all 500 samples in the MATH-500 test set using a "cuda" GPU (DGX Spark).
+
+The following codes give instructions on how to run the self-consistency experiments in rows 2 and 3 (replace `uv run` with `python` if you are not a `uv` user).
+
+**Row 2:**
+
+```bash
+uv run best_of_n_math500.py \
+    --which_model "base" \
+    --temperature 0.9 \
+    --top_p 0.9 \
+    --num_samples 3 \
+    --dataset_size 500 \
+    --prompt_suffix "\n\nExplain step by step."
+    --scoring "heuristic"
+)
+```
+
+**Row 3:**
+
+```bash
+uv run best_of_n_math500.py \
+    --which_model "base" \
+    --temperature 0.9 \
+    --top_p 0.9 \
+    --num_samples 3 \
+    --dataset_size 500 \
+    --prompt_suffix "\n\nExplain step by step."
+    --scoring "logprob"
+)
+```
+s
