@@ -107,6 +107,10 @@ def test_normalize():
         (r"\dfrac{14}{3}", "(14)/(3)"),
         (r"(3)/(4)", "(3)/(4)"),
 
+        # Multiple choice labels
+        ("c. 3", "3"),
+        ("b: 2", "2"),
+
         # Roots (don’t simplify math here but just normalize text)
         (r"\sqrt{2}", "sqrt(2)"),
 

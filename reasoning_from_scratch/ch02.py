@@ -6,13 +6,11 @@ from .qwen3 import KVCache
 import torch
 
 
-
-
 def get_device(enable_tensor_cores=True):
     if torch.cuda.is_available():
         device = torch.device("cuda")
         print("Using NVIDIA CUDA GPU")
-        
+
         if enable_tensor_cores:
             major, minor = map(int, torch.__version__.split(".")[:2])
             if (major, minor) >= (2, 9):

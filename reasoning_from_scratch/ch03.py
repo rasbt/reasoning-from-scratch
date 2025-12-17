@@ -181,6 +181,12 @@ def normalize_text(text):
         return ""
     text = RE_SPECIAL.sub("", text).strip()
 
+    # Strip leading multiple-choice labels
+    # E.g., like "c. 3" -> 3, or "b: 2" -> 2
+    match = re.match(r"^[A-Za-z]\s*[.:]\s*(.+)$", text)
+    if match:
+        text = match.group(1)
+
     # Remove angle-degree markers
     text = re.sub(r"\^\s*\{\s*\\circ\s*\}", "", text)   # ^{\circ}
     text = re.sub(r"\^\s*\\circ", "", text)             # ^\circ
@@ -273,7 +279,8 @@ def sympy_parser(expr):
             # Evaluate during parsing so simple constants simplify (e.g., 2+3 -> 5)
             evaluate=True,
         )
-    except (SympifyError, SyntaxError, TypeError, IndexError, TokenError):
+    except (SympifyError, SyntaxError, TypeError,
+            IndexError, TokenError, ValueError):
         return None
 
 
