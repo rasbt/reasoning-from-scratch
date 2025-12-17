@@ -6,13 +6,13 @@ import argparse
 import json
 from pathlib import Path
 import time
-import requests
 
 import torch
 from collections import Counter
 
 from reasoning_from_scratch.ch02 import get_device
 from reasoning_from_scratch.ch03 import (
+    load_math500_test,
     eta_progress_message,
     render_prompt,
     grade_answer,
@@ -282,24 +282,6 @@ def evaluate_math500_stream(
     return num_correct, num_examples, acc
 
 
-def get_data():
-    local_path = Path("math500_test.json")
-    url = (
-        "https://raw.githubusercontent.com/rasbt/reasoning-from-scratch/"
-        "main/ch03/01_main-chapter-code/math500_test.json"
-    )
-
-    if local_path.exists():
-        with local_path.open("r", encoding="utf-8") as f:
-            math_data = json.load(f)
-    else:
-        r = requests.get(url, timeout=30)
-        r.raise_for_status()
-        math_data = r.json()
-
-    return math_data
-
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -387,7 +369,7 @@ if __name__ == "__main__":
     print("Device:", device)
     dev_name = str(device).replace(":", "-")
 
-    math_data = get_data()
+    math_data = load_math500_test()
 
     if args.which_model == "instruct":
         which_model = "reasoning"

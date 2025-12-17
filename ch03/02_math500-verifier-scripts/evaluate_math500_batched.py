@@ -9,36 +9,18 @@ import argparse
 import json
 import time
 from pathlib import Path
-import requests
 
 import torch
 
 from reasoning_from_scratch.ch02 import get_device
 from reasoning_from_scratch.ch03 import (
+    load_math500_test,
     render_prompt,
     extract_final_candidate,
     grade_answer,
     eta_progress_message,
 )
 from reasoning_from_scratch.qwen3_batched import load_model_and_tokenizer
-
-
-def get_data():
-    local_path = Path("math500_test.json")
-    url = (
-        "https://raw.githubusercontent.com/rasbt/reasoning-from-scratch/"
-        "main/ch03/01_main-chapter-code/math500_test.json"
-    )
-
-    if local_path.exists():
-        with local_path.open("r", encoding="utf-8") as f:
-            math_data = json.load(f)
-    else:
-        r = requests.get(url, timeout=30)
-        r.raise_for_status()
-        math_data = r.json()
-
-    return math_data
 
 
 def evaluate_math500_batched(
@@ -223,7 +205,7 @@ if __name__ == "__main__":
     dev_name = str(device).replace(":", "-")
     print("Batch size:", batch_size)
 
-    math_data = get_data()[:dataset_size]
+    math_data = load_math500_test()[:dataset_size]
     if args.which_model == "instruct":
         which_model = "reasoning"
     else:

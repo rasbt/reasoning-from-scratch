@@ -2,6 +2,7 @@
 # Source for "Build a Reasoning Model (From Scratch)": https://mng.bz/lZ5B
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
+from pathlib import Path
 import json
 import sympy as sp
 import torch
@@ -19,6 +20,15 @@ class DummyTokenizer:
         if isinstance(ids, int):
             ids = [ids]
         return "".join(self._map.get(i, "?") for i in ids)
+
+
+def test_load_math500_test_has_500_entries():
+    repo_root = Path(__file__).resolve().parent.parent
+    local_path = repo_root / "math500_test.json"
+
+    data = ch03.load_math500_test(local_path=local_path, save_copy=False)
+
+    assert len(data) == 500
 
 
 def test_generate_text_stream_concat(monkeypatch):
