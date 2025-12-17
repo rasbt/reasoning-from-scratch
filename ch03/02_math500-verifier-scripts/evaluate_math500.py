@@ -3,35 +3,14 @@
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
 import argparse
-import json
-from pathlib import Path
-import requests
-
 import torch
 
 from reasoning_from_scratch.ch02 import get_device
 from reasoning_from_scratch.ch03 import (
+    load_math500_test,
     evaluate_math500_stream,
     load_model_and_tokenizer
 )
-
-
-def get_data():
-    local_path = Path("math500_test.json")
-    url = (
-        "https://raw.githubusercontent.com/rasbt/reasoning-from-scratch/"
-        "main/ch03/01_main-chapter-code/math500_test.json"
-    )
-
-    if local_path.exists():
-        with local_path.open("r", encoding="utf-8") as f:
-            math_data = json.load(f)
-    else:
-        r = requests.get(url, timeout=30)
-        r.raise_for_status()
-        math_data = r.json()
-
-    return math_data
 
 
 def parse_args():
@@ -91,7 +70,7 @@ if __name__ == "__main__":
     print("Device:", device)
     dev_name = str(device).replace(":", "-")
 
-    math_data = get_data()
+    math_data = load_math500_test()
 
     if args.which_model == "instruct":
         which_model = "reasoning"
