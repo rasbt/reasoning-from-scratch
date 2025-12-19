@@ -89,6 +89,34 @@ def load_model_and_tokenizer(which_model, device, use_compile, local_dir="qwen3"
     return model, tokenizer
 
 
+def load_tokenizer_only(which_model, local_dir="qwen3"):
+    if which_model == "base":
+        download_qwen3_small(
+            kind="base", tokenizer_only=True, out_dir=local_dir
+        )
+
+        tokenizer_path = Path(local_dir) / "tokenizer-base.json"
+        tokenizer = Qwen3Tokenizer(tokenizer_file_path=tokenizer_path)
+
+    elif which_model == "reasoning":
+        download_qwen3_small(
+            kind="reasoning", tokenizer_only=True, out_dir=local_dir
+        )
+
+        tokenizer_path = Path(local_dir) / "tokenizer-reasoning.json"
+        tokenizer = Qwen3Tokenizer(
+            tokenizer_file_path=tokenizer_path,
+            apply_chat_template=True,
+            add_generation_prompt=True,
+            add_thinking=True,
+        )
+
+    else:
+        raise ValueError(f"Invalid choice: which_model={which_model}")
+
+    return tokenizer
+
+
 def generate_text_stream_concat(
     model, tokenizer, prompt, device, max_new_tokens,
     verbose=False,
