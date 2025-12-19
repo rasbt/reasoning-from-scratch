@@ -7,6 +7,7 @@ import json
 import sympy as sp
 import torch
 import reasoning_from_scratch.ch03 as ch03
+from reasoning_from_scratch.qwen3 import Qwen3Tokenizer
 
 
 class DummyTokenizer:
@@ -293,10 +294,13 @@ def test_evaluate_math500_stream(tmp_path, monkeypatch):
         {"problem": "Compute #2", "answer": "B"},
     ]
 
+    repo_root = Path(__file__).resolve().parent.parent
+    tokenizer = Qwen3Tokenizer(tokenizer_file_path=repo_root / "tokenizer-base.json")
+
     out_path = tmp_path / "math500-test.jsonl"
     num_correct, num_examples, acc = ch03.evaluate_math500_stream(
         model=None,
-        tokenizer=None,
+        tokenizer=tokenizer,
         device="cpu",
         math_data=math_data,
         out_path=out_path,
