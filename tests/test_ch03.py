@@ -7,7 +7,6 @@ import json
 import sympy as sp
 import torch
 import reasoning_from_scratch.ch03 as ch03
-from reasoning_from_scratch.qwen3 import Qwen3Tokenizer
 
 
 class DummyTokenizer:
@@ -277,7 +276,7 @@ def test_render_prompt():
         assert got.endswith("Answer:")
 
 
-def test_evaluate_math500_stream(tmp_path, monkeypatch):
+def test_evaluate_math500_stream(tmp_path, monkeypatch, qwen3_weights_path):
 
     outputs = iter([
         "Reasoning...\n\\boxed{A}",
@@ -294,8 +293,10 @@ def test_evaluate_math500_stream(tmp_path, monkeypatch):
         {"problem": "Compute #2", "answer": "B"},
     ]
 
-    repo_root = Path(__file__).resolve().parent.parent
-    tokenizer = Qwen3Tokenizer(tokenizer_file_path=repo_root / "tokenizer-base.json")
+    tokenizer = ch03.load_tokenizer_only(
+        which_model="base",
+        local_dir=qwen3_weights_path,
+    )
 
     out_path = tmp_path / "math500-test.jsonl"
     num_correct, num_examples, acc = ch03.evaluate_math500_stream(
