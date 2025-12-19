@@ -509,7 +509,7 @@ def evaluate_math500_stream(
 
     num_examples = len(math_data)
     num_correct = 0
-    total_len = 0  # Calculates the average reponse length (see exercise 3.2)
+    total_len = 0  # Calculates the average response length (see exercise 3.2)
     start_time = time.time()
 
     with open(out_path, "w", encoding="utf-8") as f:  # Save results for inspection
