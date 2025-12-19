@@ -509,6 +509,7 @@ def evaluate_math500_stream(
 
     num_examples = len(math_data)
     num_correct = 0
+    total_len = 0  # Calculates the average response length (see exercise 3.2)
     start_time = time.time()
 
     with open(out_path, "w", encoding="utf-8") as f:  # Save results for inspection
@@ -519,6 +520,7 @@ def evaluate_math500_stream(
                 max_new_tokens=max_new_tokens,
                 verbose=verbose,
             )
+            total_len += len(tokenizer.encode(gen_text))
 
             extracted = extract_final_candidate(  # 3. Extract and normalize answer
                 gen_text
@@ -559,5 +561,7 @@ def evaluate_math500_stream(
     acc = num_correct / num_examples if num_examples else 0.0
     print(f"\nAccuracy: {acc*100:.1f}% ({num_correct}/{num_examples})")
     print(f"Total time: {seconds_elapsed/60:.1f} min")
+    avg_len = total_len / num_examples
+    print(f"Average response length: {avg_len:.2f} tokens")
     print(f"Logs written to: {out_path}")
     return num_correct, num_examples, acc
