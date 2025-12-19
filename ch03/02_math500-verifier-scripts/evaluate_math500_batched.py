@@ -12,6 +12,10 @@ from pathlib import Path
 
 import torch
 
+from reasoning_from_scratch.qwen3_batched import (
+    Qwen3Model,
+    QWEN_CONFIG_06_B
+)
 from reasoning_from_scratch.ch02 import get_device
 from reasoning_from_scratch.ch03 import (
     load_math500_test,
@@ -19,8 +23,11 @@ from reasoning_from_scratch.ch03 import (
     extract_final_candidate,
     grade_answer,
     eta_progress_message,
+    load_tokenizer_only
 )
-from reasoning_from_scratch.qwen3_batched import load_model_and_tokenizer
+from reasoning_from_scratch.qwen3_batched import (
+    load_model_and_tokenizer,
+)
 
 
 def evaluate_math500_batched(
@@ -161,6 +168,12 @@ def parse_args():
         help="Enable torch.compile for the model.",
     )
     parser.add_argument(
+        "--checkpoint_path",
+        type=str,
+        default=None,
+        help="Optional path to a .pth checkpoint to load model weights from.",
+    )
+    parser.add_argument(
         "--batch_size",
         type=int,
         default=4,
@@ -211,11 +224,22 @@ if __name__ == "__main__":
     else:
         which_model = args.which_model
 
-    model, tokenizer = load_model_and_tokenizer(
-        which_model=which_model,
-        device=device,
-        use_compile=args.compile
-    )
+    if args.checkpoint_path:
+        # To load the saved RL checkpoint files from chapter 6
+        tokenizer = load_tokenizer_only(which_model=which_model)
+        model = Qwen3Model(QWEN_CONFIG_06_B)
+        model.to(device)
+        state_dict = torch.load(args.checkpoint_path, map_location=device)
+        model.load_state_dict(state_dict)
+        if args.compile:
+            torch._dynamo.config.allow_unspec_int_on_nn_module = True
+            model = torch.compile(model)
+    else:
+        model, tokenizer = load_model_and_tokenizer(
+            which_model=which_model,
+            device=device,
+            use_compile=args.compile
+        )
     if args.which_model == "instruct":
         tokenizer.add_thinking = False
 
