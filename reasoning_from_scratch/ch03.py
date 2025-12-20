@@ -308,7 +308,7 @@ def sympy_parser(expr):
             evaluate=True,
         )
     except (SympifyError, SyntaxError, TypeError,
-            IndexError, TokenError, ValueError):
+            IndexError, TokenError, ValueError, RecursionError):
         return None
 
 
