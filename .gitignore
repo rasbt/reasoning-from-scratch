@@ -1,4 +1,6 @@
 # Other temporary files
+checkpoints
+logs
 *.jsonl
 Untitled.ipynb
 qwen3/
@@ -12,12 +14,8 @@ tokenizer-base.json
 .chainlit
 chainlit.md
 math500_test.json
-math500_base-mps.jsonl
-math500_base-cpu.jsonl
-math500_base-cuda.jsonl
-math500_reasoning-mps.jsonl
-math500_reasoning-cpu.jsonl
-math500_reasoning-cuda.jsonl
+math_train.json
+*.jsonl
 
 # Installation artifacts
 uv.lock

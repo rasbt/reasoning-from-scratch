@@ -92,9 +92,9 @@ if __name__ == "__main__":
         # To load the saved RL checkpoint files from chapter 6
         tokenizer = load_tokenizer_only(which_model=which_model)
         model = Qwen3Model(QWEN_CONFIG_06_B)
-        model.to(device)
-        state_dict = torch.load(args.checkpoint_path, map_location=device)
+        state_dict = torch.load(args.checkpoint_path, map_location="cpu")
         model.load_state_dict(state_dict)
+        model.to(device)
         if args.compile:
             torch._dynamo.config.allow_unspec_int_on_nn_module = True
             model = torch.compile(model)
