@@ -56,6 +56,17 @@ uv run rlvr_grpo_original.py \
 --max_new_tokens 512 
 ```
 
+Then, to evaluate the model, run the `evaluate_math500.py` script on the generated checkpoint. For instance,
+
+```bash
+uv run ../../ch03/02_math500-verifier-scripts/evaluate_math500.py \
+--dataset_size 500 \
+--which_model base \
+--checkpoint_path checkpoints/rlvr_grpo_original/qwen3-0.6B-rlvr-grpo-step00050.pth
+```
+
+
+
 **Row 4**
 
 ```bash
