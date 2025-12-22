@@ -6,7 +6,7 @@
 
 - [self_refinement_math500.py](self_refinement_math500.py): standalone script to evaluate models with self-refinement on the MATH-500 dataset
 
-The script impors functionality from the [`reasoning_from_scratch`](../../reasoning_from_scratch) package to avoid code duplication. (See [chapter 2 setup instructions](../../ch02/02_setup-tips/python-instructions.md) for installation details.)
+The script imports functionality from the [`reasoning_from_scratch`](../../reasoning_from_scratch) package to avoid code duplication. (See [chapter 2 setup instructions](../../ch02/02_setup-tips/python-instructions.md) for installation details.)
 
 
 
