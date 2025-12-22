@@ -110,4 +110,4 @@ Note that the original ("vanilla") GRPO method with these settings is not very s
 
 <br>
 
-Note that the original GRPO algorithm can be improved in several ways to stabilize and improve the training, which is the topic of the [next chapter](../ch07).
+Note that the original GRPO algorithm can be improved in several ways to stabilize and improve the training, which is the topic of the [next chapter](../../ch07).
