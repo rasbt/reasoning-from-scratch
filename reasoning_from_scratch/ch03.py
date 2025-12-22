@@ -293,6 +293,10 @@ def normalize_text(text):
 
 
 def sympy_parser(expr):
+    # To avoid crashing on long garbage responses
+    # that some badly trained models (chapter 6) may emit
+    if expr is None or len(expr) > 2000:
+        return None
     try:
         return spp.parse_expr(
             expr,
@@ -308,7 +312,7 @@ def sympy_parser(expr):
             evaluate=True,
         )
     except (SympifyError, SyntaxError, TypeError,
-            IndexError, TokenError, ValueError, RecursionError):
+            IndexError, TokenError, ValueError):
         return None
 
 
