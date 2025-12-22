@@ -145,10 +145,13 @@ def test_sympy_parser():
         # Numeric/symbolic equivalence
         assert sp.simplify(got - expected) == 0, f"{expr!r}: {got!r} != {expected!r}"
 
+    long_expr = "1" * 2001
     failure_cases = [
         "sqrt(",  # unbalanced
         "??",  # invalid tokens
         "2**",  # incomplete operator
+        None,  # guard against missing inputs
+        long_expr,  # guard against overly long inputs
     ]
     for expr in failure_cases:
         assert ch03.sympy_parser(expr) is None, f"expected None for {expr!r}"
