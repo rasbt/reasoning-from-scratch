@@ -41,7 +41,7 @@ jobs:
           --check-links-ignore "https://ai.stanford.edu/~amaas/data/sentiment/" \
           --check-links-ignore "https://x.com/*" \
           --check-links-ignore "https://scholar.google.com/*" \
-          --check-links-ignore "https://en.wikipedia.org/*"
+          --check-links-ignore "https://en.wikipedia.org/*" \
           --check-links-ignore "https?://localhost(:\\d+)?/.*" \
           --check-links-ignore "https?://127[.]0[.]0[.]1(:\\d+)?/.*" \
           --check-links-ignore "https://mng\\.bz/.*"
