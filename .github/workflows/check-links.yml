@@ -26,6 +26,8 @@ jobs:
         curl -LsSf https://astral.sh/uv/install.sh | sh
         uv add pytest-check-links
     - name: Check links
+      env:
+        CHECK_LINKS_TIMEOUT: "10"
       run: |
         source .venv/bin/activate
         pytest --check-links ./ \
@@ -39,4 +41,7 @@ jobs:
           --check-links-ignore "https://ai.stanford.edu/~amaas/data/sentiment/" \
           --check-links-ignore "https://x.com/*" \
           --check-links-ignore "https://scholar.google.com/*" \
-          --check-links-ignore "https://en.wikipedia.org/*"
+          --check-links-ignore "https://en.wikipedia.org/*" \
+          --check-links-ignore "https?://localhost(:\\d+)?/.*" \
+          --check-links-ignore "https?://127[.]0[.]0[.]1(:\\d+)?/.*" \
+          --check-links-ignore "https://mng\\.bz/.*"
