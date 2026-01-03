@@ -43,7 +43,7 @@ def sample_response(
     prompt_ids = torch.tensor(tokenizer.encode(prompt), device=device)
     input_ids = prompt_ids.unsqueeze(0)
 
-    cache = KVCache(n_layers=model.cfg["n_layers"])
+    cache = KVCache(model=model)
     model.reset_kv_cache()
     logits = model(input_ids, cache=cache)[:, -1]
 

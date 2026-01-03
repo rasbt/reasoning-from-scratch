@@ -55,7 +55,6 @@ class Qwen3Model(nn.Module):
         self.cfg = cfg
         self.current_pos = 0  # Track current position in KV cache
 
-        # NEW
         self.max_ctx = max_ctx
         causal = torch.triu(torch.ones(max_ctx, max_ctx, dtype=torch.bool), diagonal=1)
         self.register_buffer("causal_mask", causal, persistent=False)
@@ -483,11 +482,6 @@ class KVCache:
             )
             for _ in range(self.n_layers)
         ]
-
-    def reset(self):
-        # Optional: nothing needed if you reset model.current_pos.
-        # Keep for API symmetry.
-        pass
 
     def append(self, layer_idx, start_pos, k_new, v_new):
         B, H, Tnew, D = k_new.shape
