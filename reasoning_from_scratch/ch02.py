@@ -60,24 +60,28 @@ def generate_text_basic_cache(
     max_new_tokens,
     eos_token_id=None
 ):
-
     input_length = token_ids.shape[1]
     model.eval()
-    cache = KVCache(n_layers=model.cfg["n_layers"])
+
+    cache = KVCache(model)
     model.reset_kv_cache()
+
     out = model(token_ids, cache=cache)[:, -1]
 
+    generated = []
     for _ in range(max_new_tokens):
         next_token = torch.argmax(out, dim=-1, keepdim=True)
 
-        if (eos_token_id is not None
-                and next_token.item() == eos_token_id):
+        if eos_token_id is not None and next_token.item() == eos_token_id:
             break
 
-        token_ids = torch.cat([token_ids, next_token], dim=1)
+        generated.append(next_token)
         out = model(next_token, cache=cache)[:, -1]
 
-    return token_ids[:, input_length:]
+    if len(generated) == 0:
+        return token_ids[:, input_length:input_length]  # Empty tensor of expected shape
+
+    return torch.cat(generated, dim=1)
 
 
 def generate_stats(output_token_ids, tokenizer, start_time,

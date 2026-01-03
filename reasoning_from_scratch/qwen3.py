@@ -28,7 +28,7 @@ QWEN_CONFIG_06_B = {
 
 
 class Qwen3Model(nn.Module):
-    def __init__(self, cfg):
+    def __init__(self, cfg, max_ctx=4096):
         super().__init__()
 
         # Main model parameters
@@ -55,6 +55,11 @@ class Qwen3Model(nn.Module):
         self.cfg = cfg
         self.current_pos = 0  # Track current position in KV cache
 
+        # NEW
+        self.max_ctx = max_ctx
+        causal = torch.triu(torch.ones(max_ctx, max_ctx, dtype=torch.bool), diagonal=1)
+        self.register_buffer("causal_mask", causal, persistent=False)
+
     def forward(self, in_idx, cache=None):
         # Forward pass
         tok_embeds = self.tok_emb(in_idx)
@@ -65,14 +70,10 @@ class Qwen3Model(nn.Module):
             pos_start = self.current_pos
             pos_end = pos_start + num_tokens
             self.current_pos = pos_end
-            mask = torch.triu(
-                torch.ones(pos_end, pos_end, device=x.device, dtype=torch.bool), diagonal=1
-            )[pos_start:pos_end, :pos_end]
+            mask = self.causal_mask[pos_start:pos_end, :pos_end]
         else:
             pos_start = 0  # Not strictly necessary but helps torch.compile
-            mask = torch.triu(
-                torch.ones(num_tokens, num_tokens, device=x.device, dtype=torch.bool), diagonal=1
-            )
+            mask = self.causal_mask[:num_tokens, :num_tokens]
         # Prefill (no cache): mask starts as (num_tokens, num_tokens)
         # Cached decoding: mask starts as (num_tokens, prev_k_number_tokens + num_tokens)
         #
@@ -85,13 +86,12 @@ class Qwen3Model(nn.Module):
         mask = mask[None, None, :, :]  # broadcast mask
 
         for i, block in enumerate(self.trf_blocks):
-            blk_cache = cache.get(i) if cache else None
-            x, new_blk_cache = block(x, mask, self.cos, self.sin,
-                                     start_pos=pos_start,
-                                     cache=blk_cache)
-            if cache is not None:
-                cache.update(i, new_blk_cache)
-
+            x = block(
+                x, mask, self.cos, self.sin,
+                start_pos=pos_start,
+                cache=cache,
+                layer_idx=i,
+            )
         x = self.final_norm(x)
         logits = self.out_head(x.to(self.cfg["dtype"]))
         return logits
@@ -115,20 +115,25 @@ class TransformerBlock(nn.Module):
         self.norm1 = RMSNorm(cfg["emb_dim"], eps=1e-6)
         self.norm2 = RMSNorm(cfg["emb_dim"], eps=1e-6)
 
-    def forward(self, x, mask, cos, sin, start_pos=0, cache=None):
-        # Shortcut connection for attention block
+    def forward(self, x, mask, cos, sin, start_pos=0, cache=None, layer_idx=None):
         shortcut = x
         x = self.norm1(x)
-        x, next_cache = self.att(x, mask, cos, sin, start_pos=start_pos, cache=cache)  # Shape [batch_size, num_tokens, emb_size]
-        x = x + shortcut  # Add the original input back
 
-        # Shortcut connection for feed-forward block
+        x = self.att(
+            x, mask, cos, sin,
+            start_pos=start_pos,
+            cache=cache,
+            layer_idx=layer_idx,
+        )
+
+        x = x + shortcut
+
         shortcut = x
         x = self.norm2(x)
         x = self.ff(x)
-        x = x + shortcut  # Add the original input back
+        x = x + shortcut
 
-        return x, next_cache
+        return x
 
 
 class FeedForward(nn.Module):
@@ -175,7 +180,7 @@ class GroupedQueryAttention(nn.Module):
         else:
             self.q_norm = self.k_norm = None
 
-    def forward(self, x, mask, cos, sin, start_pos=0, cache=None):
+    def forward(self, x, mask, cos, sin, start_pos=0, cache=None, layer_idx=None):
         b, num_tokens, _ = x.shape
 
         # Apply projections
@@ -199,13 +204,20 @@ class GroupedQueryAttention(nn.Module):
         keys_new = apply_rope(keys_new, cos, sin, offset=start_pos)
 
         if cache is not None:
-            prev_k, prev_v = cache
-            keys = torch.cat([prev_k, keys_new], dim=2)
-            values = torch.cat([prev_v, values_new], dim=2)
+            if layer_idx is None:
+                raise RuntimeError("layer_idx must be provided when using KVCache")
+
+            # Write this chunk into the preallocated cache
+            # keys_new/values_new: (b, num_kv_groups, num_tokens, head_dim)
+            end = cache.append(layer_idx, start_pos, keys_new, values_new)
+
+            # Read the cached prefix up to `end`
+            keys, values = cache.get(layer_idx, end)
+
         else:
-            start_pos = 0  # reset RoPE
+            start_pos = 0  # reset RoPE if you want (as before)
             keys, values = keys_new, values_new
-        next_cache = (keys, values)
+
 
         # Expand K and V to match number of heads
         keys = keys.repeat_interleave(self.group_size, dim=1)
@@ -217,7 +229,7 @@ class GroupedQueryAttention(nn.Module):
         attn_weights = torch.softmax(attn_scores / self.head_dim**0.5, dim=-1)
 
         context = (attn_weights @ values).transpose(1, 2).reshape(b, num_tokens, self.d_out)
-        return self.out_proj(context), next_cache
+        return self.out_proj(context)
 
 
 # ==============================================================================
@@ -414,7 +426,7 @@ class Qwen3Tokenizer:
         return s
 
 
-class KVCache:
+class KVCacheSimple:
     def __init__(self, n_layers):
         self.cache = [None] * n_layers
 
@@ -430,6 +442,73 @@ class KVCache:
     def reset(self):
         for i in range(len(self.cache)):
             self.cache[i] = None
+
+import torch
+
+
+class KVCache:
+    def __init__(self, model, batch_size=1):
+        cfg = model.cfg
+        self.max_len = model.max_ctx
+        self.n_layers = int(cfg["n_layers"])
+        self.batch_size = int(batch_size)
+
+        self.n_heads = int(cfg["n_heads"])
+        self.n_kv_heads = int(cfg.get("n_kv_groups", self.n_heads))
+        self.head_dim = int(cfg["head_dim"])
+
+        p = next(model.parameters())
+        self.device = p.device
+        self.dtype = p.dtype
+
+        self.k = [
+            torch.empty(
+                self.batch_size,
+                self.n_kv_heads,
+                self.max_len,
+                self.head_dim,
+                device=self.device,
+                dtype=self.dtype,
+            )
+            for _ in range(self.n_layers)
+        ]
+        self.v = [
+            torch.empty(
+                self.batch_size,
+                self.n_kv_heads,
+                self.max_len,
+                self.head_dim,
+                device=self.device,
+                dtype=self.dtype,
+            )
+            for _ in range(self.n_layers)
+        ]
+
+    def reset(self):
+        # Optional: nothing needed if you reset model.current_pos.
+        # Keep for API symmetry.
+        pass
+
+    def append(self, layer_idx, start_pos, k_new, v_new):
+        B, H, Tnew, D = k_new.shape
+        if (B, H, D) != (self.batch_size, self.n_kv_heads, self.head_dim):
+            raise RuntimeError("KV shape mismatch")
+        if v_new.shape != k_new.shape:
+            raise RuntimeError("K/V shape mismatch")
+
+        end = start_pos + Tnew
+        if end > self.max_len:
+            raise RuntimeError("KV cache overflow")
+
+        self.k[layer_idx][:, :, start_pos:end, :] = k_new
+        self.v[layer_idx][:, :, start_pos:end, :] = v_new
+        return end
+
+    def get(self, layer_idx, end):
+        return (
+            self.k[layer_idx][:, :, :end, :],
+            self.v[layer_idx][:, :, :end, :],
+        )
 
 
 def download_qwen3_small(kind="base", tokenizer_only=False, out_dir="."):

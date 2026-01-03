@@ -39,7 +39,8 @@ def generate_text_basic_stream_cache(
 ):
     # input_length = token_ids.shape[1]
     model.eval()
-    cache = KVCache(n_layers=model.cfg["n_layers"])
+
+    cache = KVCache(model)
     model.reset_kv_cache()
 
     out = model(token_ids, cache=cache)[:, -1]
@@ -50,7 +51,7 @@ def generate_text_basic_stream_cache(
                 and next_token.item() == eos_token_id):
             break
 
-        yield next_token  # New: Yield each token as it's generated
+        yield next_token  # Yield each token as it's generated
         # token_ids = torch.cat([token_ids, next_token], dim=1)
         out = model(next_token, cache=cache)[:, -1]
 
