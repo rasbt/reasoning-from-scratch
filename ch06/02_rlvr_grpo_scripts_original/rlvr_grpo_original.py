@@ -83,7 +83,7 @@ def sequence_logprob(model, token_ids, prompt_len):
 
 
 def reward_rlvr(answer_text, ground_truth):
-    extracted = extract_final_candidate(rlvr_grpo_original_no_kl
+    extracted = extract_final_candidate(
         answer_text, fallback=None  # Require \boxed{}
     )
     if not extracted:
