@@ -3,7 +3,6 @@
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
 import argparse
-import copy
 from pathlib import Path
 
 import torch
@@ -94,7 +93,6 @@ def reward_rlvr(answer_text, ground_truth):
 
 def grpo_step(
     model,
-    ref_model,
     tokenizer,
     example,
     device,
@@ -102,9 +100,8 @@ def grpo_step(
     max_new_tokens=512,
     temperature=0.8,
     top_p=0.9,
-    kl_coeff=0.02,
 ):
-    roll_logps, roll_ref_logps, roll_rewards, samples = [], [], [], []
+    roll_logps, roll_rewards, samples = [], [], []
     prompt = render_prompt(example["problem"])
 
     for _ in range(num_rollouts):
@@ -118,12 +115,9 @@ def grpo_step(
             top_p=top_p,
         )
         logp = sequence_logprob(model, token_ids, prompt_len)
-        with torch.no_grad():
-            ref_logp = sequence_logprob(ref_model, token_ids, prompt_len)
         reward = reward_rlvr(text, example["answer"])
 
         roll_logps.append(logp)
-        roll_ref_logps.append(ref_logp)
         roll_rewards.append(reward)
         samples.append(
             {
@@ -137,16 +131,13 @@ def grpo_step(
     advantages = (rewards - rewards.mean()) / (rewards.std() + 1e-4)
 
     logps = torch.stack(roll_logps)
-    ref_logps = torch.stack(roll_ref_logps).detach()
 
     pg_loss = -(advantages.detach() * logps).mean()
-    kl_loss = kl_coeff * torch.mean(logps - ref_logps)
-    loss = pg_loss + kl_loss
+    loss = pg_loss
 
     return {
         "loss": loss.item(),
         "pg_loss": pg_loss.item(),
-        "kl_loss": kl_loss.item(),
         "rewards": roll_rewards,
         "advantages": advantages.detach().cpu().tolist(),
         "samples": samples,
@@ -167,12 +158,12 @@ def append_sample_logs(step_idx, samples, max_samples=3):
         f.write("\n")
 
 
-def append_step_metrics(step_idx, total_steps, loss, reward_avg, kl_loss):
+def append_step_metrics(step_idx, total_steps, loss, reward_avg):
     METRICS_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     with METRICS_LOG_PATH.open("a", encoding="utf-8") as f:
         f.write(
             f"[Step {step_idx}/{total_steps}] "
-            f"loss={loss:.4f} reward_avg={reward_avg:.3f} kl={kl_loss:.4f}\n"
+            f"loss={loss:.4f} reward_avg={reward_avg:.3f}\n"
         )
 
 
@@ -196,19 +187,16 @@ def save_checkpoint(model, checkpoint_dir, step, suffix=""):
 
 def train_rlvr_grpo(
     model,
-    ref_model,
     tokenizer,
     math_data,
     math500_eval_data,
     device,
     steps=None,
-    num_rollouts=8,
+    num_rollouts=9,
     max_new_tokens=512,
     temperature=0.8,
     top_p=0.9,
-    kl_coeff=0.02,
     lr=1e-5,
-    accum_steps=1,
     checkpoint_every=50,
     checkpoint_dir=CHECKPOINT_DIR,
     eval_on_checkpoint=True,
@@ -218,8 +206,6 @@ def train_rlvr_grpo(
         steps = len(math_data)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
-    optimizer.zero_grad()
-
     current_step = 0
     try:
         for step in range(steps):
@@ -227,7 +213,6 @@ def train_rlvr_grpo(
             example = math_data[step % len(math_data)]
             stats = grpo_step(
                 model=model,
-                ref_model=ref_model,
                 tokenizer=tokenizer,
                 example=example,
                 device=device,
@@ -235,18 +220,16 @@ def train_rlvr_grpo(
                 max_new_tokens=max_new_tokens,
                 temperature=temperature,
                 top_p=top_p,
-                kl_coeff=kl_coeff,
             )
-            (stats["loss_tensor"] / accum_steps).backward()
+            optimizer.zero_grad()
+            stats["loss_tensor"].backward()
 
-            if current_step % accum_steps == 0 or current_step == steps:
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-                optimizer.step()
-                optimizer.zero_grad()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            optimizer.step()
 
             reward_avg = torch.tensor(stats["rewards"]).mean().item()
             append_step_metrics(
-                current_step, steps, stats["loss"], reward_avg, stats["kl_loss"]
+                current_step, steps, stats["loss"], reward_avg
             )
 
             if current_step % 10 == 0:
@@ -291,8 +274,7 @@ def train_rlvr_grpo(
             print(
                 f"[Step {current_step}/{steps}] "
                 f"loss={stats['loss']:.4f} "
-                f"reward_avg={reward_avg:.3f} "
-                f"kl={stats['kl_loss']:.4f}"
+                f"reward_avg={reward_avg:.3f}"
             )
     except KeyboardInterrupt:
         ckpt_path = save_checkpoint(
@@ -319,7 +301,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--num_rollouts",
         type=int,
-        default=9,
+        default=8,
         help="Number of rollouts per step.",
     )
     parser.add_argument(
@@ -339,18 +321,6 @@ if __name__ == "__main__":
         type=float,
         default=0.9,
         help="Top-p sampling cutoff.",
-    )
-    parser.add_argument(
-        "--kl_coeff",
-        type=float,
-        default=0.02,
-        help="KL penalty coefficient.",
-    )
-    parser.add_argument(
-        "--accum_steps",
-        type=int,
-        default=1,
-        help="Number of gradient accumulation steps.",
     )
     parser.add_argument(
         "--checkpoint_path",
@@ -374,14 +344,8 @@ if __name__ == "__main__":
             which_model="base", device=device, use_compile=False
         )
 
-    ref_model = copy.deepcopy(model).to(device)
-    ref_model.eval()
-    for p in ref_model.parameters():
-        p.requires_grad = False
-
     trained = train_rlvr_grpo(
         model=model,
-        ref_model=ref_model,
         tokenizer=tokenizer,
         math_data=math_data,
         math500_eval_data=load_math500_test(),
@@ -391,8 +355,6 @@ if __name__ == "__main__":
         max_new_tokens=args.max_new_tokens,
         temperature=args.temperature,
         top_p=args.top_p,
-        kl_coeff=args.kl_coeff,
-        accum_steps=args.accum_steps,
     )
 
     if torch.cuda.is_available():
