@@ -442,8 +442,6 @@ class KVCacheSimple:
         for i in range(len(self.cache)):
             self.cache[i] = None
 
-import torch
-
 
 class KVCache:
     def __init__(self, model, batch_size=1):
