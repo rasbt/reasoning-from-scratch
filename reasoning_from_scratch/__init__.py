@@ -5,7 +5,7 @@
 """
 Reasoning package used by the "Reasoning Models From Scratch" book.
 
-Copyright (c) 2025, Sebastian Raschka
+Copyright (c) 2025-2026, Sebastian Raschka
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
