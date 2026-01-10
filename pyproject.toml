@@ -59,7 +59,7 @@ extra = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["reasoning_from_scratch"]
+include = ["reasoning_from_scratch", "reasoning_from_scratch.*"]
 
 [tool.uv.sources]
 reasoning = { workspace = true }
