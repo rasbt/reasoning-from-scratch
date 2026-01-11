@@ -11,6 +11,7 @@ import requests
 from sympy import simplify
 from sympy.parsing import sympy_parser as spp
 from sympy.core.sympify import SympifyError
+from sympy.polys.polyerrors import PolynomialError
 from tokenize import TokenError
 import torch
 
@@ -312,7 +313,7 @@ def sympy_parser(expr):
             evaluate=True,
         )
     except (SympifyError, SyntaxError, TypeError,
-            IndexError, TokenError, ValueError):
+            IndexError, TokenError, ValueError, PolynomialError):
         return None
 
 
