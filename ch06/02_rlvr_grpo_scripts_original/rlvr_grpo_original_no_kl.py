@@ -104,6 +104,9 @@ def grpo_step(
     roll_logps, roll_rewards, samples = [], [], []
     prompt = render_prompt(example["problem"])
 
+    was_training = model.training
+    model.eval()
+
     for _ in range(num_rollouts):
         token_ids, prompt_len, text = sample_response(
             model=model,
@@ -126,6 +129,9 @@ def grpo_step(
                 "gen_len": token_ids.numel() - prompt_len,
             }
         )
+
+    if was_training:
+        model.train()
 
     rewards = torch.tensor(roll_rewards, device=device)
     advantages = (rewards - rewards.mean()) / (rewards.std() + 1e-4)
