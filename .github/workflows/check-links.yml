@@ -27,10 +27,12 @@ jobs:
         uv add pytest-check-links
     - name: Check links
       env:
-        CHECK_LINKS_TIMEOUT: "10"
+        CHECK_LINKS_TIMEOUT: "10"  # per‑request timeout
+        CHECK_LINKS_RETRIES: "1"   # number of attempts after the initial failure
+        CHECK_LINKS_RETRY_AFTER_MAX: "10"  # how long to wait before retrying
       run: |
         source .venv/bin/activate
-        pytest --check-links ./ \
+        PYTHONPATH=.github/scripts pytest -p check_links_plugin --check-links ./ \
           --check-links-ignore "https://platform.openai.com/*" \
           --check-links-ignore "https://openai.com/*" \
           --check-links-ignore "https://arena.lmsys.org" \
