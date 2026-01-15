@@ -312,7 +312,7 @@ def sympy_parser(expr):
             # Evaluate during parsing so simple constants simplify (e.g., 2+3 -> 5)
             evaluate=True,
         )
-    except (SympifyError, SyntaxError, TypeError,
+    except (SympifyError, SyntaxError, TypeError, AttributeError,
             IndexError, TokenError, ValueError, PolynomialError):
         return None
 
