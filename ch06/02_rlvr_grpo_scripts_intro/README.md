@@ -5,15 +5,15 @@
 &nbsp;
 ## Bonus materials
 
-- [rlvr_grpo_original.py](rlvr_grpo_original.py): script that implements the original GRPO algorithm to train a reasoning model using reinforcement learning with verifiable rewards (RLVR)
-  - The algorithm was used by [DeepSeek R1](https://arxiv.org/abs/2501.12948) and originally proposed in the [DeepSeekMath](https://arxiv.org/abs/2402.03300) paper
-- [rlvr_grpo_original_no_kl.py](rlvr_grpo_original_no_kl.py): same as above but without the KL divergence term (as recommended in [DAPO](https://arxiv.org/abs/2503.14476), [Dr. GRPO](https://arxiv.org/abs/2503.20783), [Olmo 3](https://arxiv.org/abs/2512.13961), and others)
+- [rlvr_grpo_original_no_kl.py](rlvr_grpo_original_no_kl.py): Script that implements the original GRPO algorithm to train a reasoning model using reinforcement learning with verifiable rewards (RLVR). The algorithm was used by [DeepSeek R1](https://arxiv.org/abs/2501.12948) and originally proposed in the [DeepSeekMath](https://arxiv.org/abs/2402.03300) paper. However, this script omits the KL divergence term (as recommended in [DAPO](https://arxiv.org/abs/2503.14476), [Dr. GRPO](https://arxiv.org/abs/2503.20783), [Olmo 3](https://arxiv.org/abs/2512.13961), and others)
   - The KL divergence term ensures that the trained model doesn't deviate too much from the original model, but it can hurt performance (especially on math tasks)
-  - The same can be achieved by setting `--kl_coeff 0.0` in the `rlvr_grpo_original.py` script, but this script, without the KL term, is simpler and uses less memory
-  - This script implements the same code as in chapter 6; chapter 7 introduces the KL term
+  - The same can be achieved by setting `--kl_coeff 0.0` in the [rlvr_grpo_original.py](../../ch07/02_rlvr_grpo_scripts_advanced/rlvr_grpo_original.py) script in chapter 7, but this script, without the KL term, is simpler
+  - This script implements the same code as in chapter 6; **chapter 7 introduces the KL term**
 
+- [rlvr_grpo_original_no_kl_batched.py](rlvr_grpo_original_no_kl_batched.py): Same as above but supports training in batches. However, note that this increases the memory requirements and may thus require lowering the number of rollouts and rollout lengths. The usage is the same as for the script above, except it adds `--num_batches`.
+- [rlvr_grpo_original_no_kl_batched_fsdp.py](rlvr_grpo_original_no_kl_batched_fsdp.py): Same as above but supports training on multiple GPUs using PyTorch's FSDP. This is the recommended script to train if you have access to multiple GPUs. The usage is the same as for the script above, except it adds `--num_gpus`.
 
-The script imports some functionality from the [`reasoning_from_scratch`](../../reasoning_from_scratch) package to avoid code duplication. (See [chapter 2 setup instructions](../../ch02/02_setup-tips/python-instructions.md) for installation details.) However, in this case, the code also reimplements the core functions from the chapter itself to allow for easier inspection and modification.
+The scripts import some functionality from the [`reasoning_from_scratch`](../../reasoning_from_scratch) package to avoid code duplication. (See [chapter 2 setup instructions](../../ch02/02_setup-tips/python-instructions.md) for installation details.) However, in this case, the code also reimplements the core functions from the chapter itself to allow for easier inspection and modification.
 
 
 
@@ -28,18 +28,18 @@ The script imports some functionality from the [`reasoning_from_scratch`](../../
 
 &nbsp;
 
-|      | Method                    | Step | Max tokens | Num rollouts | MATH-500 Acc | Avg # of tokens |
-| ---- | ------------------------- | ---- | ---------- | ------------ | ------------ | --------------- |
-| 1    | Base (chapter 3)          | -    |            |              | 15.2%        | 78.85           |
-| 2    | Reasoning (chapter 3)     | -    |            |              | 48.2%        | 1369.79         |
-| 3    | GRPO original             | 50   | 512        | 8            | 33.4%        | 910.33          |
-| 4    | GRPO original             | 100  | 512        | 8            | 0.4%         | 1168.05         |
-| 5    | GRPO original but no KL   | 50   | 512        | 8            | 47.4%        | 586.11          |
-| 6    | GRPO original but no KL   | 100  | 512        | 8            | 44.0%        | 555.95          |
-| 7    | GRPO (Olmo 3 mod.)        | 50   | 512        | 8            | 46.4%        | 601.61          |
-| 8    | GRPO (Olmo 3 mod.)        | 100  | 512        | 8            | 45.4%        | 589.51          |
-| 9    | GRPO (DeepSeek V3.2 mod.) | 50   | 512        | 8            | 44.2%        | 618.49          |
-| 10   | GRPO (DeepSeek V3.2 mod.) | 100  | 512        | 8            | 45.2%        | 676.96          |
+|      | Method                                 | Step | Max tokens | Num rollouts | MATH-500 Acc | Avg # of tokens |
+| ---- | -------------------------------------- | ---- | ---------- | ------------ | ------------ | --------------- |
+| 1    | Base (chapter 3)                       | -    |            |              | 15.2%        | 78.85           |
+| 2    | Reasoning (chapter 3)                  | -    |            |              | 48.2%        | 1369.79         |
+| 3    | GRPO original (chapter 7)              | 50   | 512        | 8            | 33.4%        | 910.33          |
+| 4    | GRPO original (chapter 7)              | 100  | 512        | 8            | 0.4%         | 1168.05         |
+| 5    | GRPO original but no KL (this chapter) | 50   | 512        | 8            | 47.4%        | 586.11          |
+| 6    | GRPO original but no KL (this chapter) | 100  | 512        | 8            | 44.0%        | 555.95          |
+| 7    | GRPO Olmo 3 mod. (chapter 7)           | 50   | 512        | 8            | 46.4%        | 601.61          |
+| 8    | GRPO Olmo 3 mod. (chapter 7)           | 100  | 512        | 8            | 45.4%        | 589.51          |
+| 9    | GRPO DeepSeek V3.2 mod. (chapter 7)    | 50   | 512        | 8            | 44.2%        | 618.49          |
+| 10   | GRPO DeepSeek V3.2 mod. (chapter 7)    | 100  | 512        | 8            | 45.2%        | 676.96          |
 
 Checkpoints are saved every 50 steps. If you KeyboardInterrupt a script, it will also save the last step as a checkpoint.
 
@@ -66,7 +66,7 @@ uv run ../../ch03/02_math500-verifier-scripts/evaluate_math500.py \
 **Rows 3 & 4**
 
 ```bash
-uv run rlvr_grpo_original.py \
+uv run ../../ch07/02_rlvr_grpo_scripts_advanced/rlvr_grpo_original.py \
 --num_rollouts 8 \
 --max_new_tokens 512 
 ```
@@ -91,7 +91,7 @@ uv run rlvr_grpo_original_no_kl.py \
 **Rows 7 & 8**
 
 ```bash
-uv run ../../ch06/02_rlvr_grpo_scripts_original/rlvr_grpo_olmo3.py \
+uv run ../../ch07/02_rlvr_grpo_scripts_original/rlvr_grpo_olmo3.py \
 --num_rollouts 8 \
 --max_new_tokens 512 
 ```
@@ -99,7 +99,7 @@ uv run ../../ch06/02_rlvr_grpo_scripts_original/rlvr_grpo_olmo3.py \
 **Rows 9 & 10**
 
 ```bash
-uv run ../../ch06/02_rlvr_grpo_scripts_original/rlvr_grpo_deepseek_v32.py \
+uv run ../../ch07/02_rlvr_grpo_scripts_original/rlvr_grpo_deepseek_v32.py \
 --num_rollouts 8 \
 --max_new_tokens 512 
 ```

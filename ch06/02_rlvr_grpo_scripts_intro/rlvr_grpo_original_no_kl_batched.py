@@ -9,19 +9,21 @@ import torch
 
 from reasoning_from_scratch.ch02 import get_device
 from reasoning_from_scratch.ch03 import (
-    evaluate_math500_stream,
     render_prompt,
     extract_final_candidate,
     grade_answer,
-    load_model_and_tokenizer,
-    load_math500_test,
     load_tokenizer_only,
 )
 from reasoning_from_scratch.ch04 import top_p_filter
 from reasoning_from_scratch.ch06 import (
     load_math_train,
 )
-from reasoning_from_scratch.qwen3 import KVCache, Qwen3Model, QWEN_CONFIG_06_B
+from reasoning_from_scratch.qwen3 import KVCache
+from reasoning_from_scratch.qwen3_batched import (
+    Qwen3Model,
+    QWEN_CONFIG_06_B,
+    load_model_and_tokenizer,
+)
 
 SCRIPT_NAME = Path(__file__).stem
 LOG_PATH = Path(__file__).parent / "logs" / f"{SCRIPT_NAME}_outputs.txt"
@@ -30,46 +32,85 @@ CHECKPOINT_DIR = Path(__file__).parent / "checkpoints" / SCRIPT_NAME
 
 
 @torch.no_grad()
-def sample_response(
+def sample_responses_batched(
     model,
     tokenizer,
     prompt,
     device,
+    batch_size,
     max_new_tokens=512,
     temperature=0.8,
     top_p=0.9,
 ):
-    input_ids = torch.tensor(
-        tokenizer.encode(prompt),
-        device=device
-        )
+    prompts = [prompt] * batch_size
+    tokenized = [tokenizer.encode(p) for p in prompts]
+    max_len = max(len(t) for t in tokenized)
+
+    pad_id = getattr(tokenizer, "pad_token_id", None)
+    left_padded = [
+        ([pad_id] * (max_len - len(t)) + t) if pad_id is not None else t
+        for t in tokenized
+    ]
+    input_ids = torch.tensor(left_padded, device=device, dtype=torch.long)
+    attn_mask = (input_ids != pad_id).to(torch.bool) if pad_id is not None else None
 
     cache = KVCache(n_layers=model.cfg["n_layers"])
-    model.reset_kv_cache()
-    logits = model(input_ids.unsqueeze(0), cache=cache)[:, -1]
+    logits = model(input_ids, cache=cache, attn_mask=attn_mask)[:, -1]
 
-    generated = []
+    eos_id = tokenizer.eos_token_id
+    finished = torch.zeros(batch_size, dtype=torch.bool, device=device)
+
+    generated_steps = []
+    cur_attn = attn_mask
     for _ in range(max_new_tokens):
+        step_logits = logits
         if temperature and temperature != 1.0:
-            logits = logits / temperature
+            step_logits = step_logits / temperature
 
-        probas = torch.softmax(logits, dim=-1)
+        probas = torch.softmax(step_logits, dim=-1)
         probas = top_p_filter(probas, top_p)
         next_token = torch.multinomial(probas.cpu(), num_samples=1).to(device)
 
-        if (
-            tokenizer.eos_token_id is not None
-            and next_token.item() == tokenizer.eos_token_id
-        ):
-            break
-        generated.append(next_token.item())
-        logits = model(next_token, cache=cache)[:, -1]
+        eos_tok = next_token.new_full((batch_size, 1), eos_id)
+        next_token = torch.where(
+            finished.view(batch_size, 1), eos_tok, next_token
+        )
 
-    full_token_ids = torch.cat(
-        [input_ids,
-         torch.tensor(generated, device=device, dtype=input_ids.dtype),]
-    )
-    return full_token_ids, input_ids.numel(), tokenizer.decode(generated)
+        generated_steps.append(next_token)
+
+        finished = finished | (next_token.squeeze(1) == eos_id)
+        if torch.all(finished):
+            break
+
+        if cur_attn is not None:
+            ones = torch.ones(
+                (batch_size, 1), dtype=cur_attn.dtype, device=device
+            )
+            cur_attn = torch.cat([cur_attn, ones], dim=1)
+
+        logits = model(next_token, cache=cache, attn_mask=cur_attn)[:, -1]
+
+    if generated_steps:
+        gen_tokens = torch.cat(generated_steps, dim=1)
+    else:
+        gen_tokens = torch.empty((batch_size, 0), dtype=input_ids.dtype, device=device)
+
+    results = []
+    prompt_lens = [len(t) for t in tokenized]
+    for idx in range(batch_size):
+        row_tokens = gen_tokens[idx]
+        eos_pos = (row_tokens == eos_id).nonzero(as_tuple=True)[0]
+        if len(eos_pos) > 0:
+            row_tokens = row_tokens[: eos_pos[0]]
+
+        prompt_ids = torch.tensor(
+            tokenized[idx], device=device, dtype=input_ids.dtype
+        )
+        full_token_ids = torch.cat([prompt_ids, row_tokens], dim=0)
+        gen_text = tokenizer.decode(row_tokens.tolist())
+        results.append((full_token_ids, prompt_lens[idx], gen_text))
+
+    return results
 
 
 def sequence_logprob(model, token_ids, prompt_len):
@@ -97,6 +138,7 @@ def compute_grpo_loss(
     example,
     device,
     num_rollouts=4,
+    batch_size=None,
     max_new_tokens=512,
     temperature=0.8,
     top_p=0.9,
@@ -107,28 +149,36 @@ def compute_grpo_loss(
     was_training = model.training
     model.eval()
 
-    for _ in range(num_rollouts):
-        token_ids, prompt_len, text = sample_response(
+    if batch_size is None or batch_size <= 0:
+        batch_size = num_rollouts
+
+    remaining = num_rollouts
+    while remaining > 0:
+        current_batch = min(batch_size, remaining)
+        batch = sample_responses_batched(
             model=model,
             tokenizer=tokenizer,
             prompt=prompt,
             device=device,
+            batch_size=current_batch,
             max_new_tokens=max_new_tokens,
             temperature=temperature,
             top_p=top_p,
         )
-        logp = sequence_logprob(model, token_ids, prompt_len)
-        reward = reward_rlvr(text, example["answer"])
+        for token_ids, prompt_len, text in batch:
+            logp = sequence_logprob(model, token_ids, prompt_len)
+            reward = reward_rlvr(text, example["answer"])
 
-        roll_logps.append(logp)
-        roll_rewards.append(reward)
-        samples.append(
-            {
-                "text": text,
-                "reward": reward,
-                "gen_len": token_ids.numel() - prompt_len,
-            }
-        )
+            roll_logps.append(logp)
+            roll_rewards.append(reward)
+            samples.append(
+                {
+                    "text": text,
+                    "reward": reward,
+                    "gen_len": token_ids.numel() - prompt_len,
+                }
+            )
+        remaining -= current_batch
 
     if was_training:
         model.train()
@@ -173,15 +223,6 @@ def append_step_metrics(step_idx, total_steps, loss, reward_avg):
         )
 
 
-def append_eval_metrics(step_idx, acc, correct, total):
-    METRICS_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with METRICS_LOG_PATH.open("a", encoding="utf-8") as f:
-        f.write(
-            f"[Eval step {step_idx}] math500_acc={acc:.4f} "
-            f"({correct}/{total})\n"
-        )
-
-
 def save_checkpoint(model, checkpoint_dir, step, suffix=""):
     checkpoint_dir = Path(checkpoint_dir)
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -195,18 +236,16 @@ def train_rlvr_grpo(
     model,
     tokenizer,
     math_data,
-    math500_eval_data,
     device,
     steps=None,
     num_rollouts=9,
+    batch_size=None,
     max_new_tokens=512,
     temperature=0.8,
     top_p=0.9,
     lr=1e-5,
     checkpoint_every=50,
     checkpoint_dir=CHECKPOINT_DIR,
-    eval_on_checkpoint=False,
-    eval_max_items=20,
 ):
     if steps is None:
         steps = len(math_data)
@@ -223,6 +262,7 @@ def train_rlvr_grpo(
                 example=example,
                 device=device,
                 num_rollouts=num_rollouts,
+                batch_size=batch_size,
                 max_new_tokens=max_new_tokens,
                 temperature=temperature,
                 top_p=top_p,
@@ -248,34 +288,6 @@ def train_rlvr_grpo(
                     step=current_step,
                 )
                 print(f"Saved checkpoint to {ckpt_path}")
-                if eval_on_checkpoint and math500_eval_data:
-                    was_training = model.training
-                    model.eval()
-                    subset = (
-                        math500_eval_data[:eval_max_items]
-                        if eval_max_items
-                        else math500_eval_data
-                    )
-                    out_path = (
-                        Path(checkpoint_dir)
-                        / f"{SCRIPT_NAME}-step{current_step:05d}-math500.jsonl"
-                    )
-                    num_correct, num_examples, acc = evaluate_math500_stream(
-                        model=model,
-                        tokenizer=tokenizer,
-                        device=device,
-                        math_data=subset,
-                        out_path=out_path,
-                        max_new_tokens=max_new_tokens,
-                        verbose=False,
-                    )
-                    append_eval_metrics(current_step, acc, num_correct, num_examples)
-                    print(
-                        f"MATH-500 eval @ step {current_step}: "
-                        f"acc={acc:.3f} ({num_correct}/{num_examples})"
-                    )
-                    if was_training:
-                        model.train()
 
             print(
                 f"[Step {current_step}/{steps}] "
@@ -311,6 +323,12 @@ if __name__ == "__main__":
         help="Number of rollouts per step.",
     )
     parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=None,
+        help="Number of rollouts to generate in a batch (default: num_rollouts).",
+    )
+    parser.add_argument(
         "--max_new_tokens",
         type=int,
         default=512,
@@ -334,11 +352,6 @@ if __name__ == "__main__":
         default=None,
         help="Optional path to a .pth checkpoint to resume training from.",
     )
-    parser.add_argument(
-        "--eval_on_checkpoint",
-        action="store_true",
-        help="Run MATH-500 eval when saving checkpoints.",
-    )
     args = parser.parse_args()
 
     device = get_device()
@@ -359,14 +372,13 @@ if __name__ == "__main__":
         model=model,
         tokenizer=tokenizer,
         math_data=math_data,
-        math500_eval_data=load_math500_test(),
         device=device,
         steps=args.steps,
         num_rollouts=args.num_rollouts,
+        batch_size=args.batch_size,
         max_new_tokens=args.max_new_tokens,
         temperature=args.temperature,
         top_p=args.top_p,
-        eval_on_checkpoint=args.eval_on_checkpoint,
     )
 
     if torch.cuda.is_available():
