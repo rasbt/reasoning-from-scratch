@@ -92,7 +92,7 @@ def reward_rlvr(answer_text, ground_truth):
     return float(correct)
 
 
-def grpo_step(
+def compute_grpo_loss(
     model,
     ref_model,
     tokenizer,
@@ -217,7 +217,7 @@ def train_rlvr_grpo(
     accum_steps=1,
     checkpoint_every=50,
     checkpoint_dir=CHECKPOINT_DIR,
-    eval_on_checkpoint=True,
+    eval_on_checkpoint=False,
     eval_max_items=20,
 ):
     if steps is None:
@@ -231,7 +231,7 @@ def train_rlvr_grpo(
         for step in range(steps):
             current_step = step + 1
             example = math_data[step % len(math_data)]
-            stats = grpo_step(
+            stats = compute_grpo_loss(
                 model=model,
                 ref_model=ref_model,
                 tokenizer=tokenizer,
@@ -364,6 +364,11 @@ if __name__ == "__main__":
         default=None,
         help="Optional path to a .pth checkpoint to resume training from.",
     )
+    parser.add_argument(
+        "--eval_on_checkpoint",
+        action="store_true",
+        help="Run MATH-500 eval when saving checkpoints.",
+    )
     args = parser.parse_args()
 
     device = get_device()
@@ -399,6 +404,7 @@ if __name__ == "__main__":
         top_p=args.top_p,
         kl_coeff=args.kl_coeff,
         accum_steps=args.accum_steps,
+        eval_on_checkpoint=args.eval_on_checkpoint,
     )
 
     if torch.cuda.is_available():
