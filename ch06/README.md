@@ -8,4 +8,4 @@
 &nbsp;
 ## Bonus material
 
-- [02_rlvr_grpo_scripts_original](02_rlvr_grpo_scripts_original): Python scripts that implement the original GRPO algorithm. (Chapter 7 will implement common GRPO modifications to stabilize the training.)
+- [02_rlvr_grpo_scripts_intro](02_rlvr_grpo_scripts_intro): Python scripts that implement the original GRPO algorithm. (Chapter 7 will implement common GRPO modifications to stabilize the training.)
