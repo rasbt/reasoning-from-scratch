@@ -4,6 +4,7 @@
 
 import argparse
 import os
+import time
 from pathlib import Path
 
 import torch
@@ -251,12 +252,13 @@ def append_sample_logs(step_idx, samples, max_samples=3):
         f.write("\n")
 
 
-def append_step_metrics(step_idx, total_steps, loss, reward_avg):
+def append_step_metrics(step_idx, total_steps, loss, reward_avg, tokens_per_sec):
     METRICS_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     with METRICS_LOG_PATH.open("a", encoding="utf-8") as f:
         f.write(
             f"[Step {step_idx}/{total_steps}] "
-            f"loss={loss:.4f} reward_avg={reward_avg:.3f}\n"
+            f"loss={loss:.4f} reward_avg={reward_avg:.3f} "
+            f"tokens_per_sec={tokens_per_sec:.1f}\n"
         )
 
 
@@ -297,6 +299,7 @@ def train_rlvr_grpo(
     current_step = 0
     try:
         for step in range(steps):
+            step_start = time.perf_counter()
             current_step = step + 1
             example = math_data[step % len(math_data)]
             stats = compute_grpo_loss(
@@ -317,9 +320,12 @@ def train_rlvr_grpo(
             optimizer.step()
 
             reward_avg = torch.tensor(stats["rewards"]).mean().item()
+            step_time = time.perf_counter() - step_start
+            step_tokens = sum(sample["gen_len"] for sample in stats["samples"])
+            tokens_per_sec = step_tokens / step_time if step_time > 0 else 0.0
             if is_main:
                 append_step_metrics(
-                    current_step, steps, stats["loss"], reward_avg
+                    current_step, steps, stats["loss"], reward_avg, tokens_per_sec
                 )
 
                 if current_step % 10 == 0:
@@ -339,7 +345,8 @@ def train_rlvr_grpo(
                 print(
                     f"[Step {current_step}/{steps}] "
                     f"loss={stats['loss']:.4f} "
-                    f"reward_avg={reward_avg:.3f}"
+                    f"reward_avg={reward_avg:.3f} "
+                    f"tokens_per_sec={tokens_per_sec:.1f}"
                 )
     except KeyboardInterrupt:
         ckpt_path = save_checkpoint(
