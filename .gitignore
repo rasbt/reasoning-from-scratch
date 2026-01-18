@@ -1,5 +1,6 @@
 # Other temporary files
 checkpoints
+*.pth
 logs
 *.jsonl
 Untitled.ipynb
