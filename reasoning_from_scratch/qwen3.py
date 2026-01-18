@@ -452,6 +452,34 @@ def download_qwen3_small(kind="base", tokenizer_only=False, out_dir="."):
         download_file(primary, out_dir=out_dir, backup_url=backup)
 
 
+def download_qwen3_grpo_checkpoints(
+    grpo_type="no_kl",
+    step="00050",
+    out_dir=".",
+):
+
+    mapper = {"no_kl": "grpo_original_no_kl"}
+    if grpo_type not in mapper.keys():
+        raise ValueError(f"only grpo_type in {mapper.keys()} are supported for now")
+
+    repo = "rasbt/qwen3-from-scratch-grpo-checkpoints"
+    fname = f"qwen3-0.6B-rlvr-grpo-step{step}.pth"
+    primary = f"https://huggingface.co/{repo}/resolve/main/{mapper[grpo_type]}/{fname}"
+
+    backup = None
+    if step == "00050":
+        backup_root = (
+            "https://f001.backblazeb2.com/file/"
+            "reasoning-from-scratch/qwen3-0.6B-checkpoints"
+        )
+        fname = (
+            "grpo_original_no_kl/qwen3-0.6B-rlvr-grpo-step00050.pth"
+        )
+        backup = f"{backup_root}/{fname}"
+
+    download_file(primary, out_dir=out_dir, backup_url=backup)
+
+
 def load_hf_weights_into_qwen(model, param_config, params):
     """
     Only used in Appendix D for loading the other Qwen3 variants.

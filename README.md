@@ -56,7 +56,7 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 | Ch 3: Evaluating Reasoning Models                            | - [ch03_main.ipynb](ch03/01_main-chapter-code/ch03_main.ipynb)<br/>- [ch03_exercise-solutions.ipynb](ch03/01_main-chapter-code/ch03_exercise-solutions.ipynb) |
 | Ch 4: Improving Reasoning with Inference-Time Scaling        | - [ch04_main.ipynb](ch04/01_main-chapter-code/ch04_main.ipynb)<br/>- [ch04_exercise-solutions.ipynb](ch04/01_main-chapter-code/ch04_exercise-solutions.ipynb) |
 | Ch 5: Inference-Time Scaling via Self-Refinement             | - [ch05_main.ipynb](ch05/01_main-chapter-code/ch05_main.ipynb)<br/>- [ch05_exercise-solutions.ipynb](ch05/01_main-chapter-code/ch05_exercise-solutions.ipynb) |
-| Ch 6: Training Reasoning Models with Reinforcement Learning  | TBA                                                          |
+| Ch 6: Training Reasoning Models with Reinforcement Learning  | - [ch06_main.ipynb](ch06/01_main-chapter-code/ch06_main.ipynb)<br/> |
 | Ch 7: Improving Policy Optimization in Reinforcement Learning | TBA                                                          |
 | Ch 8: Distilling Reasoning Models for Efficient Reasoning    | TBA                                                          |
 | Appendix A: References and Further Reading                   | No code                                                      |
@@ -123,9 +123,13 @@ Several folders contain optional materials as a bonus for interested readers:
   - [Run inference and chat with the model](ch02/05_use_model)
 - **Chapter 3: Evaluating LLMs**
   - [MATH-500 Verifier Scripts](ch03/02_math500-verifier-scripts)
-
 - **Chapter 4: Improving Reasoning with Inference-Time Scaling**
-  - [Inference Scaling on MATH-500 ](ch04/02_math500-inference-scaling-scripts)
+  - [Inference Scaling on MATH-500](ch04/02_math500-inference-scaling-scripts) (CoT prompting, self-consistency)
+
+- **Chapter 5: Inference-Time Scaling Via Self-Refinement**
+  - [More Inference Scaling on MATH-500](ch05/02_math500-more-inference-scaling-scripts) (Best-of-N, self-refinement)
+- **Chapter 6: Training Reasoning Models with Reinforcement Learning**
+  - [GRPO scripts](ch06/02_rlvr_grpo_scripts_intro)
 
 - **Appendix F: Common Approaches to LLM Evaluation**
   - [MMLU Evaluation Methods](chF/02_mmlu)
