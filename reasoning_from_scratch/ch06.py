@@ -112,6 +112,7 @@ def compute_grpo_loss(
     temperature=0.8,
     top_p=0.9,
 ):
+    assert num_rollouts >= 2
     roll_logps, roll_rewards, samples = [], [], []
     prompt = render_prompt(example["problem"])
 
