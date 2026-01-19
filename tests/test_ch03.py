@@ -31,6 +31,49 @@ def test_load_math500_test_has_500_entries():
     assert len(data) == 500
 
 
+def test_math500_parser_self_answers():
+    repo_root = Path(__file__).resolve().parent.parent
+    local_path = repo_root / "math500_test.json"
+
+    math_data = ch03.load_math500_test(local_path=local_path, save_copy=False)
+
+    correct = 0
+    for entry in math_data:
+        correct += ch03.grade_answer(entry["answer"], entry["answer"])
+
+    assert correct == 500
+
+
+def test_math500_parser_boxed_answers():
+    repo_root = Path(__file__).resolve().parent.parent
+    local_path = repo_root / "math500_test.json"
+
+    math_data = ch03.load_math500_test(local_path=local_path, save_copy=False)
+
+    correct = 0
+    for entry in math_data:
+        boxed = f"\\boxed{{{entry['answer']}}}"
+        extract = ch03.extract_final_candidate(boxed)
+        correct += ch03.grade_answer(extract, entry["answer"])
+
+    assert correct == 500
+
+
+def test_math500_parser_boxed_constant_mismatch():
+    repo_root = Path(__file__).resolve().parent.parent
+    local_path = repo_root / "math500_test.json"
+
+    math_data = ch03.load_math500_test(local_path=local_path, save_copy=False)
+
+    correct = 0
+    for entry in math_data:
+        boxed = "\\boxed{123}"
+        extract = ch03.extract_final_candidate(boxed)
+        correct += ch03.grade_answer(extract, entry["answer"])
+
+    assert correct == 0
+
+
 def test_generate_text_stream_concat(monkeypatch):
     # Stub the underlying streaming generator to avoid any real compute
     def fake_stream(**kwargs):
