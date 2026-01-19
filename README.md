@@ -56,7 +56,7 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 | Ch 3: Evaluating Reasoning Models                            | - [ch03_main.ipynb](ch03/01_main-chapter-code/ch03_main.ipynb)<br/>- [ch03_exercise-solutions.ipynb](ch03/01_main-chapter-code/ch03_exercise-solutions.ipynb) |
 | Ch 4: Improving Reasoning with Inference-Time Scaling        | - [ch04_main.ipynb](ch04/01_main-chapter-code/ch04_main.ipynb)<br/>- [ch04_exercise-solutions.ipynb](ch04/01_main-chapter-code/ch04_exercise-solutions.ipynb) |
 | Ch 5: Inference-Time Scaling via Self-Refinement             | - [ch05_main.ipynb](ch05/01_main-chapter-code/ch05_main.ipynb)<br/>- [ch05_exercise-solutions.ipynb](ch05/01_main-chapter-code/ch05_exercise-solutions.ipynb) |
-| Ch 6: Training Reasoning Models with Reinforcement Learning  | - [ch06_main.ipynb](ch06/01_main-chapter-code/ch06_main.ipynb)<br/> |
+| Ch 6: Training Reasoning Models with Reinforcement Learning  | - [ch06_main.ipynb](ch06/01_main-chapter-code/ch06_main.ipynb)<br/>- [ch06_exercise-solutions.ipynb](ch06/01_main-chapter-code/ch06_exercise-solutions.ipynb) |
 | Ch 7: Improving Policy Optimization in Reinforcement Learning | TBA                                                          |
 | Ch 8: Distilling Reasoning Models for Efficient Reasoning    | TBA                                                          |
 | Appendix A: References and Further Reading                   | No code                                                      |
