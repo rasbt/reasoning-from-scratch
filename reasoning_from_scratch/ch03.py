@@ -470,12 +470,13 @@ def eta_progress_message(
     label="Progress",
 ):
     progress = f"{label}: {processed}/{total}"
+    pad_width = len(f"{label}: {total}/{total} | ETA: 00h 00m 00s")
     if not show_eta or processed <= 0:
-        return progress
+        return progress.ljust(pad_width)
 
     elapsed = time.time() - start_time
     if elapsed <= 0:
-        return progress
+        return progress.ljust(pad_width)
 
     remaining = max(total - processed, 0)
 
@@ -495,7 +496,8 @@ def eta_progress_message(
     else:
         eta = f"{rem_seconds:02d}s"
 
-    return f"{progress} | ETA: {eta}"
+    message = f"{progress} | ETA: {eta}"
+    return message.ljust(pad_width)
 
 
 def evaluate_math500_stream(
