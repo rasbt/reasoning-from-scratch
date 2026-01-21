@@ -46,12 +46,12 @@ dev = [
     "pytest>=8.3.5",
     "ruff>=0.4.4",
     "pytest-ruff>=0.5",
-    "transformers==4.53.0",
-    "reasoning-from-scratch",
+    "transformers>=4.53.0",
     "twine>=6.1.0",
     "build>=1.2.2.post1",
 ]
 
+[project.optional-dependencies]
 extra = [
     "datasets>=4.1.1",  # Appendix F, MMLU
     "chainlit>=2.8.3",  # Appendix G, Chat UI
