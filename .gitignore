@@ -1,3 +1,7 @@
+# Plotting
+*.pdf
+*.png
+
 # Other temporary files
 checkpoints
 *.pth
@@ -154,6 +158,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+.vscode
 .env
 .venv
 env/

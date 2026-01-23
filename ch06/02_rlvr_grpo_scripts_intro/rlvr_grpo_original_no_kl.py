@@ -27,6 +27,7 @@ from reasoning_from_scratch.qwen3 import KVCache, Qwen3Model, QWEN_CONFIG_06_B
 SCRIPT_NAME = Path(__file__).stem
 LOG_PATH = Path(__file__).parent / "logs" / f"{SCRIPT_NAME}_outputs.txt"
 METRICS_LOG_PATH = Path(__file__).parent / "logs" / f"{SCRIPT_NAME}_metrics.txt"
+CSV_LOG_PATH = Path(__file__).parent / "logs" / f"{SCRIPT_NAME}_metrics.csv"
 CHECKPOINT_DIR = Path(__file__).parent / "checkpoints" / SCRIPT_NAME
 
 
@@ -175,6 +176,17 @@ def append_step_metrics(
             f"loss={loss:.4f} reward_avg={reward_avg:.3f} "
             f"tokens_per_sec={tokens_per_sec:.1f} "
             f"avg_response_len={avg_response_len:.1f}\n"
+        )
+    CSV_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    if not CSV_LOG_PATH.exists():
+        CSV_LOG_PATH.write_text(
+            "step,total_steps,loss,reward_avg,tokens_per_sec,avg_response_len\n",
+            encoding="utf-8",
+        )
+    with CSV_LOG_PATH.open("a", encoding="utf-8") as f:
+        f.write(
+            f"{step_idx},{total_steps},{loss:.6f},{reward_avg:.6f},"
+            f"{tokens_per_sec:.6f},{avg_response_len:.6f}\n"
         )
 
 
@@ -348,6 +360,12 @@ if __name__ == "__main__":
         help="Top-p sampling cutoff.",
     )
     parser.add_argument(
+        "--seed",
+        type=str,
+        default="42",
+        help="Random seed (int) or None to disable seeding.",
+    )
+    parser.add_argument(
         "--checkpoint_path",
         type=str,
         default=None,
@@ -360,6 +378,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    if args.seed is not None and str(args.seed).strip().lower() != "none":
+        torch.manual_seed(int(args.seed))
     device = get_device()
 
     math_data = load_math_train()
