@@ -49,6 +49,8 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 [![Code tests macOS](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-macos.yml/badge.svg)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-macos.yml)
 [![Code tests Windows](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-windows.yml/badge.svg)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-windows.yml)
 
+- [Troubleshooting Guide](./troubleshooting.md)
+
 | Chapter Title                                                | Main Code                                                    |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | Ch 1: Understanding reasoning Models                         | No code                                                      |
@@ -140,6 +142,7 @@ Several folders contain optional materials as a bonus for interested readers:
 &nbsp;
 ## Questions, Feedback, and Contributing to This Repository
 
+For common problems, please see the [Troubleshooting Guide](./troubleshooting.md).
 
 I welcome all sorts of feedback, best shared via the [Manning Discussion Forum](https://livebook.manning.com/forum?product=raschka2&page=1) or [GitHub Discussions](https://github.com/rasbt/reasoning-from-scratch/discussions). Likewise, if you have any questions or just want to bounce ideas off others, please don't hesitate to post these in the forum as well.
 
