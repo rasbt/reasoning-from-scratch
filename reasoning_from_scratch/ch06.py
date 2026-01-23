@@ -241,12 +241,17 @@ def train_rlvr_grpo(
 
             # Stage 7: Optionally collect and print the rewards and losses
             reward_avg = torch.tensor(stats["rewards"]).mean().item()
+            step_tokens = sum(sample["gen_len"] for sample in stats["samples"])
+            avg_response_len = (
+                step_tokens / len(stats["samples"]) if stats["samples"] else 0.0
+            )
 
             # Print step metrics
             print(
                 f"[Step {current_step}/{steps}] "
                 f"loss={stats['loss']:.4f} "
-                f"reward_avg={reward_avg:.3f}"
+                f"reward_avg={reward_avg:.3f} "
+                f"avg_resp_len={avg_response_len:.1f}"
             )
 
             # Sample outputs (every 10 steps) to check if model
