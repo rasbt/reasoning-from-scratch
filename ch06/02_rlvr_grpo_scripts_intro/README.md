@@ -129,3 +129,20 @@ Note that the original ("vanilla") GRPO method with these settings is not very s
 <br>
 
 Note that the original GRPO algorithm can be improved in several ways to stabilize and improve the training, which is the topic of the [next chapter](../../ch07).
+
+
+
+&nbsp;
+## Plotting training runs
+
+The [plot_metrics.py](plot_metrics.py) can be used to plot the CSV-formatted  training runs. A 200-step example run is included in the `logs` folder (the log file was created with default settings except for increasing `--max_new_tokens 2048`):
+
+```bash
+uv run plot_metrics.py \
+--csv logs/rlvr_grpo_original_no_kl_metrics.csv \
+--moving_average 20
+```
+
+(The `--moving_average 20` setting averages over 20% of the past steps for a smoother trend line.)
+
+<img src="https://sebastianraschka.com/images/reasoning-from-scratch-images/ch06/other/plot.webp?1" width="600px">
