@@ -217,7 +217,13 @@ def append_sample_logs(step_idx, samples, max_samples=3):
 
 
 def append_step_metrics(
-    step_idx, total_steps, loss, reward_avg, tokens_per_sec, avg_response_len
+    step_idx,
+    total_steps,
+    loss,
+    reward_avg,
+    tokens_per_sec,
+    avg_response_len,
+    eval_acc=None,
 ):
     METRICS_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     with METRICS_LOG_PATH.open("a", encoding="utf-8") as f:
@@ -230,13 +236,14 @@ def append_step_metrics(
     CSV_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     if not CSV_LOG_PATH.exists():
         CSV_LOG_PATH.write_text(
-            "step,total_steps,loss,reward_avg,tokens_per_sec,avg_response_len\n",
+            "step,total_steps,loss,reward_avg,tokens_per_sec,avg_response_len,eval_acc\n",
             encoding="utf-8",
         )
     with CSV_LOG_PATH.open("a", encoding="utf-8") as f:
+        eval_acc_str = "" if eval_acc is None else f"{eval_acc:.6f}"
         f.write(
             f"{step_idx},{total_steps},{loss:.6f},{reward_avg:.6f},"
-            f"{tokens_per_sec:.6f},{avg_response_len:.6f}\n"
+            f"{tokens_per_sec:.6f},{avg_response_len:.6f},{eval_acc_str}\n"
         )
 
 

@@ -167,7 +167,13 @@ def append_sample_logs(step_idx, samples, max_samples=3):
 
 
 def append_step_metrics(
-    step_idx, total_steps, loss, reward_avg, tokens_per_sec, avg_response_len
+    step_idx,
+    total_steps,
+    loss,
+    reward_avg,
+    tokens_per_sec,
+    avg_response_len,
+    eval_acc=None,
 ):
     METRICS_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     with METRICS_LOG_PATH.open("a", encoding="utf-8") as f:
@@ -180,13 +186,14 @@ def append_step_metrics(
     CSV_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     if not CSV_LOG_PATH.exists():
         CSV_LOG_PATH.write_text(
-            "step,total_steps,loss,reward_avg,tokens_per_sec,avg_response_len\n",
+            "step,total_steps,loss,reward_avg,tokens_per_sec,avg_response_len,eval_acc\n",
             encoding="utf-8",
         )
     with CSV_LOG_PATH.open("a", encoding="utf-8") as f:
+        eval_acc_str = "" if eval_acc is None else f"{eval_acc:.6f}"
         f.write(
             f"{step_idx},{total_steps},{loss:.6f},{reward_avg:.6f},"
-            f"{tokens_per_sec:.6f},{avg_response_len:.6f}\n"
+            f"{tokens_per_sec:.6f},{avg_response_len:.6f},{eval_acc_str}\n"
         )
 
 
@@ -222,8 +229,7 @@ def train_rlvr_grpo(
     lr=1e-5,
     checkpoint_every=50,
     checkpoint_dir=CHECKPOINT_DIR,
-    eval_on_checkpoint=False,
-    eval_max_items=20,
+    eval_max_items=0,
 ):
     if steps is None:
         steps = len(math_data)
@@ -258,18 +264,10 @@ def train_rlvr_grpo(
                 step_tokens / len(stats["samples"]) if stats["samples"] else 0.0
             )
             tokens_per_sec = step_tokens / step_time if step_time > 0 else 0.0
-            append_step_metrics(
-                current_step,
-                steps,
-                stats["loss"],
-                reward_avg,
-                tokens_per_sec,
-                avg_response_len,
-            )
-
             if current_step % 10 == 0:
                 append_sample_logs(current_step, stats["samples"])
 
+            eval_acc = None
             if checkpoint_every and current_step % checkpoint_every == 0:
                 ckpt_path = save_checkpoint(
                     model=model,
@@ -277,7 +275,7 @@ def train_rlvr_grpo(
                     step=current_step,
                 )
                 print(f"Saved checkpoint to {ckpt_path}")
-                if eval_on_checkpoint and math500_eval_data:
+                if eval_max_items and math500_eval_data:
                     was_training = model.training
                     model.eval()
                     subset = (
@@ -298,6 +296,7 @@ def train_rlvr_grpo(
                         max_new_tokens=max_new_tokens,
                         verbose=False,
                     )
+                    eval_acc = acc
                     append_eval_metrics(current_step, acc, num_correct, num_examples)
                     print(
                         f"MATH-500 eval @ step {current_step}: "
@@ -305,6 +304,16 @@ def train_rlvr_grpo(
                     )
                     if was_training:
                         model.train()
+
+            append_step_metrics(
+                current_step,
+                steps,
+                stats["loss"],
+                reward_avg,
+                tokens_per_sec,
+                avg_response_len,
+                eval_acc=eval_acc,
+            )
 
             print(
                 f"[Step {current_step}/{steps}] "
@@ -373,8 +382,12 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--eval_on_checkpoint",
-        action="store_true",
-        help="Run MATH-500 eval when saving checkpoints.",
+        type=int,
+        default=0,
+        help=(
+            "Number of MATH-500 examples to evaluate at checkpoints "
+            "(0 disables)."
+        ),
     )
     args = parser.parse_args()
 
@@ -405,7 +418,7 @@ if __name__ == "__main__":
         max_new_tokens=args.max_new_tokens,
         temperature=args.temperature,
         top_p=args.top_p,
-        eval_on_checkpoint=args.eval_on_checkpoint,
+        eval_max_items=args.eval_on_checkpoint,
     )
 
     if torch.cuda.is_available():
