@@ -9,6 +9,7 @@ from .ch03 import (
 from .ch04 import top_p_filter
 
 import json
+import time
 from pathlib import Path
 
 import requests
@@ -184,6 +185,26 @@ def save_checkpoint(model, checkpoint_dir, step, suffix=""):
     return ckpt_path
 
 
+def append_csv_metrics(
+    csv_log_path,
+    step_idx,
+    total_steps,
+    loss,
+    reward_avg,
+    avg_response_len,
+):
+    if not csv_log_path.exists():
+        csv_log_path.write_text(
+            "step,total_steps,loss,reward_avg,avg_response_len\n",
+            encoding="utf-8",
+        )
+    with csv_log_path.open("a", encoding="utf-8") as f:
+        f.write(
+            f"{step_idx},{total_steps},{loss:.6f},{reward_avg:.6f},"
+            f"{avg_response_len:.6f}\n"
+        )
+
+
 def train_rlvr_grpo(
     model,
     tokenizer,
@@ -197,6 +218,7 @@ def train_rlvr_grpo(
     lr=1e-5,
     checkpoint_every=50,
     checkpoint_dir=".",
+    csv_log_path=None,
 
 ):
     if steps is None:
@@ -207,6 +229,10 @@ def train_rlvr_grpo(
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
     current_step = 0
 
+    if csv_log_path is None:
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        csv_log_path = f"train_rlvr_grpo_metrics_{timestamp}.csv"
+    csv_log_path = Path(csv_log_path)
     try:
         # Stage 2: Iterate over training steps
         for step in range(steps):
@@ -239,11 +265,19 @@ def train_rlvr_grpo(
             # Stage 6: Update model weights using loss gradients
             optimizer.step()
 
-            # Stage 7: Optionally collect and print the rewards and losses
+            # Stage 7: Collect rewards, losses, and response lengths
             reward_avg = torch.tensor(stats["rewards"]).mean().item()
             step_tokens = sum(sample["gen_len"] for sample in stats["samples"])
             avg_response_len = (
                 step_tokens / len(stats["samples"]) if stats["samples"] else 0.0
+            )
+            append_csv_metrics(
+                csv_log_path,
+                current_step,
+                steps,
+                stats["loss"],
+                reward_avg,
+                avg_response_len,
             )
 
             # Print step metrics
