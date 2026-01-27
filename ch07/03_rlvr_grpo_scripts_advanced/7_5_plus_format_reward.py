@@ -4,6 +4,7 @@
 
 import argparse
 import copy
+import time
 from pathlib import Path
 
 import torch
@@ -27,6 +28,7 @@ from reasoning_from_scratch.qwen3 import KVCache, Qwen3Model, QWEN_CONFIG_06_B
 SCRIPT_NAME = Path(__file__).stem
 LOG_PATH = Path(__file__).parent / "logs" / f"{SCRIPT_NAME}_outputs.txt"
 METRICS_LOG_PATH = Path(__file__).parent / "logs" / f"{SCRIPT_NAME}_metrics.txt"
+CSV_LOG_PATH = Path(__file__).parent / "logs" / f"{SCRIPT_NAME}_metrics.csv"
 CHECKPOINT_DIR = Path(__file__).parent / "checkpoints" / SCRIPT_NAME
 
 
@@ -73,6 +75,24 @@ def sample_response(
     return full_token_ids, input_ids.numel(), tokenizer.decode(generated)
 
 
+def sequence_logprob_and_entropy(model, token_ids, prompt_len):
+    logits = model(token_ids.unsqueeze(0)).squeeze(0).float()
+    logprobs = torch.log_softmax(logits, dim=-1)
+
+    targets = token_ids[1:]
+    selected = logprobs[:-1].gather(1, targets.unsqueeze(-1)).squeeze(-1)
+    token_logprobs = selected[prompt_len - 1:]
+    logp = token_logprobs.sum()
+
+    step_logprobs = logprobs[:-1][prompt_len - 1:]
+    if step_logprobs.numel() == 0:
+        entropy = logp.new_tensor(0.0)
+    else:
+        step_probs = step_logprobs.exp()
+        entropy = -(step_probs * step_logprobs).sum(dim=-1).mean()
+    return logp, entropy
+
+
 def sequence_logprob(model, token_ids, prompt_len):
     logits = model(token_ids.unsqueeze(0)).squeeze(0).float()
     logprobs = torch.log_softmax(logits, dim=-1)
@@ -92,6 +112,21 @@ def reward_rlvr(answer_text, ground_truth):
     return float(correct)
 
 
+def reward_with_format_bonus(answer_text, ground_truth, format_coeff=0.1):
+    boxed = extract_final_candidate(answer_text, fallback=None)
+    format_reward = 1.0 if boxed else 0.0
+
+    candidate = boxed or extract_final_candidate(
+        answer_text, fallback="number_then_full"
+    )
+    if not candidate:
+        return format_coeff * format_reward, format_reward
+
+    correct = grade_answer(candidate, ground_truth)
+    reward = float(correct) + format_coeff * format_reward
+    return reward, format_reward
+
+
 def compute_grpo_loss(
     model,
     ref_model,
@@ -103,8 +138,11 @@ def compute_grpo_loss(
     temperature=0.8,
     top_p=0.9,
     kl_coeff=0.02,
+    format_coeff=0.1,
 ):
-    roll_logps, roll_ref_logps, roll_rewards, samples = [], [], [], []
+    if kl_coeff and ref_model is None:
+        raise ValueError("ref_model must be provided when kl_coeff is non-zero.")
+    roll_logps, roll_ref_logps, roll_rewards, roll_format_rewards, roll_entropies, samples = [], [], [], [], [], []
     prompt = render_prompt(example["problem"])
 
     was_training = model.training
@@ -120,18 +158,27 @@ def compute_grpo_loss(
             temperature=temperature,
             top_p=top_p,
         )
-        logp = sequence_logprob(model, token_ids, prompt_len)
-        with torch.no_grad():
-            ref_logp = sequence_logprob(ref_model, token_ids, prompt_len)
-        reward = reward_rlvr(text, example["answer"])
+        logp, entropy = sequence_logprob_and_entropy(model, token_ids, prompt_len)
+        if kl_coeff:
+            with torch.no_grad():
+                ref_logp = sequence_logprob(ref_model, token_ids, prompt_len)
+        else:
+            ref_logp = None
+        reward, format_reward = reward_with_format_bonus(
+            text, example["answer"], format_coeff=format_coeff
+        )
 
         roll_logps.append(logp)
-        roll_ref_logps.append(ref_logp)
+        if kl_coeff:
+            roll_ref_logps.append(ref_logp)
         roll_rewards.append(reward)
+        roll_format_rewards.append(format_reward)
+        roll_entropies.append(entropy.item())
         samples.append(
             {
                 "text": text,
                 "reward": reward,
+                "format_reward": format_reward,
                 "gen_len": token_ids.numel() - prompt_len,
             }
         )
@@ -143,17 +190,27 @@ def compute_grpo_loss(
     advantages = (rewards - rewards.mean()) / (rewards.std() + 1e-4)
 
     logps = torch.stack(roll_logps)
-    ref_logps = torch.stack(roll_ref_logps).detach()
+    if kl_coeff:
+        ref_logps = torch.stack(roll_ref_logps).detach()
 
     pg_loss = -(advantages.detach() * logps).mean()
-    kl_loss = kl_coeff * torch.mean(logps - ref_logps)
+    if kl_coeff:
+        kl_loss = kl_coeff * torch.mean(logps - ref_logps)
+        policy_ratio = torch.exp(logps - ref_logps)
+        policy_ratio_mean = policy_ratio.mean()
+    else:
+        kl_loss = torch.tensor(0.0, device=logps.device)
+        policy_ratio_mean = None
     loss = pg_loss + kl_loss
 
     return {
         "loss": loss.item(),
         "pg_loss": pg_loss.item(),
         "kl_loss": kl_loss.item(),
+        "policy_ratio": None if policy_ratio_mean is None else policy_ratio_mean.item(),
         "rewards": roll_rewards,
+        "format_rewards": roll_format_rewards,
+        "entropies": roll_entropies,
         "advantages": advantages.detach().cpu().tolist(),
         "samples": samples,
         "loss_tensor": loss,
@@ -173,12 +230,51 @@ def append_sample_logs(step_idx, samples, max_samples=3):
         f.write("\n")
 
 
-def append_step_metrics(step_idx, total_steps, loss, reward_avg, kl_loss):
+def append_step_metrics(
+    step_idx,
+    total_steps,
+    loss,
+    kl_loss,
+    policy_ratio,
+    reward_avg,
+    format_reward_avg,
+    tokens_per_sec,
+    avg_response_len,
+    adv_avg,
+    advantage_std,
+    entropy_avg,
+    eval_acc=None,
+):
     METRICS_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    policy_ratio_str = (
+        "" if policy_ratio is None else f" policy_ratio={policy_ratio:.2f}"
+    )
     with METRICS_LOG_PATH.open("a", encoding="utf-8") as f:
         f.write(
             f"[Step {step_idx}/{total_steps}] "
-            f"loss={loss:.4f} reward_avg={reward_avg:.3f} kl={kl_loss:.4f}\n"
+            f"loss={loss:.2f} reward_avg={reward_avg:.3f} "
+            f"format_reward_avg={format_reward_avg:.3f} "
+            f"kl={kl_loss:.2f} "
+            f"tokens_per_sec={tokens_per_sec:.1f} "
+            f"avg_response_len={avg_response_len:.1f}"
+            f" adv_avg={adv_avg:.2f}"
+            f" adv_std={advantage_std:.2f}"
+            f" entropy_avg={entropy_avg:.2f}"
+            f"{policy_ratio_str}\n"
+        )
+    CSV_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    if not CSV_LOG_PATH.exists():
+        CSV_LOG_PATH.write_text(
+            "step,total_steps,loss,kl_loss,policy_ratio,reward_avg,format_reward_avg,tokens_per_sec,avg_response_len,adv_avg,advantage_std,entropy_avg,eval_acc\n",
+            encoding="utf-8",
+        )
+    with CSV_LOG_PATH.open("a", encoding="utf-8") as f:
+        eval_acc_str = "" if eval_acc is None else f"{eval_acc:.6f}"
+        policy_ratio_str = "" if policy_ratio is None else f"{policy_ratio:.6f}"
+        f.write(
+            f"{step_idx},{total_steps},{loss:.6f},{kl_loss:.6f},{policy_ratio_str},{reward_avg:.6f},{format_reward_avg:.6f},"
+            f"{tokens_per_sec:.6f},{avg_response_len:.6f},"
+            f"{adv_avg:.6f},{advantage_std:.6f},{entropy_avg:.6f},{eval_acc_str}\n"
         )
 
 
@@ -186,7 +282,7 @@ def append_eval_metrics(step_idx, acc, correct, total):
     METRICS_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     with METRICS_LOG_PATH.open("a", encoding="utf-8") as f:
         f.write(
-            f"[Eval step {step_idx}] math500_acc={acc:.4f} "
+            f"[Eval step {step_idx}] math500_acc={acc:.2f} "
             f"({correct}/{total})\n"
         )
 
@@ -208,27 +304,25 @@ def train_rlvr_grpo(
     math500_eval_data,
     device,
     steps=None,
-    num_rollouts=8,
+    num_rollouts=9,
     max_new_tokens=512,
     temperature=0.8,
     top_p=0.9,
     kl_coeff=0.02,
+    format_coeff=0.1,
     lr=1e-5,
-    accum_steps=1,
     checkpoint_every=50,
     checkpoint_dir=CHECKPOINT_DIR,
-    eval_on_checkpoint=False,
-    eval_max_items=20,
+    eval_max_items=0,
 ):
     if steps is None:
         steps = len(math_data)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
-    optimizer.zero_grad()
-
     current_step = 0
     try:
         for step in range(steps):
+            step_start = time.perf_counter()
             current_step = step + 1
             example = math_data[step % len(math_data)]
             stats = compute_grpo_loss(
@@ -242,22 +336,31 @@ def train_rlvr_grpo(
                 temperature=temperature,
                 top_p=top_p,
                 kl_coeff=kl_coeff,
+                format_coeff=format_coeff,
             )
-            (stats["loss_tensor"] / accum_steps).backward()
+            optimizer.zero_grad()
+            stats["loss_tensor"].backward()
 
-            if current_step % accum_steps == 0 or current_step == steps:
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-                optimizer.step()
-                optimizer.zero_grad()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            optimizer.step()
 
             reward_avg = torch.tensor(stats["rewards"]).mean().item()
-            append_step_metrics(
-                current_step, steps, stats["loss"], reward_avg, stats["kl_loss"]
+            format_reward_avg = torch.tensor(stats["format_rewards"]).mean().item()
+            entropy_avg = torch.tensor(stats["entropies"]).mean().item()
+            advantage_tensor = torch.tensor(stats["advantages"])
+            adv_avg = advantage_tensor.mean().item()
+            advantage_std = advantage_tensor.std().item()
+            policy_ratio = stats.get("policy_ratio")
+            step_time = time.perf_counter() - step_start
+            step_tokens = sum(sample["gen_len"] for sample in stats["samples"])
+            avg_response_len = (
+                step_tokens / len(stats["samples"]) if stats["samples"] else 0.0
             )
-
+            tokens_per_sec = step_tokens / step_time if step_time > 0 else 0.0
             if current_step % 10 == 0:
                 append_sample_logs(current_step, stats["samples"])
 
+            eval_acc = None
             if checkpoint_every and current_step % checkpoint_every == 0:
                 ckpt_path = save_checkpoint(
                     model=model,
@@ -265,7 +368,7 @@ def train_rlvr_grpo(
                     step=current_step,
                 )
                 print(f"Saved checkpoint to {ckpt_path}")
-                if eval_on_checkpoint and math500_eval_data:
+                if eval_max_items and math500_eval_data:
                     was_training = model.training
                     model.eval()
                     subset = (
@@ -286,6 +389,7 @@ def train_rlvr_grpo(
                         max_new_tokens=max_new_tokens,
                         verbose=False,
                     )
+                    eval_acc = acc
                     append_eval_metrics(current_step, acc, num_correct, num_examples)
                     print(
                         f"MATH-500 eval @ step {current_step}: "
@@ -294,11 +398,37 @@ def train_rlvr_grpo(
                     if was_training:
                         model.train()
 
+            append_step_metrics(
+                current_step,
+                steps,
+                stats["loss"],
+                stats["kl_loss"],
+                policy_ratio,
+                reward_avg,
+                format_reward_avg,
+                tokens_per_sec,
+                avg_response_len,
+                adv_avg=adv_avg,
+                advantage_std=advantage_std,
+                entropy_avg=entropy_avg,
+                eval_acc=eval_acc,
+            )
+
+            policy_ratio_str = (
+                "" if policy_ratio is None else f"policy_ratio={policy_ratio:.2f} "
+            )
             print(
                 f"[Step {current_step}/{steps}] "
-                f"loss={stats['loss']:.4f} "
+                f"loss={stats['loss']:.2f} "
+                f"kl={stats['kl_loss']:.2f} "
                 f"reward_avg={reward_avg:.3f} "
-                f"kl={stats['kl_loss']:.4f}"
+                f"format_reward_avg={format_reward_avg:.3f} "
+                f"tok/sec={tokens_per_sec:.1f} "
+                f"avg_resp_len={avg_response_len:.1f} "
+                f"adv_avg={adv_avg:.2f} "
+                f"adv_std={advantage_std:.2f} "
+                f"entropy_avg={entropy_avg:.2f} "
+                f"{policy_ratio_str}"
             )
     except KeyboardInterrupt:
         ckpt_path = save_checkpoint(
@@ -325,7 +455,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--num_rollouts",
         type=int,
-        default=9,
+        default=8,
         help="Number of rollouts per step.",
     )
     parser.add_argument(
@@ -353,10 +483,16 @@ if __name__ == "__main__":
         help="KL penalty coefficient.",
     )
     parser.add_argument(
-        "--accum_steps",
-        type=int,
-        default=1,
-        help="Number of gradient accumulation steps.",
+        "--format_coeff",
+        type=float,
+        default=0.1,
+        help="Format bonus coefficient for boxed answers.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=str,
+        default="42",
+        help="Random seed (int) or None to disable seeding.",
     )
     parser.add_argument(
         "--checkpoint_path",
@@ -366,29 +502,38 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--eval_on_checkpoint",
-        action="store_true",
-        help="Run MATH-500 eval when saving checkpoints.",
+        type=int,
+        default=0,
+        help=(
+            "Number of MATH-500 examples to evaluate at checkpoints "
+            "(0 disables)."
+        ),
     )
     args = parser.parse_args()
 
+    if args.seed is not None and str(args.seed).strip().lower() != "none":
+        torch.manual_seed(int(args.seed))
     device = get_device()
 
     math_data = load_math_train()
     if args.checkpoint_path:
-        tokenizer = load_tokenizer_only(which_model="base")
+        tokenizer = load_tokenizer_only(which_model="reasoning")
         model = Qwen3Model(QWEN_CONFIG_06_B)
         state_dict = torch.load(args.checkpoint_path, map_location="cpu")
         model.load_state_dict(state_dict)
         model.to(device)
     else:
         model, tokenizer = load_model_and_tokenizer(
-            which_model="base", device=device, use_compile=False
+            which_model="reasoning", device=device, use_compile=False
         )
 
-    ref_model = copy.deepcopy(model).to(device)
-    ref_model.eval()
-    for p in ref_model.parameters():
-        p.requires_grad = False
+    if args.kl_coeff:
+        ref_model = copy.deepcopy(model).to(device)
+        ref_model.eval()
+        for p in ref_model.parameters():
+            p.requires_grad = False
+    else:
+        ref_model = None
 
     trained = train_rlvr_grpo(
         model=model,
@@ -403,8 +548,8 @@ if __name__ == "__main__":
         temperature=args.temperature,
         top_p=args.top_p,
         kl_coeff=args.kl_coeff,
-        accum_steps=args.accum_steps,
-        eval_on_checkpoint=args.eval_on_checkpoint,
+        format_coeff=args.format_coeff,
+        eval_max_items=args.eval_on_checkpoint,
     )
 
     if torch.cuda.is_available():
