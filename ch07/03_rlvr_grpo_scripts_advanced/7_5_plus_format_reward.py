@@ -81,16 +81,22 @@ def sequence_logprob_and_entropy(model, token_ids, prompt_len):
 
     targets = token_ids[1:]
     selected = logprobs[:-1].gather(1, targets.unsqueeze(-1)).squeeze(-1)
-    token_logprobs = selected[prompt_len - 1:]
-    logp = token_logprobs.sum()
 
-    step_logprobs = logprobs[:-1][prompt_len - 1:]
-    if step_logprobs.numel() == 0:
-        entropy = logp.new_tensor(0.0)
+    # Log-prob of the generated answer tokens (sum over answer steps)
+    selected_answer_logprobs = selected[prompt_len - 1:]
+    logp_all_steps = torch.sum(selected_answer_logprobs)
+
+    # Entropy over the full vocab distribution at each answer step
+    all_answer_logprobs = logprobs[:-1][prompt_len - 1:]
+    if all_answer_logprobs.numel() == 0:  # Safeguard if the model immediately emits EOS token
+        entropy_all_steps = logp_all_steps.new_tensor(0.0)
     else:
-        step_probs = step_logprobs.exp()
-        entropy = -(step_probs * step_logprobs).sum(dim=-1).mean()
-    return logp, entropy
+        all_answer_probs = torch.exp(all_answer_logprobs)
+        plogp = all_answer_probs * all_answer_logprobs    # elementwise p * log p
+        step_entropy = -torch.sum(plogp, dim=-1)          # sum over vocab -> entropy per step
+        entropy_all_steps = torch.mean(step_entropy)      # average over answer steps
+
+    return logp_all_steps, entropy_all_steps
 
 
 def sequence_logprob(model, token_ids, prompt_len):
@@ -127,7 +133,7 @@ def reward_with_format_bonus(answer_text, ground_truth, format_coeff=0.1):
     return reward, format_reward
 
 
-def compute_grpo_loss(
+def compute_grpo_loss_plus_kl(
     model,
     ref_model,
     tokenizer,
@@ -241,7 +247,7 @@ def append_step_metrics(
     tokens_per_sec,
     avg_response_len,
     adv_avg,
-    advantage_std,
+    adv_std,
     entropy_avg,
     eval_acc=None,
 ):
@@ -258,14 +264,14 @@ def append_step_metrics(
             f"tokens_per_sec={tokens_per_sec:.1f} "
             f"avg_response_len={avg_response_len:.1f}"
             f" adv_avg={adv_avg:.2f}"
-            f" adv_std={advantage_std:.2f}"
+            f" adv_std={adv_std:.2f}"
             f" entropy_avg={entropy_avg:.2f}"
             f"{policy_ratio_str}\n"
         )
     CSV_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     if not CSV_LOG_PATH.exists():
         CSV_LOG_PATH.write_text(
-            "step,total_steps,loss,kl_loss,policy_ratio,reward_avg,format_reward_avg,tokens_per_sec,avg_response_len,adv_avg,advantage_std,entropy_avg,eval_acc\n",
+            "step,total_steps,loss,kl_loss,policy_ratio,reward_avg,format_reward_avg,tokens_per_sec,avg_response_len,adv_avg,adv_std,entropy_avg,eval_acc\n",
             encoding="utf-8",
         )
     with CSV_LOG_PATH.open("a", encoding="utf-8") as f:
@@ -274,7 +280,7 @@ def append_step_metrics(
         f.write(
             f"{step_idx},{total_steps},{loss:.6f},{kl_loss:.6f},{policy_ratio_str},{reward_avg:.6f},{format_reward_avg:.6f},"
             f"{tokens_per_sec:.6f},{avg_response_len:.6f},"
-            f"{adv_avg:.6f},{advantage_std:.6f},{entropy_avg:.6f},{eval_acc_str}\n"
+            f"{adv_avg:.6f},{adv_std:.6f},{entropy_avg:.6f},{eval_acc_str}\n"
         )
 
 
@@ -325,7 +331,7 @@ def train_rlvr_grpo(
             step_start = time.perf_counter()
             current_step = step + 1
             example = math_data[step % len(math_data)]
-            stats = compute_grpo_loss(
+            stats = compute_grpo_loss_plus_kl(
                 model=model,
                 ref_model=ref_model,
                 tokenizer=tokenizer,
@@ -349,7 +355,7 @@ def train_rlvr_grpo(
             entropy_avg = torch.tensor(stats["entropies"]).mean().item()
             advantage_tensor = torch.tensor(stats["advantages"])
             adv_avg = advantage_tensor.mean().item()
-            advantage_std = advantage_tensor.std().item()
+            adv_std = advantage_tensor.std().item()
             policy_ratio = stats.get("policy_ratio")
             step_time = time.perf_counter() - step_start
             step_tokens = sum(sample["gen_len"] for sample in stats["samples"])
@@ -409,7 +415,7 @@ def train_rlvr_grpo(
                 tokens_per_sec,
                 avg_response_len,
                 adv_avg=adv_avg,
-                advantage_std=advantage_std,
+                adv_std=adv_std,
                 entropy_avg=entropy_avg,
                 eval_acc=eval_acc,
             )
@@ -426,7 +432,7 @@ def train_rlvr_grpo(
                 f"tok/sec={tokens_per_sec:.1f} "
                 f"avg_resp_len={avg_response_len:.1f} "
                 f"adv_avg={adv_avg:.2f} "
-                f"adv_std={advantage_std:.2f} "
+                f"adv_std={adv_std:.2f} "
                 f"entropy_avg={entropy_avg:.2f} "
                 f"{policy_ratio_str}"
             )
