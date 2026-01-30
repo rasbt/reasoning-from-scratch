@@ -155,24 +155,27 @@ def evaluate_math500_stream(
                     best = None  # NEW2
                     best_score = float("-inf")  # NEW2
                     for cand in results["majority_winners"]:  # NEW2
-                        idx = results["groups"][cand][0]  # NEW2
-                        candidate_full = results["full_answers"][idx]  # NEW2
-                        if scoring == "heuristic":  # NEW2
-                            score = heuristic_score(candidate_full, prompt=prompt)  # NEW2
-                        elif scoring == "logprob":  # NEW2
-                            score = avg_logprob_answer(  # NEW2
-                                model=model,  # NEW2
-                                tokenizer=tokenizer,  # NEW2
-                                prompt=prompt,  # NEW2
-                                answer=candidate_full,  # NEW2
-                                device=device,  # NEW2
-                            )  # NEW2
-                        else:  # NEW2
-                            score = 0.0  # NEW2
-                        if score > best_score:  # NEW2
-                            best_score = score  # NEW2
+                        scores = []  # NEW2
+                        for idx in results["groups"][cand]:  # NEW2
+                            candidate_full = results["full_answers"][idx]  # NEW2
+                            if scoring == "heuristic":  # NEW2
+                                score = heuristic_score(candidate_full, prompt=prompt)  # NEW2
+                            elif scoring == "logprob":  # NEW2
+                                score = avg_logprob_answer(  # NEW2
+                                    model=model,  # NEW2
+                                    tokenizer=tokenizer,  # NEW2
+                                    prompt=prompt,  # NEW2
+                                    answer=candidate_full,  # NEW2
+                                    device=device,  # NEW2
+                                )  # NEW2
+                            else:  # NEW2
+                                score = 0.0  # NEW2
+                            scores.append(float(score))  # NEW2
+                        cand_score = max(scores)  # NEW2
+                        if cand_score > best_score:  # NEW2
+                            best_score = cand_score  # NEW2
                             best = cand  # NEW2
-                    extracted = best if best is not None else results["majority_winners"][0]  # NEW2
+                    extracted = best  # NEW2
             else:  # NEW2
                 extracted = results["final_answer"]  # NEW2
 
