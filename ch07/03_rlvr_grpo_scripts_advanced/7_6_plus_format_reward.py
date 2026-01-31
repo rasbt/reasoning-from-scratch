@@ -135,6 +135,7 @@ def reward_with_format_bonus(answer_text, ground_truth, format_coeff=0.1):
 
 def compute_grpo_loss_plus_kl(
     model,
+    old_model,
     ref_model,
     tokenizer,
     example,
@@ -143,20 +144,25 @@ def compute_grpo_loss_plus_kl(
     max_new_tokens=512,
     temperature=0.8,
     top_p=0.9,
+    clip_eps=10.0,
     kl_coeff=0.02,
     format_coeff=0.1,
 ):
     if kl_coeff and ref_model is None:
         raise ValueError("ref_model must be provided when kl_coeff is non-zero.")
-    roll_logps, roll_ref_logps, roll_rewards, roll_format_rewards, roll_entropies, samples = [], [], [], [], [], []
+    if old_model is None:
+        old_model = model
+    roll_old_logps, roll_ref_logps, roll_rewards, roll_format_rewards, roll_entropies, samples = [], [], [], [], [], []
+    roll_token_ids, roll_prompt_lens = [], []
     prompt = render_prompt(example["problem"])
 
     was_training = model.training
     model.eval()
+    old_model.eval()
 
     for _ in range(num_rollouts):
         token_ids, prompt_len, text = sample_response(
-            model=model,
+            model=old_model,
             tokenizer=tokenizer,
             prompt=prompt,
             device=device,
@@ -164,22 +170,24 @@ def compute_grpo_loss_plus_kl(
             temperature=temperature,
             top_p=top_p,
         )
-        logp, entropy = sequence_logprob_and_entropy(model, token_ids, prompt_len)
-        if kl_coeff:
-            with torch.no_grad():
+        with torch.no_grad():
+            old_logp, entropy = sequence_logprob_and_entropy(old_model, token_ids, prompt_len)
+            if kl_coeff:
                 ref_logp = sequence_logprob(ref_model, token_ids, prompt_len)
-        else:
-            ref_logp = None
+            else:
+                ref_logp = None
         reward, format_reward = reward_with_format_bonus(
             text, example["answer"], format_coeff=format_coeff
         )
 
-        roll_logps.append(logp)
+        roll_old_logps.append(old_logp)
         if kl_coeff:
             roll_ref_logps.append(ref_logp)
         roll_rewards.append(reward)
         roll_format_rewards.append(format_reward)
         roll_entropies.append(entropy.item())
+        roll_token_ids.append(token_ids)
+        roll_prompt_lens.append(prompt_len)
         samples.append(
             {
                 "text": text,
@@ -194,26 +202,40 @@ def compute_grpo_loss_plus_kl(
 
     rewards = torch.tensor(roll_rewards, device=device)
     advantages = (rewards - rewards.mean()) / (rewards.std() + 1e-4)
+    adv = advantages.detach()
 
-    logps = torch.stack(roll_logps)
+    new_logps = []
+    for token_ids, prompt_len in zip(roll_token_ids, roll_prompt_lens):
+        new_logp = sequence_logprob(model, token_ids, prompt_len)
+        new_logps.append(new_logp)
+    new_logps = torch.stack(new_logps)
+
+    old_logps = torch.stack(roll_old_logps).detach()
+    log_ratio = new_logps - old_logps
+    ratio = torch.exp(log_ratio)
+    clipped_ratio = torch.clamp(ratio, 1.0 - clip_eps, 1.0 + clip_eps)
+
+    unclipped = ratio * adv
+    clipped = clipped_ratio * adv
+    obj = torch.where(
+        adv >= 0,
+        torch.minimum(unclipped, clipped),
+        torch.maximum(unclipped, clipped),
+    )
+
+    pg_loss = -obj.mean()
     if kl_coeff:
         ref_logps = torch.stack(roll_ref_logps).detach()
-
-    pg_loss = -(advantages.detach() * logps).mean()
-    if kl_coeff:
-        kl_loss = kl_coeff * torch.mean(logps - ref_logps)
-        policy_ratio = torch.exp(logps - ref_logps)
-        policy_ratio_mean = policy_ratio.mean()
+        kl_loss = kl_coeff * torch.mean(new_logps - ref_logps)
     else:
-        kl_loss = torch.tensor(0.0, device=logps.device)
-        policy_ratio_mean = None
+        kl_loss = torch.tensor(0.0, device=new_logps.device)
     loss = pg_loss + kl_loss
 
     return {
         "loss": loss.item(),
         "pg_loss": pg_loss.item(),
         "kl_loss": kl_loss.item(),
-        "policy_ratio": None if policy_ratio_mean is None else policy_ratio_mean.item(),
+        "policy_ratio": ratio.mean().item(),
         "rewards": roll_rewards,
         "format_rewards": roll_format_rewards,
         "entropies": roll_entropies,
@@ -314,6 +336,8 @@ def train_rlvr_grpo(
     max_new_tokens=512,
     temperature=0.8,
     top_p=0.9,
+    clip_eps=10.0,
+    inner_epochs=2,
     kl_coeff=0.02,
     format_coeff=0.1,
     lr=1e-5,
@@ -331,24 +355,33 @@ def train_rlvr_grpo(
             step_start = time.perf_counter()
             current_step = step + 1
             example = math_data[step % len(math_data)]
-            stats = compute_grpo_loss_plus_kl(
-                model=model,
-                ref_model=ref_model,
-                tokenizer=tokenizer,
-                example=example,
-                device=device,
-                num_rollouts=num_rollouts,
-                max_new_tokens=max_new_tokens,
-                temperature=temperature,
-                top_p=top_p,
-                kl_coeff=kl_coeff,
-                format_coeff=format_coeff,
-            )
-            optimizer.zero_grad()
-            stats["loss_tensor"].backward()
+            old_model = copy.deepcopy(model).to(device)
+            old_model.eval()
+            for p in old_model.parameters():
+                p.requires_grad = False
+            stats = None
 
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            optimizer.step()
+            for _ in range(inner_epochs):
+                stats = compute_grpo_loss_plus_kl(
+                    model=model,
+                    old_model=old_model,
+                    ref_model=ref_model,
+                    tokenizer=tokenizer,
+                    example=example,
+                    device=device,
+                    num_rollouts=num_rollouts,
+                    max_new_tokens=max_new_tokens,
+                    temperature=temperature,
+                    top_p=top_p,
+                    clip_eps=clip_eps,
+                    kl_coeff=kl_coeff,
+                    format_coeff=format_coeff,
+                )
+                optimizer.zero_grad()
+                stats["loss_tensor"].backward()
+
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+                optimizer.step()
 
             reward_avg = torch.tensor(stats["rewards"]).mean().item()
             format_reward_avg = torch.tensor(stats["format_rewards"]).mean().item()
@@ -483,6 +516,18 @@ if __name__ == "__main__":
         help="Top-p sampling cutoff.",
     )
     parser.add_argument(
+        "--clip_eps",
+        type=float,
+        default=10.0,
+        help="GRPO/PPO clip range epsilon (DeepSeek uses 10).",
+    )
+    parser.add_argument(
+        "--inner_epochs",
+        type=int,
+        default=2,
+        help="Number of inner update iterations per step.",
+    )
+    parser.add_argument(
         "--kl_coeff",
         type=float,
         default=0.02,
@@ -553,6 +598,8 @@ if __name__ == "__main__":
         max_new_tokens=args.max_new_tokens,
         temperature=args.temperature,
         top_p=args.top_p,
+        clip_eps=args.clip_eps,
+        inner_epochs=args.inner_epochs,
         kl_coeff=args.kl_coeff,
         format_coeff=args.format_coeff,
         eval_max_items=args.eval_on_checkpoint,

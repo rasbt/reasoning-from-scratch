@@ -75,7 +75,9 @@ def sample_response(
     return full_token_ids, input_ids.numel(), tokenizer.decode(generated)
 
 
-def sequence_logprob_and_entropy(model, token_ids, prompt_len, return_entropy=False):
+# Renamed from sequence_logprob_and_entropy to reflect token-level log-probs (DAPO)
+# entropy now optional for logging.
+def answer_token_logprobs(model, token_ids, prompt_len, return_entropy=False):
     logits = model(token_ids.unsqueeze(0)).squeeze(0).float()
     logprobs = torch.log_softmax(logits, dim=-1)
 
@@ -84,23 +86,20 @@ def sequence_logprob_and_entropy(model, token_ids, prompt_len, return_entropy=Fa
 
     # Log-prob of the generated answer tokens (sum over answer steps)
     selected_answer_logprobs = selected[prompt_len - 1:]
-    logp_all_steps = torch.sum(selected_answer_logprobs)
-
     if not return_entropy:
-        return logp_all_steps
+        return selected_answer_logprobs
 
     # Entropy over the full vocab distribution at each answer step
     all_answer_logprobs = logprobs[:-1][prompt_len - 1:]
     if all_answer_logprobs.numel() == 0:  # Safeguard if the model immediately emits EOS token
-        entropy_all_steps = logp_all_steps.new_tensor(0.0)
+        entropy_all_steps = logprobs.new_tensor(0.0)
     else:
         all_answer_probs = torch.exp(all_answer_logprobs)
         plogp = all_answer_probs * all_answer_logprobs    # elementwise p * log p
         step_entropy = -torch.sum(plogp, dim=-1)          # sum over vocab -> entropy per step
         entropy_all_steps = torch.mean(step_entropy)      # average over answer steps
 
-    return logp_all_steps, entropy_all_steps
-
+    return selected_answer_logprobs, entropy_all_steps
 
 
 def reward_rlvr(answer_text, ground_truth):
@@ -124,8 +123,9 @@ def compute_grpo_loss_plus_kl(
     max_new_tokens=512,
     temperature=0.8,
     top_p=0.9,
-    clip_eps=10.0,
-    kl_coeff=0.02,
+    clip_eps_low=0.2,
+    clip_eps_high=10.0,
+    kl_coeff=0.0,
 ):
     if kl_coeff and ref_model is None:
         raise ValueError("ref_model must be provided when kl_coeff is non-zero.")
@@ -150,11 +150,11 @@ def compute_grpo_loss_plus_kl(
             top_p=top_p,
         )
         with torch.no_grad():
-            old_logp, entropy = sequence_logprob_and_entropy(
+            old_logp, entropy = answer_token_logprobs(
                 old_model, token_ids, prompt_len, return_entropy=True
             )
             if kl_coeff:
-                ref_logp = sequence_logprob_and_entropy(ref_model, token_ids, prompt_len)
+                ref_logp = answer_token_logprobs(ref_model, token_ids, prompt_len).sum()
             else:
                 ref_logp = None
         reward = reward_rlvr(text, example["answer"])
@@ -178,30 +178,49 @@ def compute_grpo_loss_plus_kl(
         model.train()
 
     rewards = torch.tensor(roll_rewards, device=device)
-    advantages = (rewards - rewards.mean()) / (rewards.std() + 1e-4)
+    advantages = rewards - rewards.mean()  # (7) No standard deviation normalization (Dr. GRPO)
+    zero_grad = rewards.max().item() == rewards.min().item()  # (1) Zero gradient signal filtering (DAPO)
     adv = advantages.detach()
 
-    new_logps = []
-    for token_ids, prompt_len in zip(roll_token_ids, roll_prompt_lens):
-        new_logp = sequence_logprob_and_entropy(model, token_ids, prompt_len)
-        new_logps.append(new_logp)
-    new_logps = torch.stack(new_logps)
+    obj_terms = []
+    ratio_terms = []
+    new_logps_sum = []
+    for idx, (token_ids, prompt_len) in enumerate(zip(roll_token_ids, roll_prompt_lens)):
+        # (3) Token-level loss (DAPO)
+        new_logp = answer_token_logprobs(model, token_ids, prompt_len)
+        old_logp = roll_old_logps[idx]
+        log_ratio = new_logp - old_logp
+        ratio = torch.exp(log_ratio)
+        ratio = torch.clamp(ratio, max=1.0 + clip_eps_high)  # (6) Truncated importance sampling (Yao et al., 2025)
+        clipped_ratio = torch.clamp(
+            ratio, 1.0 - clip_eps_low, 1.0 + clip_eps_high
+        )  # (5) Clip higher (DAPO)
 
-    old_logps = torch.stack(roll_old_logps).detach()
-    log_ratio = new_logps - old_logps
-    ratio = torch.exp(log_ratio)
-    clipped_ratio = torch.clamp(ratio, 1.0 - clip_eps, 1.0 + clip_eps)
+        adv_i = adv[idx]
+        unclipped = ratio * adv_i
+        clipped = clipped_ratio * adv_i
+        token_obj = torch.where(
+            adv_i >= 0,
+            torch.minimum(unclipped, clipped),
+            torch.maximum(unclipped, clipped),
+        )
+        new_logps_sum.append(new_logp.sum())
+        if token_obj.numel() > 0:
+            obj_terms.append(token_obj)
+            ratio_terms.append(ratio)
 
-    unclipped = ratio * adv
-    clipped = clipped_ratio * adv
-    obj = torch.where(
-        adv >= 0,
-        torch.minimum(unclipped, clipped),
-        torch.maximum(unclipped, clipped),
-    )
+    if obj_terms:
+        obj = torch.cat(obj_terms).mean()
+        policy_ratio = torch.cat(ratio_terms).mean().item()
+    else:
+        obj = advantages.new_tensor(0.0)
+        policy_ratio = 1.0
+    new_logps = torch.stack(new_logps_sum) if new_logps_sum else advantages.new_zeros(0)
+    if not obj_terms:
+        zero_grad = True
 
     pg_loss = -obj.mean()
-    if kl_coeff:
+    if kl_coeff and new_logps.numel() > 0:
         ref_logps = torch.stack(roll_ref_logps).detach()
         kl_loss = kl_coeff * torch.mean(new_logps - ref_logps)
     else:
@@ -212,12 +231,13 @@ def compute_grpo_loss_plus_kl(
         "loss": loss.item(),
         "pg_loss": pg_loss.item(),
         "kl_loss": kl_loss.item(),
-        "policy_ratio": ratio.mean().item(),
+        "policy_ratio": policy_ratio,
         "rewards": roll_rewards,
         "entropies": roll_entropies,
         "advantages": advantages.detach().cpu().tolist(),
         "samples": samples,
         "loss_tensor": loss,
+        "zero_grad": zero_grad,
     }
 
 
@@ -310,13 +330,16 @@ def train_rlvr_grpo(
     max_new_tokens=512,
     temperature=0.8,
     top_p=0.9,
-    clip_eps=10.0,
+    clip_eps_low=0.2,
+    clip_eps_high=10.0,
     inner_epochs=2,
-    kl_coeff=0.02,
+    kl_coeff=0.0,  # (4) No KL loss (DAPO, Dr. GRPO)
     lr=1e-5,
     checkpoint_every=50,
     checkpoint_dir=CHECKPOINT_DIR,
     eval_max_items=0,
+    active_sampling=True,
+    max_active_sampling_tries=8,
 ):
     if steps is None:
         steps = len(math_data)
@@ -327,7 +350,6 @@ def train_rlvr_grpo(
         for step in range(steps):
             step_start = time.perf_counter()
             current_step = step + 1
-            example = math_data[step % len(math_data)]
             old_model = copy.deepcopy(model).to(device)
             old_model.eval()
             for p in old_model.parameters():
@@ -335,20 +357,27 @@ def train_rlvr_grpo(
             stats = None
 
             for _ in range(inner_epochs):
-                stats = compute_grpo_loss_plus_kl(
-                    model=model,
-                    old_model=old_model,
-                    ref_model=ref_model,
-                    tokenizer=tokenizer,
-                    example=example,
-                    device=device,
-                    num_rollouts=num_rollouts,
-                    max_new_tokens=max_new_tokens,
-                    temperature=temperature,
-                    top_p=top_p,
-                    clip_eps=clip_eps,
-                    kl_coeff=kl_coeff,
-                )
+                for attempt in range(max_active_sampling_tries):
+                    example = math_data[(step + attempt) % len(math_data)]
+                    stats = compute_grpo_loss_plus_kl(
+                        model=model,
+                        old_model=old_model,
+                        ref_model=ref_model,
+                        tokenizer=tokenizer,
+                        example=example,
+                        device=device,
+                        num_rollouts=num_rollouts,
+                        max_new_tokens=max_new_tokens,
+                        temperature=temperature,
+                        top_p=top_p,
+                        clip_eps_low=clip_eps_low,
+                        clip_eps_high=clip_eps_high,
+                        kl_coeff=kl_coeff,
+                    )
+                    if not (active_sampling and stats["zero_grad"]):  # (2) Active sampling (DAPO)
+                        break
+                if stats is None or stats["zero_grad"]:
+                    continue
                 optimizer.zero_grad()
                 stats["loss_tensor"].backward()
 
@@ -485,10 +514,16 @@ if __name__ == "__main__":
         help="Top-p sampling cutoff.",
     )
     parser.add_argument(
-        "--clip_eps",
+        "--clip_eps_low",
+        type=float,
+        default=0.2,
+        help="Lower PPO clip epsilon (DAPO).",
+    )
+    parser.add_argument(
+        "--clip_eps_high",
         type=float,
         default=10.0,
-        help="GRPO/PPO clip range epsilon (DeepSeek uses 10).",
+        help="Upper PPO clip epsilon (DAPO clip-higher).",
     )
     parser.add_argument(
         "--inner_epochs",
@@ -499,8 +534,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--kl_coeff",
         type=float,
-        default=0.02,
-        help="KL penalty coefficient.",
+        default=0.0,
+        help="KL penalty coefficient (default disabled).",
     )
     parser.add_argument(
         "--seed",
@@ -561,7 +596,8 @@ if __name__ == "__main__":
         max_new_tokens=args.max_new_tokens,
         temperature=args.temperature,
         top_p=args.top_p,
-        clip_eps=args.clip_eps,
+        clip_eps_low=args.clip_eps_low,
+        clip_eps_high=args.clip_eps_high,
         inner_epochs=args.inner_epochs,
         kl_coeff=args.kl_coeff,
         eval_max_items=args.eval_on_checkpoint,
