@@ -102,7 +102,6 @@ def sequence_logprob_and_entropy(model, token_ids, prompt_len, return_entropy=Fa
     return logp_all_steps, entropy_all_steps
 
 
-
 def reward_rlvr(answer_text, ground_truth):
     extracted = extract_final_candidate(
         answer_text, fallback=None  # Require \boxed{}
@@ -125,7 +124,7 @@ def compute_grpo_loss_plus_kl(
     temperature=0.8,
     top_p=0.9,
     clip_eps=10.0,
-    kl_coeff=0.02,
+    kl_coeff=0.001,
 ):
     if kl_coeff and ref_model is None:
         raise ValueError("ref_model must be provided when kl_coeff is non-zero.")
@@ -312,7 +311,7 @@ def train_rlvr_grpo(
     top_p=0.9,
     clip_eps=10.0,
     inner_epochs=2,
-    kl_coeff=0.02,
+    kl_coeff=0.001,
     lr=1e-5,
     checkpoint_every=50,
     checkpoint_dir=CHECKPOINT_DIR,
@@ -499,7 +498,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--kl_coeff",
         type=float,
-        default=0.02,
+        default=0.001,
         help="KL penalty coefficient.",
     )
     parser.add_argument(

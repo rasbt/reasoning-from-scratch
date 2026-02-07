@@ -6,6 +6,7 @@
 checkpoints
 *.pth
 *.csv
+*.txt
 logs
 *.jsonl
 Untitled.ipynb
