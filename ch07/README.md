@@ -8,4 +8,4 @@
 &nbsp;
 ## Bonus material
 
-- [02_rlvr_grpo_scripts_advanced](02_rlvr_grpo_scripts_advanced): Python scripts that implement modified versions of the original GRPO algorithm from the previous chapter to stabilize the training.
+- `02_rlvr_grpo_scripts_advanced`: Python scripts that implement modified versions of the original GRPO algorithm from the previous chapter to stabilize the training.
