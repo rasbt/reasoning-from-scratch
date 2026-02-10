@@ -289,8 +289,8 @@ def parse_args():
     parser.add_argument(
         "--prompt_suffix",
         type=str,
-        default="/n/nExplain step by step.",
-        help="Adds a chain-of-thought prompt (default: '/n/nExplain step by step.')",
+        default="\n\nExplain step by step.",
+        help="Adds a chain-of-thought prompt (default: '\n\nExplain step by step.')",
     )
     parser.add_argument(
         "--seed",
