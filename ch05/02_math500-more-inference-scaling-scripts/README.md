@@ -272,7 +272,7 @@ uv run self_consistency_scorer_math500.py \
     --num_samples 3 \
     --dataset_size 500 \
     --prompt_suffix "\n\nExplain step by step." \
-    --scorer "none"
+    --scoring "none"
 ```
 
 **Row 3:**
@@ -285,7 +285,7 @@ uv run self_consistency_scorer_math500.py \
     --num_samples 3 \
     --dataset_size 500 \
     --prompt_suffix "\n\nExplain step by step." \
-    --scorer "heuristic"
+    --scoring "heuristic"
 ```
 
 **Row 4:**
@@ -298,7 +298,7 @@ uv run self_consistency_scorer_math500.py \
     --num_samples 3 \
     --dataset_size 500 \
     --prompt_suffix "\n\nExplain step by step." \
-    --scorer "logprob"
+    --scoring "logprob"
 ```
 
 &nbsp;

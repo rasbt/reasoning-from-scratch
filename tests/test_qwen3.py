@@ -91,10 +91,10 @@ def test_rope():
 
     # Generate reference RoPE via HF
     class RoPEConfig:
-        rope_type = "qwen3"
         factor = 1.0
         dim: int = head_dim
         rope_theta = 1_000_000
+        rope_parameters = {"rope_type": "default", "rope_theta": rope_theta}
         max_position_embeddings: int = 8192
         hidden_size = head_dim * num_heads
         num_attention_heads = num_heads
@@ -180,6 +180,7 @@ def test_tokenizer_equivalence():
                         tokenize=True,
                         add_generation_prompt=states[0],
                         enable_thinking=states[1],
+                        return_dict=False,
                     )
                 else:
                     input_token_ids_ref = input_token_ids
