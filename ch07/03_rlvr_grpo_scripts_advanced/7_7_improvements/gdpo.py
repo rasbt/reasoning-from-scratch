@@ -202,7 +202,7 @@ def compute_grpo_loss_plus_kl(
     if was_training:
         model.train()
 
-    rewards = torch.tensor(roll_rewards, device=device)
+    # rewards = torch.tensor(roll_rewards, device=device)
     rewards_correct = torch.tensor(roll_correct_rewards, device=device)
     rewards_format = torch.tensor(roll_format_rewards, device=device)
 
