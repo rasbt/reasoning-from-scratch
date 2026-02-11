@@ -31,23 +31,6 @@ METRICS_LOG_PATH = Path(__file__).parent / "logs" / f"{SCRIPT_NAME}_metrics.txt"
 CSV_LOG_PATH = Path(__file__).parent / "logs" / f"{SCRIPT_NAME}_metrics.csv"
 CHECKPOINT_DIR = Path(__file__).parent / "checkpoints" / SCRIPT_NAME
 
-THINK_TOKEN_ID = 151667
-END_THINK_TOKEN_ID = 151668
-
-
-# The alternative prompt below peforms worse in practice
-"""
-def render_prompt_with_think_tokens(prompt):
-    template = (
-        "You are a helpful math assistant.\n"
-        "When solving the problem, first write your reasoning inside <think> and </think> tags.\n"
-        "Then write the final result on a new line in the exact format:\n"
-        "\\boxed{ANSWER}\n\n"
-        f"Question:\n{prompt}\n\nAnswer:"
-    )
-    return template
-"""
-
 
 @torch.no_grad()
 def sample_response(
@@ -58,6 +41,7 @@ def sample_response(
     max_new_tokens=512,
     temperature=0.8,
     top_p=0.9,
+    top_k=0,
 ):
     input_ids = torch.tensor(
         tokenizer.encode(prompt),
@@ -69,12 +53,27 @@ def sample_response(
     logits = model(input_ids.unsqueeze(0), cache=cache)[:, -1]
 
     generated = []
+    keep_masks = []
     for _ in range(max_new_tokens):
         if temperature and temperature != 1.0:
             logits = logits / temperature
 
         probas = torch.softmax(logits, dim=-1)
         probas = top_p_filter(probas, top_p)
+        if top_k and top_k > 0:
+            top_k = min(top_k, probas.numel())
+            topk_vals, topk_idx = torch.topk(probas, top_k)
+            mask = torch.zeros_like(probas, dtype=torch.bool)
+            mask.scatter_(0, topk_idx, True)
+            probas = probas * mask
+        # (11) Keep sampling mask for top-p (DeepSeek V3.2)
+
+        mask = probas > 0
+        probas_sum = probas.sum()
+        if probas_sum.item() > 0:
+            probas = probas / probas_sum
+        else:
+            mask = torch.ones_like(probas, dtype=torch.bool)
         next_token = torch.multinomial(probas.cpu(), num_samples=1).to(device)
 
         if (
@@ -83,46 +82,56 @@ def sample_response(
         ):
             break
         generated.append(next_token.item())
+        keep_masks.append(mask.detach().cpu())
         logits = model(next_token, cache=cache)[:, -1]
 
     full_token_ids = torch.cat(
         [input_ids,
          torch.tensor(generated, device=device, dtype=input_ids.dtype),]
     )
-    return full_token_ids, input_ids.numel(), tokenizer.decode(generated)
+    return full_token_ids, input_ids.numel(), tokenizer.decode(generated), keep_masks
 
 
-def sequence_logprob_and_entropy(model, token_ids, prompt_len):
+def apply_keep_sampling_mask(logits, keep_masks, prompt_len):
+    if not keep_masks:
+        return logits
+    logits = logits.clone()
+    start = prompt_len - 1
+    for i, mask in enumerate(keep_masks):
+        step_idx = start + i
+        if step_idx >= logits.shape[0] - 1:
+            break
+        step_mask = mask.to(logits.device)
+        if step_mask.dim() == 2 and step_mask.size(0) == 1:
+            step_mask = step_mask.squeeze(0)
+        # (11) Keep sampling mask: enforce sampled action subspace during training
+        logits[step_idx].masked_fill_(~step_mask, float("-inf"))
+    return logits
+
+
+def sequence_logprob_and_entropy(model, token_ids, prompt_len, keep_masks=None, return_entropy=False):
     logits = model(token_ids.unsqueeze(0)).squeeze(0).float()
+    if keep_masks:
+        # (11) Keep sampling mask for log-prob evaluation
+        logits = apply_keep_sampling_mask(logits, keep_masks, prompt_len)
     logprobs = torch.log_softmax(logits, dim=-1)
 
     targets = token_ids[1:]
     selected = logprobs[:-1].gather(1, targets.unsqueeze(-1)).squeeze(-1)
-
-    # Log-prob of the generated answer tokens (sum over answer steps)
     selected_answer_logprobs = selected[prompt_len - 1:]
     logp_all_steps = torch.sum(selected_answer_logprobs)
+    if not return_entropy:
+        return logp_all_steps
 
-    # Entropy over the full vocab distribution at each answer step
     all_answer_logprobs = logprobs[:-1][prompt_len - 1:]
     if all_answer_logprobs.numel() == 0:  # Safeguard if the model immediately emits EOS token
         entropy_all_steps = logp_all_steps.new_tensor(0.0)
     else:
         all_answer_probs = torch.exp(all_answer_logprobs)
-        plogp = all_answer_probs * all_answer_logprobs    # elementwise p * log p
-        step_entropy = -torch.sum(plogp, dim=-1)          # sum over vocab -> entropy per step
-        entropy_all_steps = torch.mean(step_entropy)      # average over answer steps
-
+        plogp = all_answer_probs * all_answer_logprobs
+        step_entropy = -torch.sum(plogp, dim=-1)
+        entropy_all_steps = torch.mean(step_entropy)
     return logp_all_steps, entropy_all_steps
-
-
-def sequence_logprob(model, token_ids, prompt_len):
-    logits = model(token_ids.unsqueeze(0)).squeeze(0).float()
-    logprobs = torch.log_softmax(logits, dim=-1)
-
-    targets = token_ids[1:]
-    selected = logprobs[:-1].gather(1, targets.unsqueeze(-1)).squeeze(-1)
-    return selected[prompt_len - 1:].sum()
 
 
 def reward_rlvr(answer_text, ground_truth):
@@ -135,15 +144,7 @@ def reward_rlvr(answer_text, ground_truth):
     return float(correct)
 
 
-def reward_format(token_ids, prompt_len):
-    try:
-        gen = token_ids[prompt_len:].tolist()
-        return float(gen.index(THINK_TOKEN_ID) < gen.index(END_THINK_TOKEN_ID))
-    except ValueError:
-        return 0.0
-
-
-def compute_grpo_loss_plus_format_reward(
+def compute_grpo_loss_plus_kl(
     model,
     old_model,
     ref_model,
@@ -154,17 +155,17 @@ def compute_grpo_loss_plus_format_reward(
     max_new_tokens=512,
     temperature=0.8,
     top_p=0.9,
+    top_k=0,
     clip_eps=10.0,
     kl_coeff=0.02,
-    format_reward_weight=1.0,
-    conditional_reward=False,
+    off_policy_delta=0.1,
 ):
     if kl_coeff and ref_model is None:
         raise ValueError("ref_model must be provided when kl_coeff is non-zero.")
     if old_model is None:
         old_model = model
-    roll_old_logps, roll_ref_logps, roll_rewards, roll_format_rewards, roll_entropies, samples = [], [], [], [], [], []
-    roll_token_ids, roll_prompt_lens = [], []
+    roll_old_logps, roll_ref_logps, roll_rewards, roll_entropies, samples = [], [], [], [], []
+    roll_token_ids, roll_prompt_lens, roll_keep_masks, roll_gen_lens = [], [], [], []
     prompt = render_prompt(example["problem"])
 
     was_training = model.training
@@ -172,7 +173,7 @@ def compute_grpo_loss_plus_format_reward(
     old_model.eval()
 
     for _ in range(num_rollouts):
-        token_ids, prompt_len, text = sample_response(
+        token_ids, prompt_len, text, keep_masks = sample_response(
             model=old_model,
             tokenizer=tokenizer,
             prompt=prompt,
@@ -180,32 +181,33 @@ def compute_grpo_loss_plus_format_reward(
             max_new_tokens=max_new_tokens,
             temperature=temperature,
             top_p=top_p,
+            top_k=top_k,
         )
         with torch.no_grad():
-            old_logp, entropy = sequence_logprob_and_entropy(old_model, token_ids, prompt_len)
+            old_logp, entropy = sequence_logprob_and_entropy(
+                old_model, token_ids, prompt_len, keep_masks=keep_masks, return_entropy=True
+            )
             if kl_coeff:
-                ref_logp = sequence_logprob(ref_model, token_ids, prompt_len)
+                ref_logp = sequence_logprob_and_entropy(
+                    ref_model, token_ids, prompt_len, keep_masks=keep_masks
+                )
             else:
                 ref_logp = None
-        rlvr_reward = reward_rlvr(text, example["answer"])
-        format_reward = reward_format(token_ids, prompt_len)
-        if conditional_reward:
-            format_reward *= rlvr_reward
-        reward = rlvr_reward + format_reward_weight * format_reward
+        reward = reward_rlvr(text, example["answer"])
 
         roll_old_logps.append(old_logp)
         if kl_coeff:
             roll_ref_logps.append(ref_logp)
         roll_rewards.append(reward)
-        roll_format_rewards.append(format_reward)
         roll_entropies.append(entropy.item())
         roll_token_ids.append(token_ids)
         roll_prompt_lens.append(prompt_len)
+        roll_keep_masks.append(keep_masks)
+        roll_gen_lens.append(max(1, token_ids.numel() - prompt_len))
         samples.append(
             {
                 "text": text,
                 "reward": reward,
-                "format_reward": format_reward,
                 "gen_len": token_ids.numel() - prompt_len,
             }
         )
@@ -214,18 +216,30 @@ def compute_grpo_loss_plus_format_reward(
         model.train()
 
     rewards = torch.tensor(roll_rewards, device=device)
+    # (12) Keep GRPO advantage normalization (DeepSeek V3.2)
     advantages = (rewards - rewards.mean()) / (rewards.std() + 1e-4)
     adv = advantages.detach()
 
     new_logps = []
-    for token_ids, prompt_len in zip(roll_token_ids, roll_prompt_lens):
-        new_logp = sequence_logprob(model, token_ids, prompt_len)
+    for token_ids, prompt_len, keep_masks in zip(
+        roll_token_ids, roll_prompt_lens, roll_keep_masks
+    ):
+        new_logp = sequence_logprob_and_entropy(model, token_ids, prompt_len, keep_masks=keep_masks)
         new_logps.append(new_logp)
     new_logps = torch.stack(new_logps)
 
     old_logps = torch.stack(roll_old_logps).detach()
     log_ratio = new_logps - old_logps
     ratio = torch.exp(log_ratio)
+
+    gen_lens = torch.tensor(roll_gen_lens, device=device, dtype=new_logps.dtype)
+    # (10) Off-policy sequence masking: mask negative-advantage samples with large KL
+    seq_kl = (old_logps - new_logps) / gen_lens
+    off_policy_mask = torch.ones_like(adv)
+    # (10) Off-policy sequence masking (DeepSeek V3.2)
+    off_policy_mask[(adv < 0) & (seq_kl > off_policy_delta)] = 0
+    adv = adv * off_policy_mask
+
     clipped_ratio = torch.clamp(ratio, 1.0 - clip_eps, 1.0 + clip_eps)
 
     unclipped = ratio * adv
@@ -239,7 +253,10 @@ def compute_grpo_loss_plus_format_reward(
     pg_loss = -obj.mean()
     if kl_coeff:
         ref_logps = torch.stack(roll_ref_logps).detach()
-        kl_loss = kl_coeff * torch.mean(new_logps - ref_logps)
+        # (9) Reweighted KL using old-policy importance ratio (DeepSeek V3.2)
+        kl_ratio = torch.exp(new_logps - old_logps)
+        # (9) Reweighted KL (DeepSeek V3.2)
+        kl_loss = kl_coeff * torch.mean(kl_ratio * (new_logps - ref_logps))
     else:
         kl_loss = torch.tensor(0.0, device=new_logps.device)
     loss = pg_loss + kl_loss
@@ -250,7 +267,6 @@ def compute_grpo_loss_plus_format_reward(
         "kl_loss": kl_loss.item(),
         "policy_ratio": ratio.mean().item(),
         "rewards": roll_rewards,
-        "format_rewards": roll_format_rewards,
         "entropies": roll_entropies,
         "advantages": advantages.detach().cpu().tolist(),
         "samples": samples,
@@ -278,7 +294,6 @@ def append_step_metrics(
     kl_loss,
     policy_ratio,
     reward_avg,
-    format_reward_avg,
     tokens_per_sec,
     avg_response_len,
     adv_avg,
@@ -294,7 +309,6 @@ def append_step_metrics(
         f.write(
             f"[Step {step_idx}/{total_steps}] "
             f"loss={loss:.2f} reward_avg={reward_avg:.3f} "
-            f"format_reward_avg={format_reward_avg:.3f} "
             f"kl={kl_loss:.2f} "
             f"tokens_per_sec={tokens_per_sec:.1f} "
             f"avg_response_len={avg_response_len:.1f}"
@@ -306,14 +320,14 @@ def append_step_metrics(
     CSV_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     if not CSV_LOG_PATH.exists():
         CSV_LOG_PATH.write_text(
-            "step,total_steps,loss,kl_loss,policy_ratio,reward_avg,format_reward_avg,tokens_per_sec,avg_response_len,adv_avg,adv_std,entropy_avg,eval_acc\n",
+            "step,total_steps,loss,kl_loss,policy_ratio,reward_avg,tokens_per_sec,avg_response_len,adv_avg,adv_std,entropy_avg,eval_acc\n",
             encoding="utf-8",
         )
     with CSV_LOG_PATH.open("a", encoding="utf-8") as f:
         eval_acc_str = "" if eval_acc is None else f"{eval_acc:.6f}"
         policy_ratio_str = "" if policy_ratio is None else f"{policy_ratio:.6f}"
         f.write(
-            f"{step_idx},{total_steps},{loss:.6f},{kl_loss:.6f},{policy_ratio_str},{reward_avg:.6f},{format_reward_avg:.6f},"
+            f"{step_idx},{total_steps},{loss:.6f},{kl_loss:.6f},{policy_ratio_str},{reward_avg:.6f},"
             f"{tokens_per_sec:.6f},{avg_response_len:.6f},"
             f"{adv_avg:.6f},{adv_std:.6f},{entropy_avg:.6f},{eval_acc_str}\n"
         )
@@ -349,11 +363,11 @@ def train_rlvr_grpo(
     max_new_tokens=512,
     temperature=0.8,
     top_p=0.9,
+    top_k=0,
     clip_eps=10.0,
     inner_epochs=2,
     kl_coeff=0.02,
-    format_reward_weight=1.0,
-    conditional_reward=False,
+    off_policy_delta=0.1,
     lr=1e-5,
     checkpoint_every=50,
     checkpoint_dir=CHECKPOINT_DIR,
@@ -376,7 +390,7 @@ def train_rlvr_grpo(
             stats = None
 
             for _ in range(inner_epochs):
-                stats = compute_grpo_loss_plus_format_reward(
+                stats = compute_grpo_loss_plus_kl(
                     model=model,
                     old_model=old_model,
                     ref_model=ref_model,
@@ -387,10 +401,10 @@ def train_rlvr_grpo(
                     max_new_tokens=max_new_tokens,
                     temperature=temperature,
                     top_p=top_p,
+                    top_k=top_k,
                     clip_eps=clip_eps,
                     kl_coeff=kl_coeff,
-                    format_reward_weight=format_reward_weight,
-                    conditional_reward=conditional_reward,
+                    off_policy_delta=off_policy_delta,
                 )
                 optimizer.zero_grad()
                 stats["loss_tensor"].backward()
@@ -399,7 +413,6 @@ def train_rlvr_grpo(
                 optimizer.step()
 
             reward_avg = torch.tensor(stats["rewards"]).mean().item()
-            format_reward_avg = torch.tensor(stats["format_rewards"]).mean().item()
             entropy_avg = torch.tensor(stats["entropies"]).mean().item()
             advantage_tensor = torch.tensor(stats["advantages"])
             adv_avg = advantage_tensor.mean().item()
@@ -459,7 +472,6 @@ def train_rlvr_grpo(
                 stats["kl_loss"],
                 policy_ratio,
                 reward_avg,
-                format_reward_avg,
                 tokens_per_sec,
                 avg_response_len,
                 adv_avg=adv_avg,
@@ -476,7 +488,6 @@ def train_rlvr_grpo(
                 f"loss={stats['loss']:.2f} "
                 f"kl={stats['kl_loss']:.2f} "
                 f"reward_avg={reward_avg:.3f} "
-                f"format_reward_avg={format_reward_avg:.3f} "
                 f"tok/sec={tokens_per_sec:.1f} "
                 f"avg_resp_len={avg_response_len:.1f} "
                 f"adv_avg={adv_avg:.2f} "
@@ -531,6 +542,12 @@ if __name__ == "__main__":
         help="Top-p sampling cutoff.",
     )
     parser.add_argument(
+        "--top_k",
+        type=int,
+        default=0,
+        help="Top-k sampling cutoff (0 disables).",
+    )
+    parser.add_argument(
         "--clip_eps",
         type=float,
         default=10.0,
@@ -539,27 +556,20 @@ if __name__ == "__main__":
     parser.add_argument(
         "--inner_epochs",
         type=int,
-        default=1,
+        default=2,
         help="Number of inner update iterations per step.",
     )
     parser.add_argument(
         "--kl_coeff",
         type=float,
         default=0.0,
-        help="KL penalty coefficient.",
+        help="KL penalty coefficient (default disabled for math).",
     )
     parser.add_argument(
-        "--format_reward_weight",
-        "--format_coeff",
-        dest="format_reward_weight",
+        "--off_policy_delta",
         type=float,
-        default=1.0,
-        help="Format reward coefficient for THINK->END_THINK token order.",
-    )
-    parser.add_argument(
-        "--conditional_reward",
-        action="store_true",
-        help="Only apply format reward if the answer is correct.",
+        default=0.1,
+        help="Off-policy KL threshold for masking negative sequences.",
     )
     parser.add_argument(
         "--seed",
@@ -590,17 +600,19 @@ if __name__ == "__main__":
 
     math_data = load_math_train()
     if args.checkpoint_path:
-        tokenizer = load_tokenizer_only(which_model="reasoning")
+        tokenizer = load_tokenizer_only(which_model="base")
         model = Qwen3Model(QWEN_CONFIG_06_B)
         state_dict = torch.load(args.checkpoint_path, map_location="cpu")
         model.load_state_dict(state_dict)
         model.to(device)
     else:
         model, tokenizer = load_model_and_tokenizer(
-            which_model="reasoning", device=device, use_compile=False
+            which_model="base", device=device, use_compile=False
         )
 
-    if args.kl_coeff:
+    kl_coeff = args.kl_coeff  # (8) KL term for math domain uses zero by default
+    if kl_coeff:
+        # (8) Re KL term, only build ref_model when KL is enabled
         ref_model = copy.deepcopy(model).to(device)
         ref_model.eval()
         for p in ref_model.parameters():
@@ -620,11 +632,11 @@ if __name__ == "__main__":
         max_new_tokens=args.max_new_tokens,
         temperature=args.temperature,
         top_p=args.top_p,
+        top_k=args.top_k,
         clip_eps=args.clip_eps,
         inner_epochs=args.inner_epochs,
-        kl_coeff=args.kl_coeff,
-        format_reward_weight=args.format_reward_weight,
-        conditional_reward=args.conditional_reward,
+        kl_coeff=kl_coeff,
+        off_policy_delta=args.off_policy_delta,
         eval_max_items=args.eval_on_checkpoint,
     )
 

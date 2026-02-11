@@ -31,23 +31,6 @@ METRICS_LOG_PATH = Path(__file__).parent / "logs" / f"{SCRIPT_NAME}_metrics.txt"
 CSV_LOG_PATH = Path(__file__).parent / "logs" / f"{SCRIPT_NAME}_metrics.csv"
 CHECKPOINT_DIR = Path(__file__).parent / "checkpoints" / SCRIPT_NAME
 
-THINK_TOKEN_ID = 151667
-END_THINK_TOKEN_ID = 151668
-
-
-# The alternative prompt below peforms worse in practice
-"""
-def render_prompt_with_think_tokens(prompt):
-    template = (
-        "You are a helpful math assistant.\n"
-        "When solving the problem, first write your reasoning inside <think> and </think> tags.\n"
-        "Then write the final result on a new line in the exact format:\n"
-        "\\boxed{ANSWER}\n\n"
-        f"Question:\n{prompt}\n\nAnswer:"
-    )
-    return template
-"""
-
 
 @torch.no_grad()
 def sample_response(
@@ -135,15 +118,23 @@ def reward_rlvr(answer_text, ground_truth):
     return float(correct)
 
 
-def reward_format(token_ids, prompt_len):
-    try:
-        gen = token_ids[prompt_len:].tolist()
-        return float(gen.index(THINK_TOKEN_ID) < gen.index(END_THINK_TOKEN_ID))
-    except ValueError:
-        return 0.0
+def reward_with_format_bonus(answer_text, ground_truth, format_coeff=0.1):
+    boxed = extract_final_candidate(answer_text, fallback=None)
+    format_reward = 1.0 if boxed else 0.0
+
+    candidate = boxed or extract_final_candidate(
+        answer_text, fallback="number_then_full"
+    )
+    if not candidate:
+        return format_coeff * format_reward, format_reward, 0.0
+
+    correct = grade_answer(candidate, ground_truth)
+    correctness_reward = float(correct)
+    reward = correctness_reward + format_coeff * format_reward
+    return reward, format_reward, correctness_reward
 
 
-def compute_grpo_loss_plus_format_reward(
+def compute_grpo_loss_plus_kl(
     model,
     old_model,
     ref_model,
@@ -156,14 +147,13 @@ def compute_grpo_loss_plus_format_reward(
     top_p=0.9,
     clip_eps=10.0,
     kl_coeff=0.02,
-    format_reward_weight=1.0,
-    conditional_reward=False,
+    format_coeff=0.1,
 ):
     if kl_coeff and ref_model is None:
         raise ValueError("ref_model must be provided when kl_coeff is non-zero.")
     if old_model is None:
         old_model = model
-    roll_old_logps, roll_ref_logps, roll_rewards, roll_format_rewards, roll_entropies, samples = [], [], [], [], [], []
+    roll_old_logps, roll_ref_logps, roll_rewards, roll_format_rewards, roll_correct_rewards, roll_entropies, samples = [], [], [], [], [], [], []
     roll_token_ids, roll_prompt_lens = [], []
     prompt = render_prompt(example["problem"])
 
@@ -187,17 +177,16 @@ def compute_grpo_loss_plus_format_reward(
                 ref_logp = sequence_logprob(ref_model, token_ids, prompt_len)
             else:
                 ref_logp = None
-        rlvr_reward = reward_rlvr(text, example["answer"])
-        format_reward = reward_format(token_ids, prompt_len)
-        if conditional_reward:
-            format_reward *= rlvr_reward
-        reward = rlvr_reward + format_reward_weight * format_reward
+        reward, format_reward, correctness_reward = reward_with_format_bonus(
+            text, example["answer"], format_coeff=format_coeff
+        )
 
         roll_old_logps.append(old_logp)
         if kl_coeff:
             roll_ref_logps.append(ref_logp)
         roll_rewards.append(reward)
         roll_format_rewards.append(format_reward)
+        roll_correct_rewards.append(correctness_reward)
         roll_entropies.append(entropy.item())
         roll_token_ids.append(token_ids)
         roll_prompt_lens.append(prompt_len)
@@ -214,7 +203,14 @@ def compute_grpo_loss_plus_format_reward(
         model.train()
 
     rewards = torch.tensor(roll_rewards, device=device)
-    advantages = (rewards - rewards.mean()) / (rewards.std() + 1e-4)
+    rewards_correct = torch.tensor(roll_correct_rewards, device=device)
+    rewards_format = torch.tensor(roll_format_rewards, device=device)
+
+    # GDPO: normalize each reward component within the rollout group, then aggregate and renormalize the group.
+    adv_correct = (rewards_correct - rewards_correct.mean()) / (rewards_correct.std() + 1e-4)
+    adv_format = (rewards_format - rewards_format.mean()) / (rewards_format.std() + 1e-4)
+    adv_sum = adv_correct + format_coeff * adv_format
+    advantages = (adv_sum - adv_sum.mean()) / (adv_sum.std() + 1e-4)
     adv = advantages.detach()
 
     new_logps = []
@@ -352,8 +348,7 @@ def train_rlvr_grpo(
     clip_eps=10.0,
     inner_epochs=2,
     kl_coeff=0.02,
-    format_reward_weight=1.0,
-    conditional_reward=False,
+    format_coeff=0.1,
     lr=1e-5,
     checkpoint_every=50,
     checkpoint_dir=CHECKPOINT_DIR,
@@ -376,7 +371,7 @@ def train_rlvr_grpo(
             stats = None
 
             for _ in range(inner_epochs):
-                stats = compute_grpo_loss_plus_format_reward(
+                stats = compute_grpo_loss_plus_kl(
                     model=model,
                     old_model=old_model,
                     ref_model=ref_model,
@@ -389,8 +384,7 @@ def train_rlvr_grpo(
                     top_p=top_p,
                     clip_eps=clip_eps,
                     kl_coeff=kl_coeff,
-                    format_reward_weight=format_reward_weight,
-                    conditional_reward=conditional_reward,
+                    format_coeff=format_coeff,
                 )
                 optimizer.zero_grad()
                 stats["loss_tensor"].backward()
@@ -539,27 +533,20 @@ if __name__ == "__main__":
     parser.add_argument(
         "--inner_epochs",
         type=int,
-        default=1,
+        default=2,
         help="Number of inner update iterations per step.",
     )
     parser.add_argument(
         "--kl_coeff",
         type=float,
-        default=0.0,
+        default=0.02,
         help="KL penalty coefficient.",
     )
     parser.add_argument(
-        "--format_reward_weight",
         "--format_coeff",
-        dest="format_reward_weight",
         type=float,
-        default=1.0,
-        help="Format reward coefficient for THINK->END_THINK token order.",
-    )
-    parser.add_argument(
-        "--conditional_reward",
-        action="store_true",
-        help="Only apply format reward if the answer is correct.",
+        default=0.1,
+        help="Format bonus coefficient for boxed answers.",
     )
     parser.add_argument(
         "--seed",
@@ -623,8 +610,7 @@ if __name__ == "__main__":
         clip_eps=args.clip_eps,
         inner_epochs=args.inner_epochs,
         kl_coeff=args.kl_coeff,
-        format_reward_weight=args.format_reward_weight,
-        conditional_reward=args.conditional_reward,
+        format_coeff=args.format_coeff,
         eval_max_items=args.eval_on_checkpoint,
     )
 
