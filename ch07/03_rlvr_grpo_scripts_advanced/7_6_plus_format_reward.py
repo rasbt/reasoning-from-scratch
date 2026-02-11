@@ -12,7 +12,7 @@ import torch
 from reasoning_from_scratch.ch02 import get_device
 from reasoning_from_scratch.ch03 import (
     evaluate_math500_stream,
-    # render_prompt,
+    render_prompt,
     extract_final_candidate,
     grade_answer,
     load_model_and_tokenizer,
@@ -31,7 +31,12 @@ METRICS_LOG_PATH = Path(__file__).parent / "logs" / f"{SCRIPT_NAME}_metrics.txt"
 CSV_LOG_PATH = Path(__file__).parent / "logs" / f"{SCRIPT_NAME}_metrics.csv"
 CHECKPOINT_DIR = Path(__file__).parent / "checkpoints" / SCRIPT_NAME
 
+THINK_TOKEN_ID = 151667
+END_THINK_TOKEN_ID = 151668
 
+
+# The alternative prompt below peforms worse in practice
+"""
 def render_prompt_with_think_tokens(prompt):
     template = (
         "You are a helpful math assistant.\n"
@@ -41,6 +46,7 @@ def render_prompt_with_think_tokens(prompt):
         f"Question:\n{prompt}\n\nAnswer:"
     )
     return template
+"""
 
 
 @torch.no_grad()
@@ -129,31 +135,15 @@ def reward_rlvr(answer_text, ground_truth):
     return float(correct)
 
 
-def reward_with_format_bonus(
-    answer_text,
-    ground_truth,
-    format_coeff=0.1,
-    conditional_reward=False,
-):
-    boxed = extract_final_candidate(answer_text, fallback=None)
-    format_reward = 1.0 if boxed else 0.0
-
-    candidate = boxed or extract_final_candidate(
-        answer_text, fallback="number_then_full"
-    )
-    if not candidate:
-        return format_coeff * format_reward, format_reward
-
-    correct = grade_answer(candidate, ground_truth)
-    reward = float(correct)
-
-    if format_reward and (not conditional_reward or correct):
-        reward += format_coeff * format_reward
-
-    return reward, format_reward
+def reward_format(token_ids, prompt_len):
+    try:
+        gen = token_ids[prompt_len:].tolist()
+        return float(gen.index(THINK_TOKEN_ID) < gen.index(END_THINK_TOKEN_ID))
+    except ValueError:
+        return 0.0
 
 
-def compute_grpo_loss_plus_kl(
+def compute_grpo_loss_plus_format_reward(
     model,
     old_model,
     ref_model,
@@ -166,7 +156,7 @@ def compute_grpo_loss_plus_kl(
     top_p=0.9,
     clip_eps=10.0,
     kl_coeff=0.02,
-    format_coeff=0.1,
+    format_reward_weight=1.0,
     conditional_reward=False,
 ):
     if kl_coeff and ref_model is None:
@@ -175,7 +165,7 @@ def compute_grpo_loss_plus_kl(
         old_model = model
     roll_old_logps, roll_ref_logps, roll_rewards, roll_format_rewards, roll_entropies, samples = [], [], [], [], [], []
     roll_token_ids, roll_prompt_lens = [], []
-    prompt = render_prompt_with_think_tokens(example["problem"])
+    prompt = render_prompt(example["problem"])
 
     was_training = model.training
     model.eval()
@@ -197,12 +187,11 @@ def compute_grpo_loss_plus_kl(
                 ref_logp = sequence_logprob(ref_model, token_ids, prompt_len)
             else:
                 ref_logp = None
-        reward, format_reward = reward_with_format_bonus(
-            text,
-            example["answer"],
-            format_coeff=format_coeff,
-            conditional_reward=conditional_reward,
-        )
+        rlvr_reward = reward_rlvr(text, example["answer"])
+        format_reward = reward_format(token_ids, prompt_len)
+        if conditional_reward:
+            format_reward *= rlvr_reward
+        reward = rlvr_reward + format_reward_weight * format_reward
 
         roll_old_logps.append(old_logp)
         if kl_coeff:
@@ -363,7 +352,7 @@ def train_rlvr_grpo(
     clip_eps=10.0,
     inner_epochs=2,
     kl_coeff=0.02,
-    format_coeff=0.1,
+    format_reward_weight=1.0,
     conditional_reward=False,
     lr=1e-5,
     checkpoint_every=50,
@@ -387,7 +376,7 @@ def train_rlvr_grpo(
             stats = None
 
             for _ in range(inner_epochs):
-                stats = compute_grpo_loss_plus_kl(
+                stats = compute_grpo_loss_plus_format_reward(
                     model=model,
                     old_model=old_model,
                     ref_model=ref_model,
@@ -400,7 +389,8 @@ def train_rlvr_grpo(
                     top_p=top_p,
                     clip_eps=clip_eps,
                     kl_coeff=kl_coeff,
-                    format_coeff=format_coeff,
+                    format_reward_weight=format_reward_weight,
+                    conditional_reward=conditional_reward,
                 )
                 optimizer.zero_grad()
                 stats["loss_tensor"].backward()
@@ -559,10 +549,12 @@ if __name__ == "__main__":
         help="KL penalty coefficient.",
     )
     parser.add_argument(
+        "--format_reward_weight",
         "--format_coeff",
+        dest="format_reward_weight",
         type=float,
-        default=0.1,
-        help="Format bonus coefficient for boxed answers.",
+        default=1.0,
+        help="Format reward coefficient for THINK->END_THINK token order.",
     )
     parser.add_argument(
         "--conditional_reward",
@@ -631,7 +623,7 @@ if __name__ == "__main__":
         clip_eps=args.clip_eps,
         inner_epochs=args.inner_epochs,
         kl_coeff=args.kl_coeff,
-        format_coeff=args.format_coeff,
+        format_reward_weight=args.format_reward_weight,
         conditional_reward=args.conditional_reward,
         eval_max_items=args.eval_on_checkpoint,
     )
