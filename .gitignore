@@ -3,9 +3,11 @@
 *.png
 
 # Other temporary files
+ch07/01_main-chapter-code/*.py
 checkpoints
 *.pth
 *.csv
+*.txt
 logs
 *.jsonl
 Untitled.ipynb
