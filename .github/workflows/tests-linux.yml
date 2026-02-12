@@ -46,5 +46,8 @@ jobs:
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv sync --group dev
 
+      - name: Run chapter 7 script smoke tests
+        run: uv run pytest tests/test_ch07_scripts.py
+
       - name: Run tests
         run: uv run pytest tests
