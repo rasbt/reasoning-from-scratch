@@ -183,7 +183,7 @@ def generate_text_temp_stream_cache(
 
         #########################################
         if (eos_token_id is not None
-                and next_token.item() == eos_token_id):
+                and torch.all(next_token == eos_token_id)):
             break
 
         yield next_token
@@ -256,7 +256,7 @@ def generate_text_top_p_stream_cache(
             next_token = next_token.to(orig_device)
 
         if (eos_token_id is not None
-                and next_token.item() == eos_token_id):
+                and torch.all(next_token == eos_token_id)):
             break
 
         yield next_token

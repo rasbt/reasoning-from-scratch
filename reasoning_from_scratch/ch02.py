@@ -92,7 +92,6 @@ def generate_text_basic_stream(
     max_new_tokens,
     eos_token_id=None
 ):
-    # input_length = token_ids.shape[1]
     model.eval()
 
     for _ in range(max_new_tokens):
@@ -100,13 +99,12 @@ def generate_text_basic_stream(
         next_token = torch.argmax(out, dim=-1, keepdim=True)
 
         if (eos_token_id is not None
-                and next_token == eos_token_id):
+                and torch.all(next_token == eos_token_id)):
             break
 
-        yield next_token  # New: Yield each token as it's generated
+        yield next_token
 
         token_ids = torch.cat([token_ids, next_token], dim=1)
-    # return token_ids[:, input_length:]
 
 
 @torch.inference_mode()
@@ -126,7 +124,7 @@ def generate_text_basic_stream_cache(
         next_token = torch.argmax(out, dim=-1, keepdim=True)
 
         if (eos_token_id is not None
-                and next_token == eos_token_id):
+                and torch.all(next_token == eos_token_id)):
             break
 
         yield next_token  # New: Yield each token as it's generated
