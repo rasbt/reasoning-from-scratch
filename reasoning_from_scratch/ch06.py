@@ -227,6 +227,7 @@ def train_rlvr_grpo(
     # Stage 1: initialize optimize
     # (the model was already initialized outside the function)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
+    model.train()
     current_step = 0
 
     if csv_log_path is None:
