@@ -2,7 +2,7 @@
 # Source for "Build a Reasoning Model (From Scratch)": https://mng.bz/lZ5B
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
-from .ch02_ex import generate_text_basic_stream_cache
+from .ch02 import generate_text_basic_stream_cache
 from .ch03 import extract_final_candidate
 from .qwen3 import KVCache
 
@@ -183,7 +183,7 @@ def generate_text_temp_stream_cache(
 
         #########################################
         if (eos_token_id is not None
-                and next_token.item() == eos_token_id):
+                and torch.all(next_token == eos_token_id)):
             break
 
         yield next_token
@@ -256,7 +256,7 @@ def generate_text_top_p_stream_cache(
             next_token = next_token.to(orig_device)
 
         if (eos_token_id is not None
-                and next_token.item() == eos_token_id):
+                and torch.all(next_token == eos_token_id)):
             break
 
         yield next_token

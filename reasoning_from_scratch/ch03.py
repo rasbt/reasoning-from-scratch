@@ -21,7 +21,7 @@ from .qwen3 import (
     Qwen3Model,
     QWEN_CONFIG_06_B
 )
-from .ch02_ex import (
+from .ch02 import (
     generate_text_basic_stream_cache
 )
 

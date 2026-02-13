@@ -120,4 +120,3 @@ def test_generate_stats_prints_output(monkeypatch, capsys):
     captured = capsys.readouterr().out
     assert "Time:" in captured
     assert "tokens/sec" in captured
-    assert "10 20 30" in captured

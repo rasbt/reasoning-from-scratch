@@ -10,8 +10,7 @@ import psutil
 import requests
 
 import torch
-from reasoning_from_scratch.ch02 import get_device
-from reasoning_from_scratch.ch02_ex import generate_text_basic_stream_cache
+from reasoning_from_scratch.ch02 import get_device, generate_text_basic_stream_cache
 from reasoning_from_scratch.ch03 import load_model_and_tokenizer
 
 

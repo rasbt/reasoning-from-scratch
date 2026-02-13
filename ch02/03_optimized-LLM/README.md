@@ -25,7 +25,7 @@ The optimized code can be used as drop-in replacement for the code used in the m
 
 ```python
 from reasoning_from_scratch.qwen3 import Qwen3Model
-from reasoning_from_scratch.ch02 import generate_text_basic_cache
+from reasoning_from_scratch.ch02 import generate_text_basic_stream_cache
 ```
 
 
@@ -33,7 +33,7 @@ from reasoning_from_scratch.ch02 import generate_text_basic_cache
 
 ```python
 from reasoning_from_scratch.qwen3_optimized import Qwen3Model
-from reasoning_from_scratch.qwen3_optimized import generate_text_basic_cache
+from reasoning_from_scratch.ch02 import generate_text_basic_stream_cache
 ```
 
 &nbsp;

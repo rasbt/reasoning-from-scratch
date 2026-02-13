@@ -65,12 +65,15 @@ else:
 
 if args.cache:
     if args.optimized:
-        from reasoning_from_scratch.qwen3_optimized import generate_text_basic_cache as generate_text_basic
+        from reasoning_from_scratch.qwen3_optimized import generate_text_basic_cache as generate_text
+        is_streaming_generate = False
     else:
-        from reasoning_from_scratch.ch02 import generate_text_basic_cache as generate_text_basic
+        from reasoning_from_scratch.ch02 import generate_text_basic_stream_cache as generate_text
+        is_streaming_generate = True
 
 else:
-    from reasoning_from_scratch.ch02 import generate_text_basic
+    from reasoning_from_scratch.ch02 import generate_text_basic_stream as generate_text
+    is_streaming_generate = True
 
 device = torch.device(args.device) if args.device else get_device()
 
@@ -138,12 +141,23 @@ for iteration in range(1, 4):
     print("=" * 60)
 
     start_time = time.time()
-    output_token_ids_tensor = generate_text_basic(
-        model=model,
-        token_ids=input_token_ids_tensor,
-        max_new_tokens=max_new_tokens,
-        eos_token_id=tokenizer.eos_token_id,
-    )
+    if is_streaming_generate:
+        generated_ids = []
+        for token in generate_text(
+            model=model,
+            token_ids=input_token_ids_tensor,
+            max_new_tokens=max_new_tokens,
+            eos_token_id=tokenizer.eos_token_id,
+        ):
+            generated_ids.append(token.squeeze(0).item())
+        output_token_ids_tensor = torch.tensor(generated_ids, device=device)
+    else:
+        output_token_ids_tensor = generate_text(
+            model=model,
+            token_ids=input_token_ids_tensor,
+            max_new_tokens=max_new_tokens,
+            eos_token_id=tokenizer.eos_token_id,
+        )
     end_time = time.time()
 
     print(f"Output length: {output_token_ids_tensor.numel()}")
