@@ -363,6 +363,7 @@ def train_rlvr_grpo(
         steps = len(math_data)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
+    model.train()
     current_step = 0
     try:
         for step in range(steps):
