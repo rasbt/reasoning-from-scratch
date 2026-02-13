@@ -2,7 +2,7 @@
 # Source for "Build a Reasoning Model (From Scratch)": https://mng.bz/lZ5B
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
-from .ch02_ex import generate_text_basic_stream_cache
+from .ch02 import generate_text_basic_stream_cache
 from .ch03 import extract_final_candidate
 from .qwen3 import KVCache
 

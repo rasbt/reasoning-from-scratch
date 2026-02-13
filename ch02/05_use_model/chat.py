@@ -15,7 +15,7 @@ from reasoning_from_scratch.ch02 import (
     get_device,
     generate_stats
 )
-from reasoning_from_scratch.ch02_ex import (
+from reasoning_from_scratch.ch02 import (
     generate_text_basic_stream_cache
 )
 from reasoning_from_scratch.qwen3 import (
@@ -93,7 +93,7 @@ print(f"reasoning : {args.reasoning}")
 print("memory    : False")
 print("=" * 60)
 print()
-print("Interactive REPL (no memory). Type '\exit' or '\quit' to quit.\n")
+print("Interactive REPL (no memory). Type '\\exit' or '\\quit' to quit.\n")
 
 
 def run_once(prompt: str):
@@ -123,8 +123,7 @@ def run_once(prompt: str):
         torch.tensor(all_token_ids),
         tokenizer,
         start_time,
-        end_time,
-        print_tokens=False
+        end_time
     )
     print("-" * 60)
 
@@ -137,7 +136,7 @@ try:
         except EOFError:
             print("")
             break
-        if user_in.lower() in {"\exit", "\quit"}:
+        if user_in.lower() in {r"\exit", r"\quit"}:
             break
         if not user_in:
             continue

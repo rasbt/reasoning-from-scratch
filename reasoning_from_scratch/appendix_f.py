@@ -3,7 +3,7 @@
 # Source for "Build a Reasoning Model (From Scratch)": https://mng.bz/lZ5B
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
-from reasoning_from_scratch.ch02_ex import generate_text_basic_stream_cache
+from reasoning_from_scratch.ch02 import generate_text_basic_stream_cache
 
 
 def predict_choice(

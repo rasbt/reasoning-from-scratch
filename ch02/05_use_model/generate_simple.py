@@ -14,7 +14,7 @@ from reasoning_from_scratch.ch02 import (
     get_device,
     generate_stats
 )
-from reasoning_from_scratch.ch02_ex import (
+from reasoning_from_scratch.ch02 import (
     generate_text_basic_stream_cache
 )
 from reasoning_from_scratch.qwen3 import (
@@ -128,4 +128,4 @@ for token in generate_text_basic_stream_cache(
 end_time = time.time()
 
 print("\n")
-generate_stats(torch.tensor(all_token_ids), tokenizer, start_time, end_time, print_tokens=False)
+generate_stats(torch.tensor(all_token_ids), tokenizer, start_time, end_time)
