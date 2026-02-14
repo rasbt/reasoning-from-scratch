@@ -248,3 +248,13 @@
 [Step 248/12000] loss=-0.0000 reward_avg=0.000 tokens_per_sec=44.5 avg_response_len=2033.9
 [Step 249/12000] loss=-0.0000 reward_avg=0.000 tokens_per_sec=44.4 avg_response_len=2048.0
 [Step 250/12000] loss=-0.0000 reward_avg=0.000 tokens_per_sec=44.5 avg_response_len=1562.2
+[Step 1/12000] loss=-0.0000 reward_avg=0.000 tokens_per_sec=13.5 avg_response_len=6.4
+[Step 2/12000] loss=-8.1410 reward_avg=0.125 tokens_per_sec=35.2 avg_response_len=69.6
+[Step 3/12000] loss=1.5583 reward_avg=0.125 tokens_per_sec=31.0 avg_response_len=27.0
+[Step 4/12000] loss=13.7090 reward_avg=0.250 tokens_per_sec=33.0 avg_response_len=34.6
+[Step 5/12000] loss=-13.3051 reward_avg=0.500 tokens_per_sec=39.2 avg_response_len=312.6
+[Step 1/12000] loss=-0.0000 reward_avg=0.000 tokens_per_sec=41.1 avg_response_len=168.5
+[Step 2/12000] loss=-6.7674 reward_avg=0.125 tokens_per_sec=36.5 avg_response_len=70.0
+[Step 3/12000] loss=-0.6862 reward_avg=0.125 tokens_per_sec=30.6 avg_response_len=23.6
+[Step 4/12000] loss=2.3664 reward_avg=0.250 tokens_per_sec=33.3 avg_response_len=26.9
+[Step 5/12000] loss=11.8965 reward_avg=0.375 tokens_per_sec=40.3 avg_response_len=143.8
