@@ -7,7 +7,8 @@
 
 - [rlvr_grpo_original_no_kl.py](rlvr_grpo_original_no_kl.py): Script that implements the original GRPO algorithm to train a reasoning model using reinforcement learning with verifiable rewards (RLVR). The algorithm was used by [DeepSeek R1](https://arxiv.org/abs/2501.12948) and originally proposed in the [DeepSeekMath](https://arxiv.org/abs/2402.03300) paper. However, this script omits the KL divergence term (as recommended in [DAPO](https://arxiv.org/abs/2503.14476), [Dr. GRPO](https://arxiv.org/abs/2503.20783), [Olmo 3](https://arxiv.org/abs/2512.13961), and others)
   - The KL divergence term ensures that the trained model doesn't deviate too much from the original model, but it can hurt performance (especially on math tasks)
-  - This script implements the same code as in chapter 6; **chapter 7 introduces the KL term**
+  - This script implements conceptually the same code as in chapter 6
+  - Compared to the core chapter, there's been a small performance tweak to remove the `.cpu()` cast in the `torch.multinomial` sampler to improve throughput by 20%. See [PR #178](https://github.com/rasbt/reasoning-from-scratch/pull/178) for more information
 - [rlvr_grpo_original_no_kl_batched.py](rlvr_grpo_original_no_kl_batched.py): Same as above but supports training in batches. However, note that this increases the memory requirements and may thus require lowering the number of rollouts and rollout lengths. The usage is the same as for the script above, except it adds `--num_batches`.
 - [rlvr_grpo_original_no_kl_batched_fsdp.py](rlvr_grpo_original_no_kl_batched_fsdp.py): Same as above but supports training on multiple GPUs using PyTorch's FSDP. This is the recommended script to train if you have access to multiple GPUs. The usage is the same as for the script above, except it adds `--num_gpus`.
 
