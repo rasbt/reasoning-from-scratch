@@ -82,7 +82,9 @@ def test_scale_logits_by_temperature_validates_and_scales():
 def test_top_p_filter_truncates_and_renormalizes():
     probas = torch.tensor([[0.5, 0.4, 0.1]])
     filtered = ch04.top_p_filter(probas, top_p=0.6)
-    assert torch.allclose(filtered, torch.tensor([[1.0, 0.0, 0.0]]))
+    assert torch.allclose(
+        filtered, torch.tensor([[0.5555556, 0.4444444, 0.0]])
+    )
 
     # When no filtering is needed, output should match input
     unfiltered = ch04.top_p_filter(probas, top_p=1.0)
