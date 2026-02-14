@@ -74,7 +74,7 @@ def sample_response(
             probas = probas / probas_sum
         else:
             mask = torch.ones_like(probas, dtype=torch.bool)
-        next_token = torch.multinomial(probas.cpu(), num_samples=1).to(device)
+        next_token = torch.multinomial(probas, num_samples=1)
 
         if (
             tokenizer.eos_token_id is not None
