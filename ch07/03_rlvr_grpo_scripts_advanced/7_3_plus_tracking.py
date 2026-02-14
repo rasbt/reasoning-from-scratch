@@ -57,7 +57,7 @@ def sample_response(
 
         probas = torch.softmax(logits, dim=-1)
         probas = top_p_filter(probas, top_p)
-        next_token = torch.multinomial(probas.cpu(), num_samples=1).to(device)
+        next_token = torch.multinomial(probas, num_samples=1)
 
         if (
             tokenizer.eos_token_id is not None

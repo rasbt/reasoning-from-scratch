@@ -108,7 +108,7 @@ def sample_responses_batched(
 
         probas = torch.softmax(step_logits, dim=-1)
         probas = top_p_filter(probas, top_p)
-        next_token = torch.multinomial(probas.cpu(), num_samples=1).to(device)
+        next_token = torch.multinomial(probas, num_samples=1)
 
         eos_tok = next_token.new_full((batch_size, 1), eos_id)
         next_token = torch.where(
