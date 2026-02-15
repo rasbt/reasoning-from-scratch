@@ -13,18 +13,14 @@ from reasoning_from_scratch.ch03 import (
     render_prompt,
     extract_final_candidate,
     grade_answer,
+    load_model_and_tokenizer,
     load_tokenizer_only,
 )
 from reasoning_from_scratch.ch04 import top_p_filter
 from reasoning_from_scratch.ch06 import (
     load_math_train,
 )
-from reasoning_from_scratch.qwen3 import KVCache
-from reasoning_from_scratch.qwen3_batched import (
-    Qwen3Model,
-    QWEN_CONFIG_06_B,
-    load_model_and_tokenizer,
-)
+from reasoning_from_scratch.qwen3 import KVCache, Qwen3Model, QWEN_CONFIG_06_B
 
 SCRIPT_NAME = Path(__file__).stem
 LOG_PATH = Path(__file__).parent / "logs" / f"{SCRIPT_NAME}_outputs.txt"
@@ -44,26 +40,18 @@ def sample_responses_batched(
     temperature=0.8,
     top_p=0.9,
 ):
-    prompts = [prompt] * batch_size
-    tokenized = [tokenizer.encode(p) for p in prompts]
-    max_len = max(len(t) for t in tokenized)
-
-    pad_id = getattr(tokenizer, "pad_token_id", None)
-    left_padded = [
-        ([pad_id] * (max_len - len(t)) + t) if pad_id is not None else t
-        for t in tokenized
-    ]
-    input_ids = torch.tensor(left_padded, device=device, dtype=torch.long)
-    attn_mask = (input_ids != pad_id).to(torch.bool) if pad_id is not None else None
+    prompt_ids = torch.tensor(tokenizer.encode(prompt), device=device, dtype=torch.long)
+    prompt_len = prompt_ids.numel()
+    input_ids = prompt_ids.unsqueeze(0).expand(batch_size, -1)
 
     cache = KVCache(n_layers=model.cfg["n_layers"])
-    logits = model(input_ids, cache=cache, attn_mask=attn_mask)[:, -1]
+    model.reset_kv_cache()
+    logits = model(input_ids, cache=cache)[:, -1]
 
     eos_id = tokenizer.eos_token_id
     finished = torch.zeros(batch_size, dtype=torch.bool, device=device)
 
     generated_steps = []
-    cur_attn = attn_mask
     for _ in range(max_new_tokens):
         step_logits = logits
         if temperature and temperature != 1.0:
@@ -84,13 +72,7 @@ def sample_responses_batched(
         if torch.all(finished):
             break
 
-        if cur_attn is not None:
-            ones = torch.ones(
-                (batch_size, 1), dtype=cur_attn.dtype, device=device
-            )
-            cur_attn = torch.cat([cur_attn, ones], dim=1)
-
-        logits = model(next_token, cache=cache, attn_mask=cur_attn)[:, -1]
+        logits = model(next_token, cache=cache)[:, -1]
 
     if generated_steps:
         gen_tokens = torch.cat(generated_steps, dim=1)
@@ -98,19 +80,15 @@ def sample_responses_batched(
         gen_tokens = torch.empty((batch_size, 0), dtype=input_ids.dtype, device=device)
 
     results = []
-    prompt_lens = [len(t) for t in tokenized]
     for idx in range(batch_size):
         row_tokens = gen_tokens[idx]
         eos_pos = (row_tokens == eos_id).nonzero(as_tuple=True)[0]
         if len(eos_pos) > 0:
             row_tokens = row_tokens[: eos_pos[0]]
 
-        prompt_ids = torch.tensor(
-            tokenized[idx], device=device, dtype=input_ids.dtype
-        )
         full_token_ids = torch.cat([prompt_ids, row_tokens], dim=0)
         gen_text = tokenizer.decode(row_tokens.tolist())
-        results.append((full_token_ids, prompt_lens[idx], gen_text))
+        results.append((full_token_ids, prompt_len, gen_text))
 
     return results
 
