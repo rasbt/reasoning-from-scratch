@@ -125,14 +125,13 @@ Several folders contain optional materials as a bonus for interested readers:
   - [Run inference and chat with the model](ch02/05_use_model)
 - **Chapter 3: Evaluating LLMs**
   - [MATH-500 Verifier Scripts](ch03/02_math500-verifier-scripts)
+  - [Advanced Parser](ch03/03_advanced-parser) (hybrid LaTeX parser)
 - **Chapter 4: Improving Reasoning with Inference-Time Scaling**
   - [Inference Scaling on MATH-500](ch04/02_math500-inference-scaling-scripts) (CoT prompting, self-consistency)
-
 - **Chapter 5: Inference-Time Scaling Via Self-Refinement**
   - [More Inference Scaling on MATH-500](ch05/02_math500-more-inference-scaling-scripts) (Best-of-N, self-refinement)
 - **Chapter 6: Training Reasoning Models with Reinforcement Learning**
   - [GRPO scripts](ch06/02_rlvr_grpo_scripts_intro) with a batched mode
-
 - **Chapter 7: Improving GRPO for Reinforcement Learning**
   - [Advanced GRPO scripts](ch07/03_rlvr_grpo_scripts_advanced) (including DeepSeek-V3.2-, Olmo3-, and GDPO-style training)
 - **Appendix F: Common Approaches to LLM Evaluation**

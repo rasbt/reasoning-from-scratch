@@ -1,0 +1,2002 @@
+[
+  {
+    "answer": "\\left( 3, \\frac{\\pi}{2} \\right)",
+    "prediction": "\\boxed{(3,pi/2)}"
+  },
+  {
+    "answer": "p - q",
+    "prediction": "\\boxed{p-q}"
+  },
+  {
+    "answer": "\\frac{14}{3}",
+    "prediction": "\\boxed{14/3}"
+  },
+  {
+    "answer": "9",
+    "prediction": "\\boxed{9}"
+  },
+  {
+    "answer": "\\text{Evelyn}",
+    "prediction": "\\boxed{Evelyn}"
+  },
+  {
+    "answer": "42",
+    "prediction": "\\boxed{42}"
+  },
+  {
+    "answer": "27",
+    "prediction": "\\boxed{27}"
+  },
+  {
+    "answer": "90^\\circ",
+    "prediction": "\\boxed{90}"
+  },
+  {
+    "answer": "3\\sqrt{13}",
+    "prediction": "\\boxed{3*sqrt(13)}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "2220",
+    "prediction": "\\boxed{2220}"
+  },
+  {
+    "answer": "\\frac{3}{56}",
+    "prediction": "\\boxed{3/56}"
+  },
+  {
+    "answer": "284",
+    "prediction": "\\boxed{284}"
+  },
+  {
+    "answer": "5",
+    "prediction": "\\boxed{5}"
+  },
+  {
+    "answer": "\\sqrt{51}",
+    "prediction": "\\boxed{sqrt(51)}"
+  },
+  {
+    "answer": "6 - 5i",
+    "prediction": "\\boxed{6-5i}"
+  },
+  {
+    "answer": "-50",
+    "prediction": "\\boxed{-50}"
+  },
+  {
+    "answer": "\\pi",
+    "prediction": "\\boxed{pi}"
+  },
+  {
+    "answer": "28",
+    "prediction": "\\boxed{28}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "6+9i",
+    "prediction": "\\boxed{6+9i}"
+  },
+  {
+    "answer": "13535",
+    "prediction": "\\boxed{13535}"
+  },
+  {
+    "answer": "5",
+    "prediction": "\\boxed{5}"
+  },
+  {
+    "answer": "x=5",
+    "prediction": "\\boxed{x=5}"
+  },
+  {
+    "answer": "10",
+    "prediction": "\\boxed{10}"
+  },
+  {
+    "answer": "1,-2",
+    "prediction": "\\boxed{1,-2}"
+  },
+  {
+    "answer": "144",
+    "prediction": "\\boxed{144}"
+  },
+  {
+    "answer": "78",
+    "prediction": "\\boxed{78}"
+  },
+  {
+    "answer": "-2 + 7i",
+    "prediction": "\\boxed{-2+7i}"
+  },
+  {
+    "answer": "225",
+    "prediction": "\\boxed{225}"
+  },
+  {
+    "answer": "52_8",
+    "prediction": "\\boxed{52_8}"
+  },
+  {
+    "answer": "11\\sqrt2",
+    "prediction": "\\boxed{11\\sqrt2}"
+  },
+  {
+    "answer": "720",
+    "prediction": "\\boxed{720}"
+  },
+  {
+    "answer": "\\frac{243}{625}",
+    "prediction": "\\boxed{243/625}"
+  },
+  {
+    "answer": "-125",
+    "prediction": "\\boxed{-125}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "3, 5, 7",
+    "prediction": "\\boxed{3,5,7}"
+  },
+  {
+    "answer": "72",
+    "prediction": "\\boxed{72}"
+  },
+  {
+    "answer": "2000",
+    "prediction": "\\boxed{2000}"
+  },
+  {
+    "answer": "23",
+    "prediction": "\\boxed{23}"
+  },
+  {
+    "answer": "12",
+    "prediction": "\\boxed{12}"
+  },
+  {
+    "answer": "17",
+    "prediction": "\\boxed{17}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "70 \\sqrt{2}",
+    "prediction": "\\boxed{70*sqrt(2)}"
+  },
+  {
+    "answer": "1.25",
+    "prediction": "\\boxed{1.25}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "6",
+    "prediction": "\\boxed{6}"
+  },
+  {
+    "answer": "5",
+    "prediction": "\\boxed{5}"
+  },
+  {
+    "answer": "\\frac{3}{2}",
+    "prediction": "\\boxed{3/2}"
+  },
+  {
+    "answer": "83",
+    "prediction": "\\boxed{83}"
+  },
+  {
+    "answer": "203",
+    "prediction": "\\boxed{203}"
+  },
+  {
+    "answer": "x^5 - x^4 + x^3 - x^2 + x - 1",
+    "prediction": "\\boxed{x^5-x^4+x^3-x^2+x-1}"
+  },
+  {
+    "answer": "12",
+    "prediction": "\\boxed{12}"
+  },
+  {
+    "answer": "-\\frac{\\pi}{6}",
+    "prediction": "\\boxed{-pi/6}"
+  },
+  {
+    "answer": "0.15",
+    "prediction": "\\boxed{0.15}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "11",
+    "prediction": "\\boxed{11}"
+  },
+  {
+    "answer": "16",
+    "prediction": "\\boxed{16}"
+  },
+  {
+    "answer": "9901",
+    "prediction": "\\boxed{9901}"
+  },
+  {
+    "answer": "5",
+    "prediction": "\\boxed{5}"
+  },
+  {
+    "answer": "(6,31,-1)",
+    "prediction": "\\boxed{(6,31,-1)}"
+  },
+  {
+    "answer": "-256",
+    "prediction": "\\boxed{-256}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "10",
+    "prediction": "\\boxed{10}"
+  },
+  {
+    "answer": "\\frac{35}{64}",
+    "prediction": "\\boxed{35/64}"
+  },
+  {
+    "answer": "1",
+    "prediction": "\\boxed{1}"
+  },
+  {
+    "answer": "x^3+3x-6",
+    "prediction": "\\boxed{x^3+3x-6}"
+  },
+  {
+    "answer": "10",
+    "prediction": "\\boxed{10}"
+  },
+  {
+    "answer": "46",
+    "prediction": "\\boxed{46}"
+  },
+  {
+    "answer": "-1",
+    "prediction": "\\boxed{-1}"
+  },
+  {
+    "answer": "40_9",
+    "prediction": "\\boxed{40_9}"
+  },
+  {
+    "answer": "2516_8",
+    "prediction": "\\boxed{2516_8}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "\\frac{3\\sqrt{3}}{4}",
+    "prediction": "\\boxed{\\frac3*sqrt(3)4}"
+  },
+  {
+    "answer": "\\cot x",
+    "prediction": "\\boxed{\\cotx}"
+  },
+  {
+    "answer": "\\frac{11}{36}",
+    "prediction": "\\boxed{11/36}"
+  },
+  {
+    "answer": "0",
+    "prediction": "\\boxed{0}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "(-2,1)",
+    "prediction": "\\boxed{(-2,1)}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "501",
+    "prediction": "\\boxed{501}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "\\frac{3}{2}",
+    "prediction": "\\boxed{3/2}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "-1",
+    "prediction": "\\boxed{-1}"
+  },
+  {
+    "answer": "\\sqrt{5}",
+    "prediction": "\\boxed{sqrt(5)}"
+  },
+  {
+    "answer": "240",
+    "prediction": "\\boxed{240}"
+  },
+  {
+    "answer": "1",
+    "prediction": "\\boxed{1}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "21",
+    "prediction": "\\boxed{21}"
+  },
+  {
+    "answer": "\\frac{3}{2}",
+    "prediction": "\\boxed{3/2}"
+  },
+  {
+    "answer": "1",
+    "prediction": "\\boxed{1}"
+  },
+  {
+    "answer": "\\frac{448}{15625}",
+    "prediction": "\\boxed{448/15625}"
+  },
+  {
+    "answer": "33",
+    "prediction": "\\boxed{33}"
+  },
+  {
+    "answer": "80",
+    "prediction": "\\boxed{80}"
+  },
+  {
+    "answer": "-4",
+    "prediction": "\\boxed{-4}"
+  },
+  {
+    "answer": "1 \\pm \\sqrt{19}",
+    "prediction": "\\boxed{1\\pm*sqrt(19)}"
+  },
+  {
+    "answer": "\\text{east}",
+    "prediction": "\\boxed{east}"
+  },
+  {
+    "answer": "2k+2",
+    "prediction": "\\boxed{2k+2}"
+  },
+  {
+    "answer": "\\begin{pmatrix} -1/3 \\\\ 2/3 \\\\ 5/3 \\end{pmatrix}",
+    "prediction": "\\boxed{\\beginpmatrix-1/3\\\\2/3\\\\5/3\\endpmatrix}"
+  },
+  {
+    "answer": "145^\\circ",
+    "prediction": "\\boxed{145}"
+  },
+  {
+    "answer": "850",
+    "prediction": "\\boxed{850}"
+  },
+  {
+    "answer": "(a+5)(b+2)",
+    "prediction": "\\boxed{(a+5)(b+2)}"
+  },
+  {
+    "answer": "(3,4]",
+    "prediction": "\\boxed{(3,4]}"
+  },
+  {
+    "answer": "40",
+    "prediction": "\\boxed{40}"
+  },
+  {
+    "answer": "29",
+    "prediction": "\\boxed{29}"
+  },
+  {
+    "answer": "\\frac43",
+    "prediction": "\\boxed{\\frac43}"
+  },
+  {
+    "answer": "9",
+    "prediction": "\\boxed{9}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "120^\\circ",
+    "prediction": "\\boxed{120}"
+  },
+  {
+    "answer": "504",
+    "prediction": "\\boxed{504}"
+  },
+  {
+    "answer": "210",
+    "prediction": "\\boxed{210}"
+  },
+  {
+    "answer": "13",
+    "prediction": "\\boxed{13}"
+  },
+  {
+    "answer": "8000",
+    "prediction": "\\boxed{8000}"
+  },
+  {
+    "answer": "-5",
+    "prediction": "\\boxed{-5}"
+  },
+  {
+    "answer": "1260",
+    "prediction": "\\boxed{1260}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "81",
+    "prediction": "\\boxed{81}"
+  },
+  {
+    "answer": "-9",
+    "prediction": "\\boxed{-9}"
+  },
+  {
+    "answer": "\\text{even}",
+    "prediction": "\\boxed{even}"
+  },
+  {
+    "answer": "6",
+    "prediction": "\\boxed{6}"
+  },
+  {
+    "answer": "9",
+    "prediction": "\\boxed{9}"
+  },
+  {
+    "answer": "8",
+    "prediction": "\\boxed{8}"
+  },
+  {
+    "answer": "\\frac{11}{2}",
+    "prediction": "\\boxed{11/2}"
+  },
+  {
+    "answer": "-3",
+    "prediction": "\\boxed{-3}"
+  },
+  {
+    "answer": "1+274i",
+    "prediction": "\\boxed{1+274i}"
+  },
+  {
+    "answer": "4210_{5}",
+    "prediction": "\\boxed{4210_5}"
+  },
+  {
+    "answer": "36",
+    "prediction": "\\boxed{36}"
+  },
+  {
+    "answer": "\\frac{3840}{289}",
+    "prediction": "\\boxed{3840/289}"
+  },
+  {
+    "answer": "13",
+    "prediction": "\\boxed{13}"
+  },
+  {
+    "answer": "8",
+    "prediction": "\\boxed{8}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "120",
+    "prediction": "\\boxed{120}"
+  },
+  {
+    "answer": "16",
+    "prediction": "\\boxed{16}"
+  },
+  {
+    "answer": "9",
+    "prediction": "\\boxed{9}"
+  },
+  {
+    "answer": "64",
+    "prediction": "\\boxed{64}"
+  },
+  {
+    "answer": "204_5",
+    "prediction": "\\boxed{204_5}"
+  },
+  {
+    "answer": "\\frac{1}{3}",
+    "prediction": "\\boxed{1/3}"
+  },
+  {
+    "answer": "1",
+    "prediction": "\\boxed{1}"
+  },
+  {
+    "answer": "13",
+    "prediction": "\\boxed{13}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "28800",
+    "prediction": "\\boxed{28800}"
+  },
+  {
+    "answer": "3 \\sqrt{5}",
+    "prediction": "\\boxed{3*sqrt(5)}"
+  },
+  {
+    "answer": "(15,-29)",
+    "prediction": "\\boxed{(15,-29)}"
+  },
+  {
+    "answer": "-2",
+    "prediction": "\\boxed{-2}"
+  },
+  {
+    "answer": "\\frac{\\sqrt{3}}{3}",
+    "prediction": "\\boxed{\\frac*sqrt(3)3}"
+  },
+  {
+    "answer": "16",
+    "prediction": "\\boxed{16}"
+  },
+  {
+    "answer": "11",
+    "prediction": "\\boxed{11}"
+  },
+  {
+    "answer": "49",
+    "prediction": "\\boxed{49}"
+  },
+  {
+    "answer": "1",
+    "prediction": "\\boxed{1}"
+  },
+  {
+    "answer": "144",
+    "prediction": "\\boxed{144}"
+  },
+  {
+    "answer": "8",
+    "prediction": "\\boxed{8}"
+  },
+  {
+    "answer": "\\frac{2}{21}",
+    "prediction": "\\boxed{2/21}"
+  },
+  {
+    "answer": "2\\sqrt{113}",
+    "prediction": "\\boxed{2*sqrt(113)}"
+  },
+  {
+    "answer": "\\frac{1}{4}",
+    "prediction": "\\boxed{1/4}"
+  },
+  {
+    "answer": "30^\\circ",
+    "prediction": "\\boxed{30}"
+  },
+  {
+    "answer": "\\frac65",
+    "prediction": "\\boxed{\\frac65}"
+  },
+  {
+    "answer": "2107",
+    "prediction": "\\boxed{2107}"
+  },
+  {
+    "answer": "3.21",
+    "prediction": "\\boxed{3.21}"
+  },
+  {
+    "answer": "18",
+    "prediction": "\\boxed{18}"
+  },
+  {
+    "answer": "6",
+    "prediction": "\\boxed{6}"
+  },
+  {
+    "answer": "\\dfrac{17}{50}",
+    "prediction": "\\boxed{17/50}"
+  },
+  {
+    "answer": "-\\frac{35}{9}",
+    "prediction": "\\boxed{-35/9}"
+  },
+  {
+    "answer": "-\\sqrt{3}",
+    "prediction": "\\boxed{-sqrt(3)}"
+  },
+  {
+    "answer": "\\frac{4}{9}",
+    "prediction": "\\boxed{4/9}"
+  },
+  {
+    "answer": "\\frac{270}7\\text{ degrees}",
+    "prediction": "\\boxed{\\frac2707degrees}"
+  },
+  {
+    "answer": "65",
+    "prediction": "\\boxed{65}"
+  },
+  {
+    "answer": "19",
+    "prediction": "\\boxed{19}"
+  },
+  {
+    "answer": "12",
+    "prediction": "\\boxed{12}"
+  },
+  {
+    "answer": "1736",
+    "prediction": "\\boxed{1736}"
+  },
+  {
+    "answer": "\\frac{13}{15}",
+    "prediction": "\\boxed{13/15}"
+  },
+  {
+    "answer": "350",
+    "prediction": "\\boxed{350}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": ".0000672",
+    "prediction": "\\boxed{.0000672}"
+  },
+  {
+    "answer": "30^\\circ",
+    "prediction": "\\boxed{30}"
+  },
+  {
+    "answer": "60",
+    "prediction": "\\boxed{60}"
+  },
+  {
+    "answer": "5x - 7y + 11z + 4 = 0",
+    "prediction": "\\boxed{5x-7y+11z+4=0}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "\\frac{\\sqrt{3}}{3}",
+    "prediction": "\\boxed{\\frac*sqrt(3)3}"
+  },
+  {
+    "answer": "1251",
+    "prediction": "\\boxed{1251}"
+  },
+  {
+    "answer": "23",
+    "prediction": "\\boxed{23}"
+  },
+  {
+    "answer": "(2,\\infty)",
+    "prediction": "\\boxed{(2,\\infty)}"
+  },
+  {
+    "answer": "1",
+    "prediction": "\\boxed{1}"
+  },
+  {
+    "answer": "7",
+    "prediction": "\\boxed{7}"
+  },
+  {
+    "answer": "7",
+    "prediction": "\\boxed{7}"
+  },
+  {
+    "answer": "6",
+    "prediction": "\\boxed{6}"
+  },
+  {
+    "answer": "160",
+    "prediction": "\\boxed{160}"
+  },
+  {
+    "answer": "\\frac{13}{18}",
+    "prediction": "\\boxed{13/18}"
+  },
+  {
+    "answer": "0",
+    "prediction": "\\boxed{0}"
+  },
+  {
+    "answer": "30",
+    "prediction": "\\boxed{30}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "\\frac{1}{4}",
+    "prediction": "\\boxed{1/4}"
+  },
+  {
+    "answer": "24",
+    "prediction": "\\boxed{24}"
+  },
+  {
+    "answer": "1600",
+    "prediction": "\\boxed{1600}"
+  },
+  {
+    "answer": "6",
+    "prediction": "\\boxed{6}"
+  },
+  {
+    "answer": "10,\\!080",
+    "prediction": "\\boxed{10,080}"
+  },
+  {
+    "answer": "17",
+    "prediction": "\\boxed{17}"
+  },
+  {
+    "answer": "40",
+    "prediction": "\\boxed{40}"
+  },
+  {
+    "answer": "66",
+    "prediction": "\\boxed{66}"
+  },
+  {
+    "answer": "\\frac{2}{3}",
+    "prediction": "\\boxed{2/3}"
+  },
+  {
+    "answer": "12",
+    "prediction": "\\boxed{12}"
+  },
+  {
+    "answer": "0",
+    "prediction": "\\boxed{0}"
+  },
+  {
+    "answer": "\\begin{pmatrix} -2 \\\\ -14 \\\\ -7 \\end{pmatrix}",
+    "prediction": "\\boxed{\\beginpmatrix-2\\\\-14\\\\-7\\endpmatrix}"
+  },
+  {
+    "answer": "\\left( \\frac{3}{2}, -13 \\right)",
+    "prediction": "\\boxed{(3/2,-13)}"
+  },
+  {
+    "answer": "28",
+    "prediction": "\\boxed{28}"
+  },
+  {
+    "answer": "1",
+    "prediction": "\\boxed{1}"
+  },
+  {
+    "answer": "16",
+    "prediction": "\\boxed{16}"
+  },
+  {
+    "answer": "10",
+    "prediction": "\\boxed{10}"
+  },
+  {
+    "answer": "5",
+    "prediction": "\\boxed{5}"
+  },
+  {
+    "answer": "56",
+    "prediction": "\\boxed{56}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "110",
+    "prediction": "\\boxed{110}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "6",
+    "prediction": "\\boxed{6}"
+  },
+  {
+    "answer": "11,\\! 111,\\! 111,\\! 100",
+    "prediction": "\\boxed{11,111,111,100}"
+  },
+  {
+    "answer": "(-1,6)",
+    "prediction": "\\boxed{(-1,6)}"
+  },
+  {
+    "answer": "\\frac{1}{2}",
+    "prediction": "\\boxed{1/2}"
+  },
+  {
+    "answer": "\\frac{16}{27}",
+    "prediction": "\\boxed{16/27}"
+  },
+  {
+    "answer": "900",
+    "prediction": "\\boxed{900}"
+  },
+  {
+    "answer": "54",
+    "prediction": "\\boxed{54}"
+  },
+  {
+    "answer": "14",
+    "prediction": "\\boxed{14}"
+  },
+  {
+    "answer": "\\frac{9}{256}",
+    "prediction": "\\boxed{9/256}"
+  },
+  {
+    "answer": "11",
+    "prediction": "\\boxed{11}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "\\text{(C)}",
+    "prediction": "\\boxed{(C)}"
+  },
+  {
+    "answer": "288 \\pi",
+    "prediction": "\\boxed{288pi}"
+  },
+  {
+    "answer": "90",
+    "prediction": "\\boxed{90}"
+  },
+  {
+    "answer": "\\frac{16}{5}",
+    "prediction": "\\boxed{16/5}"
+  },
+  {
+    "answer": "10",
+    "prediction": "\\boxed{10}"
+  },
+  {
+    "answer": "\\frac{1997}{2}",
+    "prediction": "\\boxed{1997/2}"
+  },
+  {
+    "answer": "30^\\circ",
+    "prediction": "\\boxed{30}"
+  },
+  {
+    "answer": "34",
+    "prediction": "\\boxed{34}"
+  },
+  {
+    "answer": "\\frac 59",
+    "prediction": "\\boxed{\\frac59}"
+  },
+  {
+    "answer": "12",
+    "prediction": "\\boxed{12}"
+  },
+  {
+    "answer": "22",
+    "prediction": "\\boxed{22}"
+  },
+  {
+    "answer": "-4",
+    "prediction": "\\boxed{-4}"
+  },
+  {
+    "answer": "16",
+    "prediction": "\\boxed{16}"
+  },
+  {
+    "answer": "116",
+    "prediction": "\\boxed{116}"
+  },
+  {
+    "answer": "17",
+    "prediction": "\\boxed{17}"
+  },
+  {
+    "answer": "\\$32,\\!348",
+    "prediction": "\\boxed{\\$32,348}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "8",
+    "prediction": "\\boxed{8}"
+  },
+  {
+    "answer": "-13x+3",
+    "prediction": "\\boxed{-13x+3}"
+  },
+  {
+    "answer": "8",
+    "prediction": "\\boxed{8}"
+  },
+  {
+    "answer": "\\frac{10}{11}",
+    "prediction": "\\boxed{10/11}"
+  },
+  {
+    "answer": "\\begin{pmatrix} -1 & 0 \\\\ 0 & -1 \\end{pmatrix}",
+    "prediction": "\\boxed{\\beginpmatrix-1&0\\\\0&-1\\endpmatrix}"
+  },
+  {
+    "answer": "17",
+    "prediction": "\\boxed{17}"
+  },
+  {
+    "answer": "13",
+    "prediction": "\\boxed{13}"
+  },
+  {
+    "answer": "540",
+    "prediction": "\\boxed{540}"
+  },
+  {
+    "answer": "81",
+    "prediction": "\\boxed{81}"
+  },
+  {
+    "answer": "\\frac{1}{8}",
+    "prediction": "\\boxed{1/8}"
+  },
+  {
+    "answer": "28",
+    "prediction": "\\boxed{28}"
+  },
+  {
+    "answer": "\\text{(E)}",
+    "prediction": "\\boxed{(E)}"
+  },
+  {
+    "answer": "\\frac{8}{21}",
+    "prediction": "\\boxed{8/21}"
+  },
+  {
+    "answer": "864 \\mbox{ inches}^2",
+    "prediction": "\\boxed{864\\mboxinches^2}"
+  },
+  {
+    "answer": "16",
+    "prediction": "\\boxed{16}"
+  },
+  {
+    "answer": "22",
+    "prediction": "\\boxed{22}"
+  },
+  {
+    "answer": "120^\\circ",
+    "prediction": "\\boxed{120}"
+  },
+  {
+    "answer": "76^\\circ",
+    "prediction": "\\boxed{76}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "15",
+    "prediction": "\\boxed{15}"
+  },
+  {
+    "answer": "1\\frac{4}{5}",
+    "prediction": "\\boxed{14/5}"
+  },
+  {
+    "answer": "4005",
+    "prediction": "\\boxed{4005}"
+  },
+  {
+    "answer": "\\dfrac{33}{100}",
+    "prediction": "\\boxed{33/100}"
+  },
+  {
+    "answer": "180^\\circ",
+    "prediction": "\\boxed{180}"
+  },
+  {
+    "answer": "1",
+    "prediction": "\\boxed{1}"
+  },
+  {
+    "answer": "6",
+    "prediction": "\\boxed{6}"
+  },
+  {
+    "answer": "10",
+    "prediction": "\\boxed{10}"
+  },
+  {
+    "answer": "333",
+    "prediction": "\\boxed{333}"
+  },
+  {
+    "answer": "1030",
+    "prediction": "\\boxed{1030}"
+  },
+  {
+    "answer": "1250",
+    "prediction": "\\boxed{1250}"
+  },
+  {
+    "answer": "18+2\\pi",
+    "prediction": "\\boxed{18+2pi}"
+  },
+  {
+    "answer": "7",
+    "prediction": "\\boxed{7}"
+  },
+  {
+    "answer": "11",
+    "prediction": "\\boxed{11}"
+  },
+  {
+    "answer": "\\sqrt{53}",
+    "prediction": "\\boxed{sqrt(53)}"
+  },
+  {
+    "answer": "255",
+    "prediction": "\\boxed{255}"
+  },
+  {
+    "answer": "7\\pi",
+    "prediction": "\\boxed{7pi}"
+  },
+  {
+    "answer": "8",
+    "prediction": "\\boxed{8}"
+  },
+  {
+    "answer": "36^\\circ",
+    "prediction": "\\boxed{36}"
+  },
+  {
+    "answer": "129",
+    "prediction": "\\boxed{129}"
+  },
+  {
+    "answer": "1",
+    "prediction": "\\boxed{1}"
+  },
+  {
+    "answer": "3 \\pm 2 \\sqrt{2}",
+    "prediction": "\\boxed{3\\pm2*sqrt(2)}"
+  },
+  {
+    "answer": "440",
+    "prediction": "\\boxed{440}"
+  },
+  {
+    "answer": "\\frac{17}{21}",
+    "prediction": "\\boxed{17/21}"
+  },
+  {
+    "answer": "36",
+    "prediction": "\\boxed{36}"
+  },
+  {
+    "answer": "7",
+    "prediction": "\\boxed{7}"
+  },
+  {
+    "answer": "16",
+    "prediction": "\\boxed{16}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "63",
+    "prediction": "\\boxed{63}"
+  },
+  {
+    "answer": "898",
+    "prediction": "\\boxed{898}"
+  },
+  {
+    "answer": "\\left(\\frac{3}{5},\\frac{8}{3}\\right]",
+    "prediction": "\\boxed{(3/5,8/3]}"
+  },
+  {
+    "answer": "58",
+    "prediction": "\\boxed{58}"
+  },
+  {
+    "answer": "11",
+    "prediction": "\\boxed{11}"
+  },
+  {
+    "answer": "\\text{(B)}",
+    "prediction": "\\boxed{(B)}"
+  },
+  {
+    "answer": "103",
+    "prediction": "\\boxed{103}"
+  },
+  {
+    "answer": "\\begin{pmatrix} -18 \\\\ -49 \\\\ 96 \\end{pmatrix}",
+    "prediction": "\\boxed{\\beginpmatrix-18\\\\-49\\\\96\\endpmatrix}"
+  },
+  {
+    "answer": "63",
+    "prediction": "\\boxed{63}"
+  },
+  {
+    "answer": "12",
+    "prediction": "\\boxed{12}"
+  },
+  {
+    "answer": "5.4 \\text{ cents}",
+    "prediction": "\\boxed{5.4cents}"
+  },
+  {
+    "answer": "5",
+    "prediction": "\\boxed{5}"
+  },
+  {
+    "answer": "28",
+    "prediction": "\\boxed{28}"
+  },
+  {
+    "answer": "9",
+    "prediction": "\\boxed{9}"
+  },
+  {
+    "answer": "\\frac9{19}",
+    "prediction": "\\boxed{\\frac919}"
+  },
+  {
+    "answer": "6",
+    "prediction": "\\boxed{6}"
+  },
+  {
+    "answer": "(-\\infty, 0]",
+    "prediction": "\\boxed{(-\\infty,0]}"
+  },
+  {
+    "answer": "1+2\\sqrt{3}",
+    "prediction": "\\boxed{1+2*sqrt(3)}"
+  },
+  {
+    "answer": "14",
+    "prediction": "\\boxed{14}"
+  },
+  {
+    "answer": "49",
+    "prediction": "\\boxed{49}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "(5,\\infty)",
+    "prediction": "\\boxed{(5,\\infty)}"
+  },
+  {
+    "answer": "12\\pi",
+    "prediction": "\\boxed{12pi}"
+  },
+  {
+    "answer": "(2,4)",
+    "prediction": "\\boxed{(2,4)}"
+  },
+  {
+    "answer": "41",
+    "prediction": "\\boxed{41}"
+  },
+  {
+    "answer": "12",
+    "prediction": "\\boxed{12}"
+  },
+  {
+    "answer": "0",
+    "prediction": "\\boxed{0}"
+  },
+  {
+    "answer": "\\frac{11+9a}{20}",
+    "prediction": "\\boxed{11+9a/20}"
+  },
+  {
+    "answer": "-128",
+    "prediction": "\\boxed{-128}"
+  },
+  {
+    "answer": "-\\frac{24}{25}",
+    "prediction": "\\boxed{-24/25}"
+  },
+  {
+    "answer": "10",
+    "prediction": "\\boxed{10}"
+  },
+  {
+    "answer": "-1",
+    "prediction": "\\boxed{-1}"
+  },
+  {
+    "answer": "\\frac{1}{3}",
+    "prediction": "\\boxed{1/3}"
+  },
+  {
+    "answer": "120",
+    "prediction": "\\boxed{120}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "\\frac{9}{100}",
+    "prediction": "\\boxed{9/100}"
+  },
+  {
+    "answer": "15",
+    "prediction": "\\boxed{15}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "1940",
+    "prediction": "\\boxed{1940}"
+  },
+  {
+    "answer": "\\frac{13}{6}",
+    "prediction": "\\boxed{13/6}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "-120",
+    "prediction": "\\boxed{-120}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "26000",
+    "prediction": "\\boxed{26000}"
+  },
+  {
+    "answer": "6",
+    "prediction": "\\boxed{6}"
+  },
+  {
+    "answer": "4343_6",
+    "prediction": "\\boxed{4343_6}"
+  },
+  {
+    "answer": "2k",
+    "prediction": "\\boxed{2k}"
+  },
+  {
+    "answer": "55^\\circ",
+    "prediction": "\\boxed{55}"
+  },
+  {
+    "answer": "-2",
+    "prediction": "\\boxed{-2}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "58,500",
+    "prediction": "\\boxed{58,500}"
+  },
+  {
+    "answer": "5",
+    "prediction": "\\boxed{5}"
+  },
+  {
+    "answer": "1",
+    "prediction": "\\boxed{1}"
+  },
+  {
+    "answer": "66",
+    "prediction": "\\boxed{66}"
+  },
+  {
+    "answer": "6r^2-4r-24",
+    "prediction": "\\boxed{6r^2-4r-24}"
+  },
+  {
+    "answer": "4495",
+    "prediction": "\\boxed{4495}"
+  },
+  {
+    "answer": "10080",
+    "prediction": "\\boxed{10080}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "\\frac{1}{16}",
+    "prediction": "\\boxed{1/16}"
+  },
+  {
+    "answer": "11 \\sqrt{5} + 11",
+    "prediction": "\\boxed{11*sqrt(5)+11}"
+  },
+  {
+    "answer": "480",
+    "prediction": "\\boxed{480}"
+  },
+  {
+    "answer": "81",
+    "prediction": "\\boxed{81}"
+  },
+  {
+    "answer": "100",
+    "prediction": "\\boxed{100}"
+  },
+  {
+    "answer": "(-\\sqrt{3}, \\sqrt{3})",
+    "prediction": "\\boxed{(-sqrt(3),sqrt(3))}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "\\text{ellipse}",
+    "prediction": "\\boxed{ellipse}"
+  },
+  {
+    "answer": "6",
+    "prediction": "\\boxed{6}"
+  },
+  {
+    "answer": "\\frac{7}{4}",
+    "prediction": "\\boxed{7/4}"
+  },
+  {
+    "answer": "16 \\sqrt{3}",
+    "prediction": "\\boxed{16*sqrt(3)}"
+  },
+  {
+    "answer": "\\frac14",
+    "prediction": "\\boxed{\\frac14}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "(1,-16,-4,43)",
+    "prediction": "\\boxed{(1,-16,-4,43)}"
+  },
+  {
+    "answer": "8",
+    "prediction": "\\boxed{8}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "1",
+    "prediction": "\\boxed{1}"
+  },
+  {
+    "answer": "31",
+    "prediction": "\\boxed{31}"
+  },
+  {
+    "answer": "21",
+    "prediction": "\\boxed{21}"
+  },
+  {
+    "answer": "-41",
+    "prediction": "\\boxed{-41}"
+  },
+  {
+    "answer": "17",
+    "prediction": "\\boxed{17}"
+  },
+  {
+    "answer": "90^\\circ",
+    "prediction": "\\boxed{90}"
+  },
+  {
+    "answer": "1+2i",
+    "prediction": "\\boxed{1+2i}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "25",
+    "prediction": "\\boxed{25}"
+  },
+  {
+    "answer": "(8,-2)",
+    "prediction": "\\boxed{(8,-2)}"
+  },
+  {
+    "answer": "6",
+    "prediction": "\\boxed{6}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "12",
+    "prediction": "\\boxed{12}"
+  },
+  {
+    "answer": "(0,9) \\cup (9,36)",
+    "prediction": "\\boxed{(0,9)\\cup(9,36)}"
+  },
+  {
+    "answer": "\\frac{1}{2}",
+    "prediction": "\\boxed{1/2}"
+  },
+  {
+    "answer": "\\frac{20000}{\\pi}",
+    "prediction": "\\boxed{20000/pi}"
+  },
+  {
+    "answer": "x \\in [-2,7]",
+    "prediction": "\\boxed{x\\in[-2,7]}"
+  },
+  {
+    "answer": "15x - 80",
+    "prediction": "\\boxed{15x-80}"
+  },
+  {
+    "answer": "22",
+    "prediction": "\\boxed{22}"
+  },
+  {
+    "answer": "11",
+    "prediction": "\\boxed{11}"
+  },
+  {
+    "answer": "18",
+    "prediction": "\\boxed{18}"
+  },
+  {
+    "answer": "\\frac{11}{2}",
+    "prediction": "\\boxed{11/2}"
+  },
+  {
+    "answer": "\\frac{\\sqrt{21}}{5}",
+    "prediction": "\\boxed{\\frac*sqrt(21)5}"
+  },
+  {
+    "answer": "12",
+    "prediction": "\\boxed{12}"
+  },
+  {
+    "answer": "0",
+    "prediction": "\\boxed{0}"
+  },
+  {
+    "answer": "\\sqrt{66}",
+    "prediction": "\\boxed{sqrt(66)}"
+  },
+  {
+    "answer": "\\frac 34",
+    "prediction": "\\boxed{\\frac34}"
+  },
+  {
+    "answer": "-\\frac{3}{8}",
+    "prediction": "\\boxed{-3/8}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "23",
+    "prediction": "\\boxed{23}"
+  },
+  {
+    "answer": "\\text{Navin}",
+    "prediction": "\\boxed{Navin}"
+  },
+  {
+    "answer": "326.5",
+    "prediction": "\\boxed{326.5}"
+  },
+  {
+    "answer": "\\frac{14}{3}",
+    "prediction": "\\boxed{14/3}"
+  },
+  {
+    "answer": "\\frac{13}{4}",
+    "prediction": "\\boxed{13/4}"
+  },
+  {
+    "answer": "1 - 12i",
+    "prediction": "\\boxed{1-12i}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "60",
+    "prediction": "\\boxed{60}"
+  },
+  {
+    "answer": "0",
+    "prediction": "\\boxed{0}"
+  },
+  {
+    "answer": "9",
+    "prediction": "\\boxed{9}"
+  },
+  {
+    "answer": "\\begin{pmatrix} 1/5 \\\\ -18/5 \\end{pmatrix}",
+    "prediction": "\\boxed{\\beginpmatrix1/5\\\\-18/5\\endpmatrix}"
+  },
+  {
+    "answer": "2 \\sqrt{5}",
+    "prediction": "\\boxed{2*sqrt(5)}"
+  },
+  {
+    "answer": "6",
+    "prediction": "\\boxed{6}"
+  },
+  {
+    "answer": "60",
+    "prediction": "\\boxed{60}"
+  },
+  {
+    "answer": "406",
+    "prediction": "\\boxed{406}"
+  },
+  {
+    "answer": "5r^5",
+    "prediction": "\\boxed{5r^5}"
+  },
+  {
+    "answer": "10",
+    "prediction": "\\boxed{10}"
+  },
+  {
+    "answer": "9",
+    "prediction": "\\boxed{9}"
+  },
+  {
+    "answer": "\\frac{1}{8}",
+    "prediction": "\\boxed{1/8}"
+  },
+  {
+    "answer": "-2",
+    "prediction": "\\boxed{-2}"
+  },
+  {
+    "answer": "2\\sqrt{5}",
+    "prediction": "\\boxed{2*sqrt(5)}"
+  },
+  {
+    "answer": "\\begin{pmatrix} -7 \\\\ 16 \\\\ 5 \\end{pmatrix}",
+    "prediction": "\\boxed{\\beginpmatrix-7\\\\16\\\\5\\endpmatrix}"
+  },
+  {
+    "answer": "\\begin{pmatrix} 16/49 \\\\ 48/49 \\\\ 24/49 \\end{pmatrix}",
+    "prediction": "\\boxed{\\beginpmatrix16/49\\\\48/49\\\\24/49\\endpmatrix}"
+  },
+  {
+    "answer": "27",
+    "prediction": "\\boxed{27}"
+  },
+  {
+    "answer": "\\{1\\pm\\sqrt{5},-2\\}",
+    "prediction": "\\boxed{\\1\\pm*sqrt(5),-2\\}"
+  },
+  {
+    "answer": "1440",
+    "prediction": "\\boxed{1440}"
+  },
+  {
+    "answer": "600",
+    "prediction": "\\boxed{600}"
+  },
+  {
+    "answer": "3R^2",
+    "prediction": "\\boxed{3R^2}"
+  },
+  {
+    "answer": "6\\sqrt{2}",
+    "prediction": "\\boxed{6*sqrt(2)}"
+  },
+  {
+    "answer": "29",
+    "prediction": "\\boxed{29}"
+  },
+  {
+    "answer": "64",
+    "prediction": "\\boxed{64}"
+  },
+  {
+    "answer": "50",
+    "prediction": "\\boxed{50}"
+  },
+  {
+    "answer": "4.5",
+    "prediction": "\\boxed{4.5}"
+  },
+  {
+    "answer": "\\left[ \\frac{\\pi^2}{8}, \\frac{5 \\pi^2}{4} \\right]",
+    "prediction": "\\boxed{[pi^2/8,5pi^2/4]}"
+  },
+  {
+    "answer": "331",
+    "prediction": "\\boxed{331}"
+  },
+  {
+    "answer": ".35625",
+    "prediction": "\\boxed{.35625}"
+  },
+  {
+    "answer": "32",
+    "prediction": "\\boxed{32}"
+  },
+  {
+    "answer": "(-\\infty, 2) \\cup (3, \\infty)",
+    "prediction": "\\boxed{(-\\infty,2)\\cup(3,\\infty)}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "4",
+    "prediction": "\\boxed{4}"
+  },
+  {
+    "answer": "x^8 + x^7 + x^6 + x^5 + x^4 + x^3 + x^2 + x + 1",
+    "prediction": "\\boxed{x^8+x^7+x^6+x^5+x^4+x^3+x^2+x+1}"
+  },
+  {
+    "answer": "14",
+    "prediction": "\\boxed{14}"
+  },
+  {
+    "answer": "550",
+    "prediction": "\\boxed{550}"
+  },
+  {
+    "answer": "256",
+    "prediction": "\\boxed{256}"
+  },
+  {
+    "answer": "45",
+    "prediction": "\\boxed{45}"
+  },
+  {
+    "answer": "\\frac{1}{2}",
+    "prediction": "\\boxed{1/2}"
+  },
+  {
+    "answer": "15",
+    "prediction": "\\boxed{15}"
+  },
+  {
+    "answer": "8",
+    "prediction": "\\boxed{8}"
+  },
+  {
+    "answer": "9",
+    "prediction": "\\boxed{9}"
+  },
+  {
+    "answer": "44",
+    "prediction": "\\boxed{44}"
+  },
+  {
+    "answer": "47",
+    "prediction": "\\boxed{47}"
+  },
+  {
+    "answer": "64",
+    "prediction": "\\boxed{64}"
+  },
+  {
+    "answer": "\\frac{639}{40}",
+    "prediction": "\\boxed{639/40}"
+  },
+  {
+    "answer": "143",
+    "prediction": "\\boxed{143}"
+  },
+  {
+    "answer": "10",
+    "prediction": "\\boxed{10}"
+  },
+  {
+    "answer": "y = 2x + 3",
+    "prediction": "\\boxed{y=2x+3}"
+  },
+  {
+    "answer": "6",
+    "prediction": "\\boxed{6}"
+  },
+  {
+    "answer": "-2,1",
+    "prediction": "\\boxed{-2,1}"
+  },
+  {
+    "answer": "0",
+    "prediction": "\\boxed{0}"
+  },
+  {
+    "answer": "41",
+    "prediction": "\\boxed{41}"
+  },
+  {
+    "answer": "\\$18.90",
+    "prediction": "\\boxed{\\$18.90}"
+  },
+  {
+    "answer": "75^\\circ",
+    "prediction": "\\boxed{75}"
+  },
+  {
+    "answer": "12",
+    "prediction": "\\boxed{12}"
+  },
+  {
+    "answer": "59",
+    "prediction": "\\boxed{59}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "9",
+    "prediction": "\\boxed{9}"
+  },
+  {
+    "answer": "121",
+    "prediction": "\\boxed{121}"
+  },
+  {
+    "answer": "8 \\pi",
+    "prediction": "\\boxed{8pi}"
+  },
+  {
+    "answer": "15\\mbox{ cm}^2",
+    "prediction": "\\boxed{15\\mboxcm^2}"
+  },
+  {
+    "answer": "8",
+    "prediction": "\\boxed{8}"
+  },
+  {
+    "answer": "25",
+    "prediction": "\\boxed{25}"
+  },
+  {
+    "answer": "27648",
+    "prediction": "\\boxed{27648}"
+  },
+  {
+    "answer": "84",
+    "prediction": "\\boxed{84}"
+  },
+  {
+    "answer": "137 \\frac{1}{2}",
+    "prediction": "\\boxed{1371/2}"
+  },
+  {
+    "answer": "7",
+    "prediction": "\\boxed{7}"
+  },
+  {
+    "answer": "3",
+    "prediction": "\\boxed{3}"
+  },
+  {
+    "answer": "29",
+    "prediction": "\\boxed{29}"
+  },
+  {
+    "answer": "200",
+    "prediction": "\\boxed{200}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "\\frac{2}{1005}",
+    "prediction": "\\boxed{2/1005}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "1",
+    "prediction": "\\boxed{1}"
+  },
+  {
+    "answer": "8n^2 + 4n + 1",
+    "prediction": "\\boxed{8n^2+4n+1}"
+  },
+  {
+    "answer": "202",
+    "prediction": "\\boxed{202}"
+  },
+  {
+    "answer": "\\frac{8}{15}",
+    "prediction": "\\boxed{8/15}"
+  },
+  {
+    "answer": "10",
+    "prediction": "\\boxed{10}"
+  },
+  {
+    "answer": "13",
+    "prediction": "\\boxed{13}"
+  },
+  {
+    "answer": "216",
+    "prediction": "\\boxed{216}"
+  },
+  {
+    "answer": "2",
+    "prediction": "\\boxed{2}"
+  },
+  {
+    "answer": "\\$36",
+    "prediction": "\\boxed{\\$36}"
+  },
+  {
+    "answer": "15",
+    "prediction": "\\boxed{15}"
+  },
+  {
+    "answer": "14",
+    "prediction": "\\boxed{14}"
+  },
+  {
+    "answer": "64",
+    "prediction": "\\boxed{64}"
+  },
+  {
+    "answer": "y = -2x",
+    "prediction": "\\boxed{y=-2x}"
+  },
+  {
+    "answer": "20",
+    "prediction": "\\boxed{20}"
+  },
+  {
+    "answer": "\\frac{1}{4}",
+    "prediction": "\\boxed{1/4}"
+  },
+  {
+    "answer": "(2,12) \\cup (12,102)",
+    "prediction": "\\boxed{(2,12)\\cup(12,102)}"
+  },
+  {
+    "answer": "\\frac{5}{13}",
+    "prediction": "\\boxed{5/13}"
+  },
+  {
+    "answer": "\\frac{7}{2}",
+    "prediction": "\\boxed{7/2}"
+  },
+  {
+    "answer": "-1",
+    "prediction": "\\boxed{-1}"
+  },
+  {
+    "answer": "106^\\circ",
+    "prediction": "\\boxed{106}"
+  }
+]
