@@ -31,7 +31,7 @@ def download_from_github(rel_path, out=None):
         return out
 
     # Download file
-    r = requests.get(github_raw_base + str(rel_path))
+    r = requests.get(github_raw_base + rel_path.as_posix())
     r.raise_for_status()
 
     out.write_bytes(r.content)

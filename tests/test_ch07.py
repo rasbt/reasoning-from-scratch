@@ -181,7 +181,7 @@ def test_reward_format_cases_from_prompt_example():
 
     cases = [
         ("Correct order", "Let's ... <think> ... </think> ...", 1.0),
-        ("Typo in <think>", "Let's ... <thnik> ... </think> ...", 0.0),
+        ("Invalid opening tag", "Let's ... <th1nk> ... </think> ...", 0.0),
         ("Reversed order", "Let's ... </think> ... <think> ...", 0.0),
         ("Missing </think>", "Let's ... <think> ...", 0.0),
     ]
