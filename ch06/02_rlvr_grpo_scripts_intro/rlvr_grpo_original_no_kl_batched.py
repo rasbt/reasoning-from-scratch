@@ -410,4 +410,5 @@ if __name__ == "__main__":
         max_mem_gb = torch.cuda.max_memory_allocated() / (1024 ** 3)
         print(f"Max CUDA memory allocated: {max_mem_gb:.2f} GB")
 
+    CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
     torch.save(trained.state_dict(), CHECKPOINT_DIR/"qwen3-0.6B-rlvr-grpo.pth")
