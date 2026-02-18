@@ -8,6 +8,7 @@
 
 - [evaluate_math500.py](evaluate_math500.py): standalone script to evaluate models on the MATH-500 dataset
 - [evaluate_math500_batched.py](evaluate_math500_batched.py): same as above, but processes multiple examples in parallel during generation (for higher throughput)
+- [evaluate_json.py](evaluate_json.py): evaluate saved records JSON/JSONL files and report accuracy
 
 Both evaluation scripts import functionality from the [`reasoning_from_scratch`](../../reasoning_from_scratch) package to avoid code duplication. (See [chapter 2 setup instructions](../../ch02/02_setup-tips/python-instructions.md) for installation details.)
 
@@ -78,6 +79,7 @@ Extra options:
                         memory-intensive, but easier to debug.
 ```
 
+
 &nbsp;
 
 
@@ -124,3 +126,23 @@ Some PyTorch ops used in efficient batched inference are not yet supported on MP
 
 
 - The accuracy of the base model  is 15.6% (78/500); the accuracy of the reasoning model is 50.8% (254/500).
+
+
+&nbsp;
+## `evaluate_json.py` usage
+
+Use this if you already have saved records and only want to (re)compute accuracy:
+
+```bash
+uv run evaluate_json.py --json_path math500_base-mps-evaluate-script.jsonl
+# Accuracy 15.6% (78/500)
+
+Optional keys:
+
+```bash
+uv run evaluate_json.py \
+  --json_path my_records.json \
+  --gtruth_answer "gtruth_answer" \
+  --generated_text "generated_text"
+```
+
