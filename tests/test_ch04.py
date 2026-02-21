@@ -91,6 +91,22 @@ def test_top_p_filter_truncates_and_renormalizes():
     assert torch.allclose(unfiltered, probas)
 
 
+def test_top_p_filter_batched_rows_renormalize_independently():
+    # Make sure it also works for batched cases
+    probas = torch.tensor(
+        [
+            [0.40, 0.30, 0.20, 0.10, 0.00],
+            [0.05, 0.25, 0.35, 0.15, 0.20],
+        ]
+    )
+
+    filtered = ch04.top_p_filter(probas, top_p=0.70)
+
+    assert filtered.shape == probas.shape
+    assert torch.all(filtered >= 0)
+    assert torch.allclose(filtered.sum(dim=1), torch.ones(2), atol=1e-6)
+
+
 def test_generate_text_temp_stream_cache_stops_on_eos():
     model = DummyModelCache(fixed_token=3)
     token_ids = torch.tensor([[0, 1]])
