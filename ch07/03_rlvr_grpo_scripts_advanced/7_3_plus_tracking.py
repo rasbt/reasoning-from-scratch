@@ -59,12 +59,14 @@ def sample_response(
         probas = top_p_filter(probas, top_p)
         next_token = torch.multinomial(probas, num_samples=1)
 
+        token_id = next_token.item()
+        generated.append(token_id)
+
         if (
             tokenizer.eos_token_id is not None
-            and next_token.item() == tokenizer.eos_token_id
+            and token_id == tokenizer.eos_token_id
         ):
             break
-        generated.append(next_token.item())
         logits = model(next_token, cache=cache)[:, -1]
 
     full_token_ids = torch.cat(
