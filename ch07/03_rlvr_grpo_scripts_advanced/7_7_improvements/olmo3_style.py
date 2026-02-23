@@ -128,6 +128,7 @@ def compute_grpo_loss_plus_kl(
     clip_eps_low=0.2,
     clip_eps_high=10.0,
     kl_coeff=0.0,
+    skip_zero_adv=False,
 ):
     if kl_coeff and ref_model is None:
         raise ValueError("ref_model must be provided when kl_coeff is non-zero.")
@@ -184,6 +185,27 @@ def compute_grpo_loss_plus_kl(
     zero_grad = rewards.max().item() == rewards.min().item()  # (1) Zero gradient signal filtering (DAPO)
     adv = advantages.detach()
 
+    is_zero_adv = torch.allclose(
+        advantages,
+        torch.zeros_like(advantages),
+        atol=1e-8,
+        rtol=0.0,
+    )
+    if skip_zero_adv and is_zero_adv:
+        return {
+            "loss": 0.0,
+            "pg_loss": 0.0,
+            "kl_loss": 0.0,
+            "policy_ratio": None,
+            "rewards": roll_rewards,
+            "entropies": roll_entropies,
+            "advantages": advantages.detach().cpu().tolist(),
+            "is_zero_adv": True,
+            "samples": samples,
+            "loss_tensor": None,
+            "zero_grad": True,
+        }
+
     obj_terms = []
     ratio_terms = []
     new_logps_sum = []
@@ -237,6 +259,7 @@ def compute_grpo_loss_plus_kl(
         "rewards": roll_rewards,
         "entropies": roll_entropies,
         "advantages": advantages.detach().cpu().tolist(),
+        "is_zero_adv": is_zero_adv,
         "samples": samples,
         "loss_tensor": loss,
         "zero_grad": zero_grad,
@@ -342,6 +365,7 @@ def train_rlvr_grpo(
     eval_max_items=0,
     active_sampling=True,
     max_active_sampling_tries=8,
+    skip_zero_advantage_updates=False,
 ):
     if steps is None:
         steps = len(math_data)
@@ -376,16 +400,18 @@ def train_rlvr_grpo(
                         clip_eps_low=clip_eps_low,
                         clip_eps_high=clip_eps_high,
                         kl_coeff=kl_coeff,
+                        skip_zero_adv=skip_zero_advantage_updates,
                     )
                     if not (active_sampling and stats["zero_grad"]):  # (2) Active sampling (DAPO)
                         break
                 if stats is None or stats["zero_grad"]:
                     continue
-                optimizer.zero_grad()
-                stats["loss_tensor"].backward()
+                if stats["loss_tensor"] is not None:
+                    optimizer.zero_grad()
+                    stats["loss_tensor"].backward()
 
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-                optimizer.step()
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+                    optimizer.step()
 
             reward_avg = torch.tensor(stats["rewards"]).mean().item()
             entropy_avg = torch.tensor(stats["entropies"]).mean().item()
@@ -561,6 +587,14 @@ if __name__ == "__main__":
             "(0 disables)."
         ),
     )
+    parser.add_argument(
+        "--skip-zero-advantage-updates",
+        action="store_true",
+        help=(
+            "Skip backward/optimizer step when rollout advantages are all "
+            "near zero."
+        ),
+    )
     args = parser.parse_args()
 
     if args.seed is not None and str(args.seed).strip().lower() != "none":
@@ -604,6 +638,7 @@ if __name__ == "__main__":
         inner_epochs=args.inner_epochs,
         kl_coeff=args.kl_coeff,
         eval_max_items=args.eval_on_checkpoint,
+        skip_zero_advantage_updates=args.skip_zero_advantage_updates,
     )
 
     if torch.cuda.is_available():
