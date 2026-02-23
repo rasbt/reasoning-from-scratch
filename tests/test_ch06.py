@@ -97,8 +97,8 @@ def test_sample_response_generates_until_eos():
 
     assert model.reset_called is True
     assert prompt_len == 2
-    assert text == "X"
-    assert token_ids.tolist() == [5, 6, 2]
+    assert text == "X0"
+    assert token_ids.tolist() == [5, 6, 2, 0]
 
 
 def test_reward_rlvr_requires_boxed_answers():

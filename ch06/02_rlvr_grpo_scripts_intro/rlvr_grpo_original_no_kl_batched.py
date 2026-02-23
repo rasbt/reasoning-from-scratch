@@ -84,7 +84,7 @@ def sample_responses_batched(
         row_tokens = gen_tokens[idx]
         eos_pos = (row_tokens == eos_id).nonzero(as_tuple=True)[0]
         if len(eos_pos) > 0:
-            row_tokens = row_tokens[: eos_pos[0]]
+            row_tokens = row_tokens[: eos_pos[0] + 1]
 
         full_token_ids = torch.cat([prompt_ids, row_tokens], dim=0)
         gen_text = tokenizer.decode(row_tokens.tolist())
