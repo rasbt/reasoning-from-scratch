@@ -122,6 +122,7 @@ def compute_grpo_loss(
     temperature=0.8,
     top_p=0.9,
     clip_eps=10.0,
+    skip_zero_adv=False,
 ):
     roll_old_logps, roll_rewards, roll_entropies, samples = [], [], [], []
     roll_token_ids, roll_prompt_lens = [], []
@@ -169,6 +170,24 @@ def compute_grpo_loss(
     advantages = (rewards - rewards.mean()) / (rewards.std() + 1e-4)
     adv = advantages.detach()
 
+    is_zero_adv = torch.allclose(
+        advantages,
+        torch.zeros_like(advantages),
+        atol=1e-8,
+        rtol=0.0,
+    )
+    if skip_zero_adv and is_zero_adv:
+        return {
+            "loss": 0.0,
+            "policy_ratio": 1.0,
+            "rewards": roll_rewards,
+            "entropies": roll_entropies,
+            "advantages": advantages.detach().cpu().tolist(),
+            "is_zero_adv": True,
+            "samples": samples,
+            "loss_tensor": None,
+        }
+
     # Recompute sequence log-probs under the current policy (with grad)
     new_logps = []
     for token_ids, prompt_len in zip(roll_token_ids, roll_prompt_lens):
@@ -199,6 +218,7 @@ def compute_grpo_loss(
         "rewards": roll_rewards,
         "entropies": roll_entropies,
         "advantages": advantages.detach().cpu().tolist(),
+        "is_zero_adv": is_zero_adv,
         "samples": samples,
         "loss_tensor": loss,
     }
@@ -293,6 +313,7 @@ def train_rlvr_grpo(
     checkpoint_every=50,
     checkpoint_dir=CHECKPOINT_DIR,
     eval_max_items=0,
+    skip_zero_advantage_updates=False,
 ):
     if steps is None:
         steps = len(math_data)
@@ -326,12 +347,14 @@ def train_rlvr_grpo(
                     temperature=temperature,
                     top_p=top_p,
                     clip_eps=clip_eps,
+                    skip_zero_adv=skip_zero_advantage_updates,
                 )
-                optimizer.zero_grad()
-                stats["loss_tensor"].backward()
+                if stats["loss_tensor"] is not None:
+                    optimizer.zero_grad()
+                    stats["loss_tensor"].backward()
 
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-                optimizer.step()
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+                    optimizer.step()
 
             reward_avg = torch.tensor(stats["rewards"]).mean().item()
             entropy_avg = torch.tensor(stats["entropies"]).mean().item()
@@ -489,6 +512,14 @@ if __name__ == "__main__":
             "(0 disables)."
         ),
     )
+    parser.add_argument(
+        "--skip-zero-advantage-updates",
+        action="store_true",
+        help=(
+            "Skip backward/optimizer step when rollout advantages are all "
+            "near zero."
+        ),
+    )
     args = parser.parse_args()
 
     if args.seed is not None and str(args.seed).strip().lower() != "none":
@@ -520,6 +551,7 @@ if __name__ == "__main__":
         top_p=args.top_p,
         inner_epochs=args.inner_epochs,
         eval_max_items=args.eval_on_checkpoint,
+        skip_zero_advantage_updates=args.skip_zero_advantage_updates,
     )
 
     if torch.cuda.is_available():

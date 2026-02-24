@@ -161,8 +161,9 @@ def compute_grpo_loss(
     max_new_tokens=512,
     temperature=0.8,
     top_p=0.9,
+    skip_zero_adv=False,
 ):
-    roll_logps, roll_rewards, samples = [], [], []
+    roll_rewards, samples, rollout_data = [], [], []
     prompt = render_prompt(example["problem"])
 
     was_training = model.training
@@ -185,11 +186,10 @@ def compute_grpo_loss(
             top_p=top_p,
         )
         for token_ids, prompt_len, text in batch:
-            logp = sequence_logprob(model, token_ids, prompt_len)
             reward = reward_rlvr(text, example["answer"])
 
-            roll_logps.append(logp)
             roll_rewards.append(reward)
+            rollout_data.append((token_ids, prompt_len))
             samples.append(
                 {
                     "text": text,
@@ -205,6 +205,28 @@ def compute_grpo_loss(
     rewards = torch.tensor(roll_rewards, device=device)
     advantages = (rewards - rewards.mean()) / (rewards.std() + 1e-4)
 
+    is_zero_adv = torch.allclose(
+        advantages,
+        torch.zeros_like(advantages),
+        atol=1e-8,
+        rtol=0.0,
+    )
+    if skip_zero_adv and is_zero_adv:
+        return {
+            "loss": 0.0,
+            "pg_loss": 0.0,
+            "rewards": roll_rewards,
+            "advantages": advantages.detach().cpu().tolist(),
+            "is_zero_adv": True,
+            "samples": samples,
+            "loss_tensor": None,
+        }
+
+    roll_logps = []
+    for token_ids, prompt_len in rollout_data:
+        logp = sequence_logprob(model, token_ids, prompt_len)
+        roll_logps.append(logp)
+
     logps = torch.stack(roll_logps)
 
     pg_loss = -(advantages.detach() * logps).mean()
@@ -215,6 +237,7 @@ def compute_grpo_loss(
         "pg_loss": pg_loss.item(),
         "rewards": roll_rewards,
         "advantages": advantages.detach().cpu().tolist(),
+        "is_zero_adv": is_zero_adv,
         "samples": samples,
         "loss_tensor": loss,
     }
@@ -293,6 +316,7 @@ def train_rlvr_grpo(
     checkpoint_every=50,
     checkpoint_dir=CHECKPOINT_DIR,
     is_main=True,
+    skip_zero_advantage_updates=False,
 ):
     if steps is None:
         steps = len(math_data)
@@ -315,12 +339,14 @@ def train_rlvr_grpo(
                 max_new_tokens=max_new_tokens,
                 temperature=temperature,
                 top_p=top_p,
+                skip_zero_adv=skip_zero_advantage_updates,
             )
-            optimizer.zero_grad()
-            stats["loss_tensor"].backward()
+            if stats["loss_tensor"] is not None:
+                optimizer.zero_grad()
+                stats["loss_tensor"].backward()
 
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            optimizer.step()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+                optimizer.step()
 
             reward_avg = torch.tensor(stats["rewards"]).mean().item()
             step_time = time.perf_counter() - step_start
@@ -418,6 +444,7 @@ def main_worker(rank, world_size, args):
             temperature=args.temperature,
             top_p=args.top_p,
             is_main=is_main,
+            skip_zero_advantage_updates=args.skip_zero_advantage_updates,
         )
 
         if is_main and torch.cuda.is_available():
@@ -484,6 +511,14 @@ if __name__ == "__main__":
         type=str,
         default=None,
         help="Optional path to a .pth checkpoint to resume training from.",
+    )
+    parser.add_argument(
+        "--skip-zero-advantage-updates",
+        action="store_true",
+        help=(
+            "Skip backward/optimizer step when rollout advantages are all "
+            "near zero."
+        ),
     )
     parser.add_argument(
         "--num_gpus",
