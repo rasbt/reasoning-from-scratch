@@ -2,6 +2,10 @@
 
 This folder contains scripts to generate teacher outputs for math problems, which can be used as distillation data for training a smaller reasoning model, as covered in chapter 8.
 
+[![Tutorial](https://img.youtube.com/vi/wzfq5-VN7EQ/hqdefault.jpg)](https://www.youtube.com/watch?v=wzfq5-VN7EQ)
+
+(Click on the image above to play the tuorial video.)
+
 &nbsp;
 ## Files
 
