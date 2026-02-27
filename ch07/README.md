@@ -3,7 +3,7 @@
 &nbsp;
 ## Main chapter code
 
-- [01_main-chapter-code]: main chapter code and exercise solutions
+- [01_main-chapter-code](01_main-chapter-code): main chapter code and exercise solutions
 - [02_logs](02_logs): log files analyzed in this chapter
 
 &nbsp;
