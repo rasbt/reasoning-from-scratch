@@ -188,11 +188,11 @@ That being said, let's do a simple cost calculation. Given an average input prom
 
 Here is the breakdown:
 
-- Total input tokens: 11 × 1000 = 11,000 
-- Total output tokens: 1524 × 1000 = 1,524,000 
-- Input cost: $\frac{11{,}000}{1{,}000{,}000} \times 0.70 = \$0.0077$
-- Output cost: $\frac{1{,}524{,}000}{1{,}000{,}000} \times 2.50 = \$3.81$
-- Total cost: $\$3.81 + \$0.0077 \approx \$3.82$
+- Total input tokens: 11 × 1000 = 11,000  
+- Total output tokens: 1524 × 1000 = 1,524,000  
+- Input cost: (11,000 / 1,000,000) × 0.70 = $0.0077  
+- Output cost: (1,524,000 / 1,000,000) × 2.50 = $3.81  
+- Total cost: $3.81 + $0.0077 ≈ $3.82
 
 &nbsp;
 ### 2.1 OpenRouter setup
