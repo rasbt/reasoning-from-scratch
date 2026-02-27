@@ -170,6 +170,50 @@ def load_math500_test(local_path="math500_test.json", save_copy=True):
 def content_to_text(value):
     if isinstance(value, str):
         return value
+    if isinstance(value, dict):
+        # Prefer common text-bearing keys first.
+        preferred_keys = (
+            "content",
+            "text",
+            "value",
+            "output_text",
+            "response",
+            "answer",
+            "final",
+            "refusal",
+            "reasoning",
+            "reasoning_content",
+            "thinking",
+            "message",
+            "parts",
+        )
+        chunks = []
+        for key in preferred_keys:
+            if key in value:
+                chunk = content_to_text(value[key])
+                if chunk:
+                    chunks.append(chunk)
+
+        # If no preferred keys are present, recursively inspect nested values
+        # but skip metadata keys that are unlikely to contain model text.
+        if not chunks:
+            metadata_keys = {
+                "id",
+                "type",
+                "role",
+                "index",
+                "finish_reason",
+                "logprobs",
+                "usage",
+            }
+            for key, nested_value in value.items():
+                if key in metadata_keys:
+                    continue
+                chunk = content_to_text(nested_value)
+                if chunk:
+                    chunks.append(chunk)
+
+        return "".join(chunks)
     if isinstance(value, list):
         chunks = []
         for item in value:
@@ -203,36 +247,82 @@ def parse_openrouter_response(decoded):
         raise RuntimeError("OpenRouter response has invalid choices format.")
 
     message = first_choice["message"] if "message" in first_choice else None
-    if not isinstance(message, dict):
-        message = {}
 
-    content = content_to_text(message["content"] if "content" in message else None)
+    content = ""
+    if isinstance(message, dict):
+        content = content_to_text(message["content"] if "content" in message else None)
+    elif isinstance(message, str):
+        content = content_to_text(message)
+
     if not content:
         content = content_to_text(first_choice["text"] if "text" in first_choice else None)
+    if not content:
+        content = content_to_text(first_choice["content"] if "content" in first_choice else None)
+    if not content:
+        content = content_to_text(first_choice["output_text"] if "output_text" in first_choice else None)
+    if not content:
+        content = content_to_text(first_choice["delta"] if "delta" in first_choice else None)
     if not content:
         content = content_to_text(decoded["response"] if "response" in decoded else None)
     if not content:
         content = content_to_text(
             decoded["output_text"] if "output_text" in decoded else None
         )
+    if not content:
+        content = content_to_text(decoded["output"] if "output" in decoded else None)
+    if not content:
+        content = content_to_text(decoded["message"] if "message" in decoded else None)
+    if not content:
+        content = content_to_text(decoded["messages"] if "messages" in decoded else None)
+    if not content:
+        content = content_to_text(decoded["completion"] if "completion" in decoded else None)
 
-    thinking = content_to_text(message["reasoning"] if "reasoning" in message else None)
+    thinking = ""
+    if isinstance(message, dict):
+        thinking = content_to_text(message["reasoning"] if "reasoning" in message else None)
     if not thinking:
-        thinking = content_to_text(
-            message["reasoning_content"] if "reasoning_content" in message else None
-        )
+        if isinstance(message, dict):
+            thinking = content_to_text(
+                message["reasoning_content"] if "reasoning_content" in message else None
+            )
     if not thinking:
-        thinking = content_to_text(message["thinking"] if "thinking" in message else None)
+        if isinstance(message, dict):
+            thinking = content_to_text(
+                message["thinking"] if "thinking" in message else None
+            )
     if not thinking:
         thinking = content_to_text(
             first_choice["reasoning"] if "reasoning" in first_choice else None
         )
     if not thinking:
+        thinking = content_to_text(
+            first_choice["reasoning_content"] if "reasoning_content" in first_choice else None
+        )
+    if not thinking:
+        thinking = content_to_text(
+            first_choice["thinking"] if "thinking" in first_choice else None
+        )
+    if not thinking:
         thinking = content_to_text(decoded["reasoning"] if "reasoning" in decoded else None)
+    if not thinking:
+        thinking = content_to_text(
+            decoded["reasoning_content"] if "reasoning_content" in decoded else None
+        )
+    if not thinking:
+        thinking = content_to_text(decoded["thinking"] if "thinking" in decoded else None)
+    if not thinking:
+        thinking = content_to_text(decoded["output"] if "output" in decoded else None)
+
+    # Some models/providers only expose reasoning-like text.
+    if not content and thinking:
+        content = thinking
 
     if not content:
+        choice_keys = sorted(first_choice.keys()) if isinstance(first_choice, dict) else []
+        root_keys = sorted(decoded.keys()) if isinstance(decoded, dict) else []
         raise RuntimeError(
-            "OpenRouter response did not contain parseable assistant content."
+            "OpenRouter response did not contain parseable assistant content. "
+            f"choice_keys={choice_keys}, root_keys={root_keys}"
         )
 
     return {
