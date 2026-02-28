@@ -19,7 +19,7 @@ Both scripts expect a JSON file via `--math_json`. At a minimum, each object sho
 
 Extra keys such as `level`, `type`, and `unique_id` are ignored. You can look at the [math_train_sample.json](math_train_sample.json) file for an example structure, which is based on the [math_full_minus_math500.json](https://github.com/rasbt/math_full_minus_math500/blob/main/math_full_minus_math500.json) we used in chapters 6 and 7. 
 
-To apply it to the full 11,500 samples, simply download the [math_full_minus_math500.json](https://github.com/rasbt/math_full_minus_math500/blob/main/math_full_minus_math500.json) and pass it into the scripts via `--math_json math_full_minus_math500.json`. Note that this will take a long time, so I recommend truncating the file to a few hundred or a thousand examples.
+To apply it to the full 12,000 samples, simply download the [math_full_minus_math500.json](https://github.com/rasbt/math_full_minus_math500/blob/main/math_full_minus_math500.json) and pass it into the scripts via `--math_json math_full_minus_math500.json`. Note that this will take a long time, so I recommend truncating the file to a few hundred or a thousand examples.
 
 
 &nbsp;
