@@ -120,7 +120,7 @@ The entries in the resulting [sample_ollama_outputs.json](sample_ollama_outputs.
 The `"message_thinking"` field contains the chain-of-thought explanation, and `"message_content"` contains the final answer. For instance, these could be connected as
 
 ```python
-complete_answer = f"<think>{data['message_tinking']}</think>\n\n{data['message_content']}"
+complete_answer = f"<think>{data['message_thinking']}</think>\n\n{data['message_content']}"
 ```
 
 That is,
