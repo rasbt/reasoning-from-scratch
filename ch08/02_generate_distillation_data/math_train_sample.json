@@ -1,0 +1,37 @@
+[
+  {
+    "problem":"Let \\[f(x) = \\left\\{\n\\begin{array}{cl} ax+3, &\\text{ if }x>2, \\\\\nx-5 &\\text{ if } -2 \\le x \\le 2, \\\\\n2x-b &\\text{ if } x <-2.\n\\end{array}\n\\right.\\]Find $a+b$ if the piecewise function is continuous (which means that its graph can be drawn without lifting your pencil from the paper).",
+    "level":"Level 5",
+    "type":"Algebra",
+    "answer":"0",
+    "unique_id":0
+  },
+  {
+    "problem":"A rectangular band formation is a formation with $m$ band members in each of $r$ rows, where $m$ and $r$ are integers. A particular band has less than 100 band members. The director arranges them in a rectangular formation and finds that he has two members left over. If he increases the number of members in each row by 1 and reduces the number of rows by 2, there are exactly enough places in the new formation for each band member. What is the largest number of members the band could have?",
+    "level":"Level 5",
+    "type":"Algebra",
+    "answer":"98",
+    "unique_id":1
+  },
+  {
+    "problem":"What is the degree of the polynomial $(4 +5x^3 +100 +2\\pi x^4 + \\sqrt{10}x^4 +9)$?",
+    "level":"Level 3",
+    "type":"Algebra",
+    "answer":"4",
+    "unique_id":2
+  },
+  {
+    "problem":"Evaluate $\\left\\lceil3\\left(6-\\frac12\\right)\\right\\rceil$.",
+    "level":"Level 3",
+    "type":"Algebra",
+    "answer":"17",
+    "unique_id":3
+  },
+  {
+    "problem":"Sam is hired for a 20-day period. On days that he works, he earns $\\$$60. For each day that he does not work, $\\$$30 is subtracted from his earnings. At the end of the 20-day period, he received $\\$$660. How many days did he not work?",
+    "level":"Level 3",
+    "type":"Algebra",
+    "answer":"6",
+    "unique_id":4
+  }
+]
