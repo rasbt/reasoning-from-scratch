@@ -3,6 +3,7 @@
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
 import argparse
+import concurrent.futures
 import json
 import os
 import re
@@ -131,6 +132,15 @@ def parse_args():
         help=(
             "Resume from an existing output JSON file by skipping already "
             "completed rows."
+        ),
+    )
+    parser.add_argument(
+        "--num_processes",
+        type=int,
+        default=1,
+        help=(
+            "Number of parallel OpenRouter requests. "
+            "Use 1 for sequential generation. Default: 1"
         ),
     )
     return parser.parse_args()
@@ -451,6 +461,41 @@ def validate_resume_rows(rows, selected_data):
             )
 
 
+def generate_row(
+    row,
+    shorter_answers_prompt,
+    model,
+    api_key,
+    max_new_tokens,
+    temperature,
+    top_p,
+    timeout,
+    max_retries,
+    retry_delay,
+):
+    prompt = render_prompt(
+        row["problem"],
+        shorter_answers_prompt=shorter_answers_prompt,
+    )
+    response = query_openrouter_chat(
+        prompt=prompt,
+        model=model,
+        api_key=api_key,
+        max_new_tokens=max_new_tokens,
+        temperature=temperature,
+        top_p=top_p,
+        timeout=timeout,
+        max_retries=max_retries,
+        retry_delay=retry_delay,
+    )
+    return {
+        "problem": row["problem"],
+        "gtruth_answer": row["answer"],
+        "message_thinking": response["message_thinking"],
+        "message_content": response["message_content"],
+    }
+
+
 if __name__ == "__main__":
     args = parse_args()
 
@@ -459,6 +504,8 @@ if __name__ == "__main__":
         raise SystemExit(
             "OpenRouter API key missing. Set OPENROUTER_API_KEY."
         )
+    if args.num_processes < 1:
+        raise SystemExit("--num_processes must be >= 1.")
 
     if args.prompt is not None:
         response = query_openrouter_chat(
@@ -540,47 +587,118 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
-    for offset, row in enumerate(remaining_data, start=1):
-        idx = start_idx + offset
-        prompt = render_prompt(
-            row["problem"],
-            shorter_answers_prompt=args.shorter_answers_prompt,
-        )
-        response = query_openrouter_chat(
-            prompt=prompt,
-            model=args.model,
-            api_key=api_key,
-            max_new_tokens=args.max_new_tokens,
-            temperature=args.temperature,
-            top_p=args.top_p,
-            timeout=args.timeout,
-            max_retries=args.max_retries,
-            retry_delay=args.retry_delay,
-        )
+    if args.num_processes == 1:
+        for offset, row in enumerate(remaining_data, start=1):
+            idx = start_idx + offset
+            generated_row = generate_row(
+                row=row,
+                shorter_answers_prompt=args.shorter_answers_prompt,
+                model=args.model,
+                api_key=api_key,
+                max_new_tokens=args.max_new_tokens,
+                temperature=args.temperature,
+                top_p=args.top_p,
+                timeout=args.timeout,
+                max_retries=args.max_retries,
+                retry_delay=args.retry_delay,
+            )
 
-        rows.append(
-            {
-                "problem": row["problem"],
-                "gtruth_answer": row["answer"],
-                "message_thinking": response["message_thinking"],
-                "message_content": response["message_content"],
-            }
-        )
-        write_rows_json_incremental(rows, out_file)
+            rows.append(generated_row)
+            write_rows_json_incremental(rows, out_file)
 
-        progress_msg = eta_progress_message(
-            processed=offset,
-            total=remaining_total,
-            start_time=start_time,
-            show_eta=True,
-            label="MATH-500",
-        )
+            progress_msg = eta_progress_message(
+                processed=offset,
+                total=remaining_total,
+                start_time=start_time,
+                show_eta=True,
+                label="MATH-500",
+            )
 
-        if args.verbose:
-            print(f"{progress_msg}")
-            print(f"{idx}/{num_examples} -> {rows[-1]['message_content']}")
-        else:
-            print(f"{idx}/{num_examples} | {progress_msg}", end="\r", flush=True)
+            if args.verbose:
+                print(f"{progress_msg}")
+                print(f"{idx}/{num_examples} -> {rows[-1]['message_content']}")
+            else:
+                print(f"{idx}/{num_examples} | {progress_msg}", end="\r", flush=True)
+    else:
+        print(f"Parallel requests enabled: {args.num_processes}")
+        next_submit = 0
+        next_write = 0
+        futures = {}
+        completed_rows = {}
+
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=args.num_processes
+        ) as executor:
+            while next_write < remaining_total:
+                while (
+                    next_submit < remaining_total
+                    and len(futures) < args.num_processes
+                ):
+                    row = remaining_data[next_submit]
+                    future = executor.submit(
+                        generate_row,
+                        row,
+                        args.shorter_answers_prompt,
+                        args.model,
+                        api_key,
+                        args.max_new_tokens,
+                        args.temperature,
+                        args.top_p,
+                        args.timeout,
+                        args.max_retries,
+                        args.retry_delay,
+                    )
+                    futures[future] = next_submit
+                    next_submit += 1
+
+                done, _ = concurrent.futures.wait(
+                    futures,
+                    return_when=concurrent.futures.FIRST_COMPLETED,
+                )
+
+                failed_at = None
+                failed_exc = None
+                for future in done:
+                    offset0 = futures.pop(future)
+                    try:
+                        completed_rows[offset0] = future.result()
+                    except Exception as exc:
+                        if failed_at is None:
+                            failed_at = offset0
+                            failed_exc = exc
+
+                while next_write in completed_rows:
+                    rows.append(completed_rows.pop(next_write))
+                    write_rows_json_incremental(rows, out_file)
+
+                    processed = next_write + 1
+                    idx = start_idx + processed
+                    progress_msg = eta_progress_message(
+                        processed=processed,
+                        total=remaining_total,
+                        start_time=start_time,
+                        show_eta=True,
+                        label="MATH-500",
+                    )
+
+                    if args.verbose:
+                        print(f"{progress_msg}")
+                        print(f"{idx}/{num_examples} -> {rows[-1]['message_content']}")
+                    else:
+                        print(
+                            f"{idx}/{num_examples} | {progress_msg}",
+                            end="\r",
+                            flush=True,
+                        )
+                    next_write += 1
+
+                if failed_at is not None:
+                    for pending_future in futures:
+                        pending_future.cancel()
+                    failing_idx = start_idx + failed_at + 1
+                    raise RuntimeError(
+                        f"Generation failed at dataset row {failing_idx}."
+                    ) from failed_exc
 
     write_rows_json_incremental(rows, out_file)
 
