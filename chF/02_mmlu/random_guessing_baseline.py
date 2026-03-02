@@ -20,25 +20,26 @@ def gold_letter(ans):
 
 def main():
     parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="Show gold answer distribution for an MMLU subset and a random-guess baseline."
     )
     parser.add_argument(
         "--subset",
         type=str,
         default="high_school_mathematics",
-        help="MMLU subset name (default: 'high_school_mathematics').",
+        help="MMLU subset name.",
     )
     parser.add_argument(
         "--seed",
         type=int,
         default=42,
-        help="Random seed for the random-guess baseline (default: 42).",
+        help="Random seed for the random-guess baseline.",
     )
     parser.add_argument(
         "--trials",
         type=int,
         default=10_000,
-        help="Number of random-guess trials (default: 10,000).",
+        help="Number of random-guess trials.",
     )
     args = parser.parse_args()
 

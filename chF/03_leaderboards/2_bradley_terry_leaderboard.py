@@ -47,7 +47,7 @@ def bradley_terry_torch(vote_pairs, device):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Bradley-Terry leaderboard.")
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description="Bradley-Terry leaderboard.")
     parser.add_argument("--path", type=str, help="Path to votes JSON")
     args = parser.parse_args()
 

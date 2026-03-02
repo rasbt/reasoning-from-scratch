@@ -136,31 +136,31 @@ def evaluate_math500_batched(
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "--device",
         type=str,
         default="auto",
-        help="Device to use: 'auto' (default), or any torch device string like 'cpu', 'cuda', 'cuda:0', 'mps'.",
+        help="Device to use: 'auto', or any torch device string like 'cpu', 'cuda', 'cuda:0', 'mps'.",
     )
     parser.add_argument(
         "--which_model",
         type=str,
         default="base",
         choices=["base", "reasoning", "instruct"],
-        help="Model variant to load. Defaults to 'base'.",
+        help="Model variant to load",
     )
     parser.add_argument(
         "--dataset_size",
         type=int,
         default=10,
-        help="Number of MATH-500 examples to evaluate. Default: 10",
+        help="Number of MATH-500 examples to evaluate",
     )
     parser.add_argument(
         "--max_new_tokens",
         type=int,
         default=2048,
-        help="Max new tokens for generation. Default: 2048",
+        help="Max new tokens for generation",
     )
     parser.add_argument(
         "--compile",
@@ -177,7 +177,7 @@ def parse_args():
         "--batch_size",
         type=int,
         default=4,
-        help="Batch size for batched generation. Default: 4",
+        help="Batch size for batched generation",
     )
     parser.add_argument(
         "--verbose",

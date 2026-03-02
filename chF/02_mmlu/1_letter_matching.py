@@ -88,13 +88,14 @@ def evaluate_mmlu_letter(
 
 def main():
     parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="Zero-shot MMLU letter evaluator (A/B/C/D matching)."
     )
     parser.add_argument(
         "--device",
         type=str,
         default="auto",
-        help="Device to use: 'auto' (default), or any torch device string like "
+        help="Device to use: 'auto', or any torch device string like "
              "'cpu', 'cuda', 'cuda:0', 'mps'.",
     )
     parser.add_argument(
@@ -102,14 +103,13 @@ def main():
         type=str,
         default="base",
         choices=["base", "reasoning"],
-        help="Model variant to load. Defaults to 'base'.",
+        help="Model variant to load",
     )
     parser.add_argument(
         "--subsets",
         type=str,
         default="high_school_mathematics",
-        help="Comma-separated subset names or 'all'. "
-             "Default: 'high_school_mathematics'.",
+        help="Comma-separated subset names or 'all'.",
     )
     args = parser.parse_args()
 

@@ -22,7 +22,7 @@ from reasoning_from_scratch.qwen3 import (
 ############################
 # Parse command-line args
 ############################
-parser = argparse.ArgumentParser(description="Run Qwen3 text generation")
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description="Run Qwen3 text generation")
 parser.add_argument(
     "--device",
     type=str,
@@ -33,13 +33,13 @@ parser.add_argument(
 parser.add_argument(
     "--cache",
     action="store_true",
-    help="Use KV cache during generation (default: False)."
+    help="Use KV cache during generation."
 )
 
 parser.add_argument(
     "--compile",
     action="store_true",
-    help="Compile PyTorch model (default: False)."
+    help="Compile PyTorch model."
 )
 
 parser.add_argument(

@@ -21,31 +21,31 @@ from reasoning_from_scratch.qwen3 import Qwen3Model, QWEN_CONFIG_06_B
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "--device",
         type=str,
         default="auto",
-        help="Device to use: auto, cpu, cuda, cuda:0, mps, etc. Default: auto",
+        help="Device to use: auto, cpu, cuda, cuda:0, mps, etc",
     )
     parser.add_argument(
         "--dataset_size",
         type=int,
         default=500,
-        help="Number of MATH-500 examples to evaluate. Default: 500",
+        help="Number of MATH-500 examples to evaluate",
     )
     parser.add_argument(
         "--which_model",
         type=str,
         default="reasoning",
         choices=["base", "reasoning", "instruct"],
-        help="Model variant to generate answers with. Default: reasoning",
+        help="Model variant to generate answers with",
     )
     parser.add_argument(
         "--max_new_tokens",
         type=int,
         default=2048,
-        help="Max new tokens for generation. Default: 2048",
+        help="Max new tokens for generation",
     )
     parser.add_argument(
         "--compile",
@@ -62,7 +62,7 @@ def parse_args():
         "--out_file",
         type=str,
         default="math500_qwen3_answers.json",
-        help="Output JSON file path. Default: math500_qwen3_answers.json",
+        help="Output JSON file path",
     )
     parser.add_argument(
         "--verbose",

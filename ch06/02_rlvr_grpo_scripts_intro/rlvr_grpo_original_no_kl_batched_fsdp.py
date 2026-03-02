@@ -462,13 +462,14 @@ def main_worker(rank, world_size, args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="Train RLVR GRPO on the MATH dataset."
     )
     parser.add_argument(
         "--steps",
         type=int,
         default=None,
-        help="Number of training steps (default: len(math_data)).",
+        help="Number of training steps.",
     )
     parser.add_argument(
         "--num_rollouts",
@@ -480,7 +481,7 @@ if __name__ == "__main__":
         "--batch_size",
         type=int,
         default=None,
-        help="Number of rollouts to generate in a batch (default: num_rollouts).",
+        help="Number of rollouts to generate in a batch.",
     )
     parser.add_argument(
         "--max_new_tokens",
@@ -524,7 +525,7 @@ if __name__ == "__main__":
         "--num_gpus",
         type=int,
         default=1,
-        help="Number of GPUs to use for FSDP (default: 1).",
+        help="Number of GPUs to use for FSDP.",
     )
     args = parser.parse_args()
 
