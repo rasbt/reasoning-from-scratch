@@ -52,7 +52,7 @@ def moving_average(values, window):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Plot training metrics.")
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description="Plot training metrics.")
     parser.add_argument(
         "--csv",
         required=True,
@@ -63,7 +63,7 @@ def main():
         "--moving_average",
         type=int,
         default=0,
-        help="Moving average window (default: 0 disables).",
+        help="Moving average window.",
     )
     args = parser.parse_args()
 

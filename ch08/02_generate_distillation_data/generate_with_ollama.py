@@ -33,12 +33,12 @@ SHORTER_ANSWERS_PROMPT_TEMPLATE = (
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "--dataset_size",
         type=int,
         default=500,
-        help="Number of MATH-500 examples to evaluate. Default: 500",
+        help="Number of MATH-500 examples to evaluate",
     )
     parser.add_argument(
         "--prompt",
@@ -62,43 +62,43 @@ def parse_args():
         "--model",
         type=str,
         default="qwen3:30b-thinking",
-        help="Ollama model name. Default: qwen3:30b-thinking",
+        help="Ollama model name",
     )
     parser.add_argument(
         "--ollama_url",
         type=str,
         default="http://localhost:11434/api/chat",
-        help="Ollama chat API URL. Default: http://localhost:11434/api/chat",
+        help="Ollama chat API URL",
     )
     parser.add_argument(
         "--max_new_tokens",
         type=int,
         default=2048,
-        help="Max new tokens for generation (maps to num_predict). Default: 2048",
+        help="Max new tokens for generation (maps to num_predict)",
     )
     parser.add_argument(
         "--temperature",
         type=float,
         default=0.0,
-        help="Sampling temperature. Default: 0.0",
+        help="Sampling temperature",
     )
     parser.add_argument(
         "--timeout",
         type=int,
         default=600,
-        help="Request timeout in seconds. Default: 600",
+        help="Request timeout in seconds",
     )
     parser.add_argument(
         "--max_retries",
         type=int,
         default=3,
-        help="Number of retries per sample on request failure. Default: 3",
+        help="Number of retries per sample on request failure",
     )
     parser.add_argument(
         "--retry_delay",
         type=float,
         default=3.0,
-        help="Seconds to wait between retries. Default: 3.0",
+        help="Seconds to wait between retries",
     )
     parser.add_argument(
         "--out_file",

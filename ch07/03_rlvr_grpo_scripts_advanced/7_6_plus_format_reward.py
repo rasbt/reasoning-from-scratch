@@ -527,13 +527,14 @@ def train_rlvr_grpo(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="Train RLVR GRPO on the MATH dataset."
     )
     parser.add_argument(
         "--steps",
         type=int,
         default=None,
-        help="Number of training steps (default: len(math_data)).",
+        help="Number of training steps.",
     )
     parser.add_argument(
         "--num_rollouts",

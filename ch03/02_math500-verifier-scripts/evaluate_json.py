@@ -13,7 +13,7 @@ from reasoning_from_scratch.ch03 import (
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "--json_path",
         type=str,
@@ -24,13 +24,13 @@ def parse_args():
         "--gtruth_answer",
         type=str,
         default="gtruth_answer",
-        help="Key name for the ground-truth answer. Default: gtruth_answer",
+        help="Key name for the ground-truth answer",
     )
     parser.add_argument(
         "--generated_text",
         type=str,
         default="generated_text",
-        help="Key name for generated model output. Default: generated_text",
+        help="Key name for generated model output",
     )
     return parser.parse_args()
 

@@ -537,13 +537,14 @@ def train_rlvr_grpo(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="Train RLVR GRPO on the MATH dataset."
     )
     parser.add_argument(
         "--steps",
         type=int,
         default=None,
-        help="Number of training steps (default: len(math_data)).",
+        help="Number of training steps.",
     )
     parser.add_argument(
         "--num_rollouts",
@@ -591,7 +592,7 @@ if __name__ == "__main__":
         "--kl_coeff",
         type=float,
         default=0.0,
-        help="KL penalty coefficient (default disabled for math).",
+        help="KL penalty coefficient; set to 0.0 to disable for math.",
     )
     parser.add_argument(
         "--off_policy_delta",

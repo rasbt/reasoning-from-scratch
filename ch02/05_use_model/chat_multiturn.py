@@ -25,7 +25,7 @@ from reasoning_from_scratch.qwen3 import (
     QWEN_CONFIG_06_B
 )
 
-parser = argparse.ArgumentParser(description="Run Qwen3 text generation (interactive REPL)")
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description="Run Qwen3 text generation (interactive REPL)")
 parser.add_argument(
     "--device",
     type=str,
@@ -37,17 +37,17 @@ parser.add_argument(
     "--max_new_tokens",
     type=int,
     default=2048,
-    help="Maximum number of new tokens to generate in each turn (default: 2048)."
+    help="Maximum number of new tokens to generate in each turn."
 )
 parser.add_argument(
     "--compile",
     action="store_true",
-    help="Compile PyTorch model (default: False)."
+    help="Compile PyTorch model."
 )
 parser.add_argument(
     "--reasoning",
     action="store_true",
-    help="Use reasoning model variant (default: False)."
+    help="Use reasoning model variant."
 )
 
 args = parser.parse_args()

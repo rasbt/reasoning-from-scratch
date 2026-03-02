@@ -24,6 +24,7 @@ def elo_ratings(vote_pairs, k_factor=32, initial_rating=1000):
 
 def main():
     parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="Compute Elo leaderboard."
     )
     parser.add_argument("--path", type=str, help="Path to votes JSON")

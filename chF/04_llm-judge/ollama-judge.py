@@ -131,7 +131,7 @@ def parse_score(judge_text, default=3):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "--device",
         type=str,
@@ -143,31 +143,31 @@ def parse_args():
         type=str,
         default="base",
         choices=["base", "reasoning"],
-        help="Candidate variant to use. Defaults to 'base'.",
+        help="Candidate variant to use",
     )
     parser.add_argument(
         "--dataset_size",
         type=int,
         default=10,
-        help="Number of MATH-500 examples to evaluate. Default: 10",
+        help="Number of MATH-500 examples to evaluate",
     )
     parser.add_argument(
         "--max_new_tokens",
         type=int,
         default=2048,
-        help="Max new tokens for candidate generation. Default: 2048",
+        help="Max new tokens for candidate generation",
     )
     parser.add_argument(
         "--url",
         type=str,
         default="http://localhost:11434/api/chat",
-        help="Ollama chat endpoint for the judge. Default: 'http://localhost:11434/api/chat'"
+        help="Ollama chat endpoint for the judge"
     )
     parser.add_argument(
         "--judge_model",
         type=str,
         default="gpt-oss:20b",
-        help="Judge model name (Ollama). Used only for scoring. Default: 'gpt-oss:20b'",
+        help="Judge model name (Ollama). Used only for scoring",
     )
     return parser.parse_args()
 
