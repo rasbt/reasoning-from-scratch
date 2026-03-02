@@ -58,6 +58,8 @@ uv run ../../ch03/02_math500-verifier-scripts/evaluate_math500.py \
 --which_model base
 ```
 
+- Tip: You can add `--show_eta` to the code execution command above to show a time estimate of the total runtime of the script specific to your machine
+
 **Row 2**
 
 ```bash
