@@ -15,6 +15,7 @@ from reasoning_from_scratch.ch03 import (
     grade_answer,
     load_model_and_tokenizer,
     load_tokenizer_only,
+    eta_progress_message,
 )
 from reasoning_from_scratch.ch04 import top_p_filter
 from reasoning_from_scratch.ch06 import (
@@ -273,6 +274,7 @@ def train_rlvr_grpo(
     checkpoint_every=50,
     checkpoint_dir=CHECKPOINT_DIR,
     skip_zero_advantage_updates=False,
+    show_eta=False,
 ):
     if steps is None:
         steps = len(math_data)
@@ -280,6 +282,7 @@ def train_rlvr_grpo(
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
     model.train()
     current_step = 0
+    train_start_time = time.time() if show_eta else None
     try:
         for step in range(steps):
             step_start = time.perf_counter()
@@ -331,12 +334,24 @@ def train_rlvr_grpo(
                 )
                 print(f"Saved checkpoint to {ckpt_path}")
 
+            eta_suffix = ""
+            if show_eta:
+                eta_msg = eta_progress_message(
+                    processed=current_step,
+                    total=steps,
+                    start_time=train_start_time,
+                    show_eta=True,
+                    label="Step",
+                ).rstrip()
+                eta_part = eta_msg.split(" | ", 1)[-1]
+                eta_suffix = f" | {eta_part}"
             print(
                 f"[Step {current_step}/{steps}] "
                 f"loss={stats['loss']:.4f} "
                 f"reward_avg={reward_avg:.3f} "
                 f"tok/sec={tokens_per_sec:.1f} "
                 f"avg_resp_len={avg_response_len:.1f}"
+                f"{eta_suffix}"
             )
     except KeyboardInterrupt:
         ckpt_path = save_checkpoint(
@@ -411,6 +426,11 @@ if __name__ == "__main__":
             "near zero."
         ),
     )
+    parser.add_argument(
+        "--show_eta",
+        action="store_true",
+        help="Append ETA to step logs.",
+    )
     args = parser.parse_args()
 
     if args.seed is not None and str(args.seed).strip().lower() != "none":
@@ -441,6 +461,7 @@ if __name__ == "__main__":
         temperature=args.temperature,
         top_p=args.top_p,
         skip_zero_advantage_updates=args.skip_zero_advantage_updates,
+        show_eta=args.show_eta,
     )
 
     if torch.cuda.is_available():
