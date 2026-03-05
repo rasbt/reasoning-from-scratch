@@ -74,7 +74,7 @@ def calc_next_token_probas(model, tokenizer, prompt, device):
 
 
 @torch.inference_mode()
-def calc_next_token_logprobas(model, tokenizer, prompt, device):
+def calc_next_token_logprobas(model, tokenizer, prompt, device, show=True):
 
     token_ids = torch.tensor(tokenizer.encode(prompt), device=device)
 
@@ -86,15 +86,14 @@ def calc_next_token_logprobas(model, tokenizer, prompt, device):
     next_ids = token_ids[1:]
     next_token_logprobas = all_logprobas[t_idx, next_ids]
 
-    print(
-        "Next-token log-probabilities:",
-        [p.item() for p in next_token_logprobas]
-    )
     # We replace the product with a sum
-    print(
-        "Joint log-probability:",
-        torch.sum(next_token_logprobas)
-    )
+    sum_next_token_logprobas = torch.sum(next_token_logprobas)
+
+    if show:
+        print("Next-token log-probabilities:", next_token_logprobas)
+        print("Joint log-probability:", sum_next_token_logprobas)
+    else:
+        return next_token_logprobas, sum_next_token_logprobas
 
 
 @torch.inference_mode()
