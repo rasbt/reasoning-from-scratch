@@ -3,11 +3,32 @@
 This folder contains scripts to generate teacher outputs for math problems, which can be used as distillation data for training a smaller reasoning model, as covered in chapter 8.
 
 &nbsp;
+**Table of contents:**
+
+- [Files](#files)
+- [Input Data Format](#input-data-format)
+- [Output Format](#output-format)
+- [1. Local generation with Ollama](#1-local-generation-with-ollama)
+  - [1.1 Ollama setup](#11-ollama-setup)
+  - [1.2 Local data generation with Ollama](#12-local-data-generation-with-ollama)
+  - [1.3 Ollama troubleshooting](#13-ollama-troubleshooting)
+    - [1.3.1 Ollama not running](#131-ollama-not-running)
+    - [1.3.2 Ollama model not downloaded](#132-ollama-model-not-downloaded)
+- [2. Hosted generation with OpenRouter](#2-hosted-generation-with-openrouter)
+  - [2.1 OpenRouter setup](#21-openrouter-setup)
+  - [2.2 Data generation with OpenRouter](#22-data-generation-with-openrouter)
+- [Datasets for distillation](#datasets-for-distillation)
+- [Dataset statistics](#dataset-statistics)
+- [Teacher accuracy](#teacher-accuracy)
+
+
+&nbsp;
 ## Files
 
-- `generate_with_ollama.py`: Uses the Ollama to generate the model answers for distillation. This script is recommended if  you want to distill from smaller models you can run locally, for example, Qwen3 4B, gpt-oss 20B, DeepSeek R1 32B, etc. 
-- `generate_with_openrouter.py`: Uses models through the OpenRouter API to generate the model answers distillation. This is recommended when using larger models like DeepSeek R1 (671B) or Kimi K2.5 (1T) that are too large to be run locally.
-- `math_train_sample.json`: Small sample dataset for quick sanity checks.
+- [average_field_lengths_json.py](average_field_lengths_json.py): Utility script to print basic statistics of the generated datasets.
+- [generate_with_ollama.py](generate_with_ollama.py): Uses the Ollama to generate the model answers for distillation. This script is recommended if  you want to distill from smaller models you can run locally, for example, Qwen3 4B, gpt-oss 20B, DeepSeek R1 32B, etc. 
+- [generate_with_openrouter.py](generate_with_openrouter.py): Uses models through the OpenRouter API to generate the model answers distillation. This is recommended when using larger models like DeepSeek R1 (671B) or Kimi K2.5 (1T) that are too large to be run locally.
+- [math_train_sample.json](math_train_sample.json): Small sample dataset for quick sanity checks.
 
 &nbsp;
 ## Input Data Format
@@ -228,3 +249,45 @@ The [sample_openrouter_outputs.json](sample_openrouter_outputs.json) output file
 
 **Tip:** If you are generating a lot of data, running this sequential distillation process can be very slow (e.g., ~100 hours for 12,000 answers with DeepSeek R1). In this case, I recommend running multiple parallel data generation threads via `--num_processes`. For instance, using `--num_processes 50` with the DeepSeek R1 models cuts the runtime from 100 hours down to approximately 2 hours.
 
+
+&nbsp;
+## Datasets for distillation
+
+A collection of datasets generated via the OpenRouter approach described above can be found here: [https://huggingface.co/datasets/rasbt/math_distill](https://huggingface.co/datasets/rasbt/math_distill).
+
+&nbsp;
+## Dataset statistics
+
+To check the datasets statistics, use the [average_field_lengths_json.py] script:
+
+```bash
+uv run average_field_lengths_json.py \
+--json_path sample_openrouter_outputs.json
+```
+
+```
+tokenizer-reasoning.json: 100% (10 MiB / 10 MiB)
+Records: 5
+Tokenizer: reasoning
+Field             AvgTokens  MinTokens  MaxToken  Count
+gtruth_answer          9.40          9        10      5
+message_content      196.00        166       259      5
+message_thinking     933.20        449      1676      5
+problem               77.80         30       121      5
+```
+
+&nbsp;
+## Teacher accuracy
+
+To calculate the accuracy of the model that generated the dataset (i.e., the teacher), use the [../../ch03/02_math500-verifier-scripts/evaluate_json.py](../../ch03/02_math500-verifier-scripts/evaluate_json.py) script:
+
+```bash
+uv run ../../ch03/02_math500-verifier-scripts/evaluate_json.py \
+--json_path sample_openrouter_outputs.json \
+--gtruth_answer gtruth_answer \
+--generated_text message_content
+```
+
+```
+Accuracy: 100.0% (5/5)
+```
