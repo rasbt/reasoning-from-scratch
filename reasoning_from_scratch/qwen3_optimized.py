@@ -349,7 +349,7 @@ class Qwen3Tokenizer:
         tok_path = Path(tokenizer_file_path)
         if not tok_path.is_file():
             raise FileNotFoundError(
-                f"Tokenizer file '{tok_path}' not found. Please allocate it's available."
+                f"Tokenizer file '{tok_path}' not found. Please ensure it's available."
             )
 
         self._tok = Tokenizer.from_file(str(tok_path))
