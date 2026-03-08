@@ -44,7 +44,7 @@ If it doesn't exist, you could then try to install a different Python runtime vi
 sudo apt-get install -y python3.12-dev build-essential
 ````
 
-Orm you could disable the C++ requirements in PyTorch before calling `torch.compile`:
+Or you could disable the C++ requirements in PyTorch before calling `torch.compile`:
 
 ```python
 import torch
