@@ -134,6 +134,9 @@ Several folders contain optional materials as a bonus for interested readers:
   - [GRPO scripts](ch06/02_rlvr_grpo_scripts_intro) with a batched mode
 - **Chapter 7: Improving GRPO for Reinforcement Learning**
   - [Advanced GRPO scripts](ch07/03_rlvr_grpo_scripts_advanced) (including DeepSeek-V3.2-, Olmo3-, and GDPO-style training)
+- **Chapter 8: Distilling Reasoning Models for Efficient Reasoning**
+  - [Generate distillation data](ch08/02_generate_distillation_data) (teacher-output generation via Ollama or OpenRouter)
+  - [Train with distillation](ch08/04_train_with_distillation) (including single-example and batched distillation scripts)
 - **Appendix F: Common Approaches to LLM Evaluation**
   - [MMLU Evaluation Methods](chF/02_mmlu)
   - [LLM leaderboards](chF/03_leaderboards)
