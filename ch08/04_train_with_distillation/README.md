@@ -170,21 +170,41 @@ For the experiments below, I used the `deepseek-r1-math-train.json` and `qwen3-2
 
 &nbsp;
 
-|      | Teacher data                         | Epoch | MATH-500 Acc |
-| ---- | ------------------------------------ | ----- | ------------ |
-| 1    | DeepSeek R1 distillation data        | 1     | 30.6%        |
-| 2    | DeepSeek R1 distillation data        | 2     | 32.4%        |
-| 3    | DeepSeek R1 distillation data        | 3     | 33.6%        |
-| 4    | Qwen3 235B A22B distillation data    | 1     | 45.0%        |
-| 5    | Qwen3 235B A22B distillation data    | 2     | 43.8%        |
-| 6    | Qwen3 235B A22B distillation data    | 3     | 44.2%        |
+|      | Teacher data                         | Epoch | MATH-500 Acc | Final val loss |
+| ---- | ------------------------------------ | ----- | ------------ | -------------- |
+| 1    | Base (chapter 3)                     | -     | 15.2%        | -              |
+| 2    | Reasoning (chapter 3)                | -     | 48.2%        | -              |
+| 3    | DeepSeek R1 distillation data        | 1     | 30.6%        | 0.5436         |
+| 4    | DeepSeek R1 distillation data        | 2     | 32.4%        | 0.5349         |
+| 5    | DeepSeek R1 distillation data        | 3     | 33.6%        | 0.5343         |
+| 6    | Qwen3 235B A22B distillation data    | 1     | 45.0%        | 0.4043         |
+| 7    | Qwen3 235B A22B distillation data    | 2     | 43.8%        | 0.3963         |
+| 8    | Qwen3 235B A22B distillation data    | 3     | 44.2%        | 0.3948         |
 
 The training takes about 30 min on an H100 and about 3 hours on a DGX Spark and uses up to 15 GB RAM.
 
 Below are the code snippets to reproduce the results reported in the table.
 
 &nbsp;
-**Rows 1, 2, & 3**
+**Row 1**
+
+```bash
+uv run ../../ch03/02_math500-verifier-scripts/evaluate_math500.py \
+--dataset_size 500 \
+--which_model base
+```
+
+&nbsp;
+**Row 2**
+
+```bash
+uv run ../../ch03/02_math500-verifier-scripts/evaluate_math500.py \
+--dataset_size 500 \
+--which_model reasoning
+```
+
+&nbsp;
+**Rows 3, 4, & 5**
 
 ```bash
 uv run distill.py \
@@ -208,10 +228,10 @@ uv run ../../ch03/02_math500-verifier-scripts/evaluate_math500.py \
 --checkpoint_path run-1/checkpoints/distill/qwen3-0.6B-distill-step06682-epoch1.pth
 ```
 
-For row 2 and row 3, replace the checkpoint path with `...step13364-epoch2.pth` and `...step20046-epoch3.pth`, respectively.
+For row 4 and row 5, replace the checkpoint path with `...step13364-epoch2.pth` and `...step20046-epoch3.pth`, respectively.
 
 &nbsp;
-**Rows 4, 5, & 6**
+**Rows 6, 7, & 8**
 
 ```bash
 uv run distill.py \
@@ -234,4 +254,4 @@ uv run ../../ch03/02_math500-verifier-scripts/evaluate_math500.py \
 --checkpoint_path run_11/checkpoints/distill/qwen3-0.6B-distill-step05746-epoch1.pth
 ```
 
-For row 5 and row 6, replace the checkpoint path with `...step11492-epoch2.pth` and `...step17238-epoch3.pth`, respectively.
+For row 7 and row 8, replace the checkpoint path with `...step11492-epoch2.pth` and `...step17238-epoch3.pth`, respectively.
