@@ -309,6 +309,7 @@ def train_distillation_batched(
         for batch_examples in iter_batches(epoch_examples, batch_size):
             global_step += 1
             step_start = time.time()
+            optimizer.zero_grad()
 
             loss, supervised_tokens = compute_batch_loss(
                 model=model,
@@ -317,7 +318,6 @@ def train_distillation_batched(
                 device=device,
             )
 
-            optimizer.zero_grad()
             loss.backward()
             if grad_clip_norm is not None:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip_norm)
