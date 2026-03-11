@@ -60,7 +60,7 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 | Ch 5: Inference-Time Scaling via Self-Refinement            | - [ch05_main.ipynb](ch05/01_main-chapter-code/ch05_main.ipynb)<br/>- [ch05_exercise-solutions.ipynb](ch05/01_main-chapter-code/ch05_exercise-solutions.ipynb) |
 | Ch 6: Training Reasoning Models with Reinforcement Learning | - [ch06_main.ipynb](ch06/01_main-chapter-code/ch06_main.ipynb)<br/>- [ch06_exercise-solutions.ipynb](ch06/01_main-chapter-code/ch06_exercise-solutions.ipynb) |
 | Ch 7: Improving GRPO for Reinforcement Learning             | - [ch07_main.ipynb](ch07/01_main-chapter-code/ch07_main.ipynb)<br/>- [ch07_exercise-solutions.ipynb](ch07/01_main-chapter-code/ch07_exercise-solutions.ipynb) |
-| Ch 8: Distilling Reasoning Models for Efficient Reasoning   | TBA                                                          |
+| Ch 8: Distilling Reasoning Models for Efficient Reasoning   | - [ch08_main.ipynb](ch08/01_main-chapter-code/ch08_main.ipynb) |
 | Appendix A: References and Further Reading                  | No code                                                      |
 | Appendix B: Exercise Solutions                              | Code and solutions are in each chapter's subfolder           |
 | Appendix C: Qwen3 LLM Source Code                           | - [chC_main.ipynb](chC/01_main-chapter-code/chC_main.ipynb)  |
