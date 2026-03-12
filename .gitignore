@@ -3,6 +3,8 @@
 *.png
 
 # Other temporary files
+ch08/01_main-chapter-code/deepseek-r1-math-train.json
+ch08/01_main-chapter-code/evaluate_json.py
 *-draft.ipynb
 ch07/01_main-chapter-code/*.py
 checkpoints
