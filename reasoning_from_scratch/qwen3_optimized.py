@@ -587,7 +587,6 @@ def generate_text_basic_cache(
     max_new_tokens,
     eos_token_id=None
 ):
-
     input_length = token_ids.shape[1]
     model.eval()
     cache = KVCache(
@@ -600,6 +599,7 @@ def generate_text_basic_cache(
     )
     model.reset_kv_cache()
     out = model(token_ids, cache=cache)[:, -1]
+    generated_tokens = []
 
     for _ in range(max_new_tokens):
         next_token = torch.argmax(out, dim=-1, keepdim=True)
@@ -608,9 +608,11 @@ def generate_text_basic_cache(
                 and torch.all(next_token == eos_token_id)):
             break
 
-        token_ids = torch.cat([token_ids, next_token], dim=1)
+        generated_tokens.append(next_token)
         out = model(next_token, cache=cache)[:, -1]
 
+    if generated_tokens:
+        return torch.cat(generated_tokens, dim=1)
     return token_ids[:, input_length:]
 
 
