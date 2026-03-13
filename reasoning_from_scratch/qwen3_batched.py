@@ -330,6 +330,7 @@ def generate_text_basic_batched_cache(
 
     # Decode
     cur_attn = attn_mask
+    generated_tokens = []
     for _ in range(max_new_tokens):
         # If all sequences are already finished, stop
         if eos_token_id is not None and finished is not None and torch.all(finished):
@@ -349,12 +350,14 @@ def generate_text_basic_batched_cache(
 
         # Advance one token with KV cache
         out = model(next_token, cache=cache, attn_mask=cur_attn)[:, -1]
-        token_ids = torch.cat([token_ids, next_token], dim=1)
+        generated_tokens.append(next_token)
 
         # Update finished mask after appending this step's token
         if eos_token_id is not None:
             finished = finished | (next_token.squeeze(1) == eos_token_id)
 
+    if generated_tokens:
+        return torch.cat(generated_tokens, dim=1)
     return token_ids[:, input_length:]
 
 
