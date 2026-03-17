@@ -19,6 +19,11 @@ tmp
 qwen3-0.6B.pth
 qwen3-0.6B-reasoning.pth
 qwen3-0.6B-base.pth
+qwen3-1.7B-base
+qwen3-4b-base
+qwen3-8b-base
+qwen3-14B-base
+qwen3-32B-base
 tokenizer-reasoning.json
 tokenizer.json
 tokenizer-base.json
