@@ -4,8 +4,10 @@
 
 import json
 import math
+import os
 
 import matplotlib
+import pytest
 import torch
 
 import reasoning_from_scratch.ch08 as ch08
@@ -57,6 +59,10 @@ class DummyConstLogitModel:
         self.training = True
 
 
+run_real_download = os.environ.get("RUN_REAL_DOWNLOAD_TESTS", "0") == "1"
+skip_expensive = os.environ.get("SKIP_EXPENSIVE", "0") == "1"
+
+
 def test_load_distill_data_uses_cached_file_without_request(
     tmp_path, monkeypatch
 ):
@@ -99,6 +105,23 @@ def test_load_distill_data_downloads_when_missing(tmp_path, monkeypatch):
     assert calls["url"].endswith("deepseek-r1-math-train.json")
     assert response.raise_called is True
     assert json.loads(out.read_text(encoding="utf-8")) == payload
+
+
+@pytest.mark.skipif(
+    skip_expensive or not run_real_download,
+    reason="Set RUN_REAL_DOWNLOAD_TESTS=1 and unset SKIP_EXPENSIVE to run real download tests",
+)
+def test_load_distill_data_real_download_math500(tmp_path):
+    out = tmp_path / "deepseek-r1-math500.json"
+
+    returned = ch08.load_distill_data(
+        local_path=out,
+        partition="deepseek-r1-math500",
+    )
+
+    assert out.exists()
+    assert len(returned) == 500
+    assert {"problem", "message_thinking", "message_content"} <= returned[0].keys()
 
 
 def test_format_distilled_answer_wraps_thinking_and_content():
@@ -156,6 +179,18 @@ def test_load_reasoning_tokenizer_downloads_and_configures_tokenizer(
         "add_generation_prompt": True,
         "add_thinking": True,
     }
+
+
+@pytest.mark.skipif(
+    skip_expensive or not run_real_download,
+    reason="Set RUN_REAL_DOWNLOAD_TESTS=1 and unset SKIP_EXPENSIVE to run real download tests",
+)
+def test_load_reasoning_tokenizer_real_download(tmp_path):
+    tokenizer = ch08.load_reasoning_tokenizer(local_dir=tmp_path)
+
+    assert (tmp_path / "tokenizer-reasoning.json").exists()
+    assert tokenizer.eos_token == "<|im_end|>"
+    assert len(tokenizer.encode("Explain large language models.")) > 0
 
 
 def test_build_examples_encodes_prompt_answer_and_skips_invalid_rows(

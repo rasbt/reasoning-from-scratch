@@ -3,6 +3,8 @@
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
 import json
+import os
+import pytest
 import torch
 import reasoning_from_scratch.ch06 as ch06
 
@@ -67,6 +69,10 @@ class DummyTrainModel:
         return self
 
 
+run_real_download = os.environ.get("RUN_REAL_DOWNLOAD_TESTS", "0") == "1"
+skip_expensive = os.environ.get("SKIP_EXPENSIVE", "0") == "1"
+
+
 def test_load_math_train_uses_local_file(tmp_path, monkeypatch):
     data = [{"problem": "1+1", "answer": "2"}]
     local_path = tmp_path / "math_train.json"
@@ -79,6 +85,20 @@ def test_load_math_train_uses_local_file(tmp_path, monkeypatch):
 
     loaded = ch06.load_math_train(local_path=local_path, save_copy=True)
     assert loaded == data
+
+
+@pytest.mark.skipif(
+    skip_expensive or not run_real_download,
+    reason="Set RUN_REAL_DOWNLOAD_TESTS=1 and unset SKIP_EXPENSIVE to run real download tests",
+)
+def test_load_math_train_real_download(tmp_path):
+    local_path = tmp_path / "math_train.json"
+
+    data = ch06.load_math_train(local_path=local_path, save_copy=True)
+
+    assert local_path.exists()
+    assert len(data) > 0
+    assert {"problem", "answer"} <= data[0].keys()
 
 
 def test_sample_response_generates_until_eos():

@@ -1,0 +1,46 @@
+# Copyright (c) Sebastian Raschka under Apache License 2.0 (see LICENSE.txt)
+# Source for "Build a Reasoning Model (From Scratch)": https://mng.bz/lZ5B
+# Code repository: https://github.com/rasbt/reasoning-from-scratch
+
+name: Real download tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 8 * * 1'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  real-download-tests:
+    name: Real download tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      RUN_REAL_DOWNLOAD_TESTS: "1"
+      HF_HUB_DISABLE_TELEMETRY: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv and dependencies
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv sync --group dev
+          .venv/bin/pip install huggingface_hub safetensors
+
+      - name: Run real download tests
+        run: |
+          uv run pytest \
+            tests/test_ch03.py \
+            tests/test_ch06.py \
+            tests/test_ch07.py \
+            tests/test_ch08.py \
+            tests/test_appendix_d.py \
+            -k real_download
