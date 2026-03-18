@@ -39,7 +39,7 @@ Note that this runs tests guarded by `SKIP_EXPENSIVE` in the test files, but it 
 
 ### 3. Download tests only
 
-There are some tests that check whether the model checkpoint files are available for download and the servers (still) work. It's not necessary to run these tests locally or a regular basis. This is more meant for occassional testing.
+There are some tests that check whether the model checkpoint files are available for download and the servers (still) work. It's not necessary to run these tests locally or a regular basis. This is more meant for occasional testing.
 
 To run these download tests, use:
 
