@@ -211,3 +211,13 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# chE temp files
+chE/__pycache__/
+chE/deepseek-r1-math-train.json
+chE/distill_batched.py
+chE/evaluate_math500_batched.py
+chE/evaluate_math500.py
+chE/figures/
+chE/math500_test.json
+chE/qwen3/

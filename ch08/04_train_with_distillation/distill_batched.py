@@ -279,6 +279,7 @@ def train_distillation_batched(
     seed=42,
     log_every=50,
     grad_clip_norm=None,
+    sort_by_length=True,
     checkpoint_dir=CHECKPOINT_DIR,
     csv_log_path=CSV_LOG_PATH,
 ):
@@ -302,6 +303,9 @@ def train_distillation_batched(
     for epoch in range(1, epochs + 1):
         epoch_examples = list(train_examples)
         rng.shuffle(epoch_examples)
+        if sort_by_length:
+            # Group similar lengths to reduce padding waste and speed up batching
+            epoch_examples.sort(key=lambda example: len(example["token_ids"]))
 
         epoch_train_loss = 0.0
         epoch_example_count = 0
@@ -484,6 +488,11 @@ def parse_args():
             "Default behavior concatenates thinking and answer without think tokens."
         ),
     )
+    parser.add_argument(
+        "--no_sorting",
+        action="store_true",
+        help="Disable length-based sorting before batching.",
+    )
     return parser.parse_args()
 
 
@@ -509,7 +518,7 @@ def main():
     tokenizer_variant = "reasoning" if args.use_think_tokens else "base"
     tokenizer = load_tokenizer_only(which_model=tokenizer_variant)
     if checkpoint_path is not None:
-        model = Qwen3Model(QWEN_CONFIG_06_B)
+        model = Qwen3Model(QWEN_CONFIG_06_B, float32_upcast=False)
         state_dict = torch.load(checkpoint_path, map_location="cpu")
         model.load_state_dict(state_dict)
         model.to(device)
@@ -518,12 +527,14 @@ def main():
             which_model="base",
             device=device,
             use_compile=False,
+            float32_upcast=False,
         )
 
     print("Model variant: base")
     print("Tokenizer variant:", tokenizer_variant)
     print("Use think tokens:", args.use_think_tokens)
     print("Batch size:", args.batch_size)
+    print("Length sorting:", not args.no_sorting)
     print("Grad clip norm:", args.grad_clip_norm)
     print("Checkpoint path:", checkpoint_path if checkpoint_path is not None else "--")
 
@@ -542,6 +553,8 @@ def main():
         validation_size=args.validation_size,
         seed=args.seed,
     )
+    if not args.no_sorting:
+        val_examples.sort(key=lambda example: len(example["token_ids"]))
 
     print("Raw dataset rows:", raw_row_count)
     print(
@@ -578,6 +591,7 @@ def main():
         seed=args.seed,
         log_every=args.log_every,
         grad_clip_norm=args.grad_clip_norm,
+        sort_by_length=not args.no_sorting,
         checkpoint_dir=CHECKPOINT_DIR,
         csv_log_path=CSV_LOG_PATH,
     )

@@ -65,7 +65,7 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 | Appendix B: Exercise Solutions                              | Code and solutions are in each chapter's subfolder           |
 | Appendix C: Qwen3 LLM Source Code                           | - [chC_main.ipynb](chC/01_main-chapter-code/chC_main.ipynb)  |
 | Appendix D: Using larger LLMs                               | - [chD_main.ipynb](chD/chD_main.ipynb)                       |
-| Appendix E                                                  | TBA                                                          |
+| Appendix E: Batching and throughput-oriented execution      | - [chE_main.ipynb](chE/chE_main.ipynb)                       |
 | Appendix F: Common Approaches to LLM Evaluation             | - [chF_main.ipynb](chF/01_main-chapter-code/chF_main.ipynb)  |
 
 <br>
