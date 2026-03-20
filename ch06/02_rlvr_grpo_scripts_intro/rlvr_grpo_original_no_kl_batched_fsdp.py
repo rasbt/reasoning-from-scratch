@@ -3,6 +3,7 @@
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
 import argparse
+import math
 import os
 import time
 from pathlib import Path
@@ -435,7 +436,7 @@ def main_worker(rank, world_size, args):
         total_steps = (
             args.steps
             if args.steps is not None
-            else (len(math_data_full) + world_size - 1) // world_size
+            else math.ceil(len(math_data_full) / world_size)
         )
         math_data = shard_data(math_data_full, rank, world_size)
         if not math_data:
