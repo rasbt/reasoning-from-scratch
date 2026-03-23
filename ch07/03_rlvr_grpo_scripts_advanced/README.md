@@ -1,8 +1,6 @@
 # Chapter 7: Improving Policy Optimization in Reinforcement Learning
 
-&nbsp;
-
-In progress ...
+This section contains advanced GRPO scripts that extend the chapter 6 implementation with additional tracking, stabilization, and reward-modeling variants.
 
 
 &nbsp;
@@ -11,7 +9,6 @@ In progress ...
 &nbsp;
 ### Main Scripts
 
-- `ch06_ref.py` (*7.2 Tracking GRPO performance metrics*): The code from chapter 6 included for reference; this is the same code that is used in section 
 - `7_3_plus_tracking.py` (*7.3 Tracking more advanced GRPO performance metrics*): Tracks additional performance metrics (advantage statistics and entropy)
 - `7_4_plus_clip_ratio.py` (*7.4 Stabilizing sequence-level GRPO using clipped policy ratios*): Like above but computes policy gradient loss with clipped policy ratios
 - `7_5_plus_kl.py` (*7.5 Controlling how much the model changes with a KL term*): Like above but adds a KL loss term
