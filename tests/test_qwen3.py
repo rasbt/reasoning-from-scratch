@@ -2,6 +2,8 @@
 # Source for "Build a Reasoning Model (From Scratch)": https://mng.bz/lZ5B
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
+import reasoning_from_scratch.qwen3 as qwen3_mod
+
 from reasoning_from_scratch.qwen3 import (
     compute_rope_params,
     apply_rope,
@@ -9,7 +11,9 @@ from reasoning_from_scratch.qwen3 import (
     RMSNorm,
     Qwen3Model,
     Qwen3Tokenizer,
-    load_hf_weights_into_qwen
+    load_hf_weights_into_qwen,
+    download_qwen3_grpo_checkpoints,
+    download_qwen3_distill_checkpoints,
 )
 from reasoning_from_scratch.ch02 import (
     generate_text_basic,
@@ -197,6 +201,74 @@ def test_tokenizer_equivalence():
                 expected_pad_token = "<|endoftext|>"
                 assert tokenizer.decode([tokenizer.eos_token_id]) == expected_eos_token
                 assert tokenizer.decode([tokenizer.pad_token_id]) == expected_pad_token
+
+
+def test_download_qwen3_grpo_checkpoints_legacy_no_kl(monkeypatch):
+    calls = []
+
+    def fake_download_file(url, out_dir=".", backup_url=None):
+        calls.append((url, out_dir, backup_url))
+        return "downloaded-path"
+
+    monkeypatch.setattr(qwen3_mod, "download_file", fake_download_file)
+
+    path = download_qwen3_grpo_checkpoints(grpo_type="no_kl", step="00050", out_dir="qwen3")
+    assert path == "downloaded-path"
+    assert calls == [(
+        "https://huggingface.co/rasbt/qwen3-from-scratch-grpo-checkpoints/resolve/main/"
+        "grpo_original_no_kl/qwen3-0.6B-rlvr-grpo-step00050.pth",
+        "qwen3",
+        "https://f001.backblazeb2.com/file/reasoning-from-scratch/qwen3-0.6B-checkpoints/"
+        "grpo_original_no_kl/qwen3-0.6B-rlvr-grpo-step00050.pth",
+    )]
+
+
+def test_download_qwen3_grpo_checkpoints_chapter_7(monkeypatch):
+    calls = []
+
+    def fake_download_file(url, out_dir=".", backup_url=None):
+        calls.append((url, out_dir, backup_url))
+        return "downloaded-path"
+
+    monkeypatch.setattr(qwen3_mod, "download_file", fake_download_file)
+
+    path = download_qwen3_grpo_checkpoints(
+        grpo_type="clip_ratio",
+        step=150,
+        out_dir="qwen3",
+    )
+
+    assert path == "downloaded-path"
+    assert calls == [(
+        "https://huggingface.co/rasbt/qwen3-from-scratch-grpo-checkpoints/resolve/main/"
+        "7_4_plus_clip_ratio/checkpoints/qwen3-0.6B-rlvr-grpo-step00150.pth",
+        "qwen3",
+        None,
+    )]
+
+
+def test_download_qwen3_distill_checkpoints(monkeypatch):
+    calls = []
+
+    def fake_download_file(url, out_dir=".", backup_url=None):
+        calls.append((url, out_dir, backup_url))
+        return "downloaded-path"
+
+    monkeypatch.setattr(qwen3_mod, "download_file", fake_download_file)
+
+    path = download_qwen3_distill_checkpoints(
+        distill_type="deepseek_r1",
+        step="13364",
+        out_dir="qwen3",
+    )
+
+    assert path == "downloaded-path"
+    assert calls == [(
+        "https://huggingface.co/rasbt/qwen3-from-scratch-distill-checkpoints/resolve/main/"
+        "ch08_distill_deepseek_r1/checkpoints/qwen3-0.6B-distill-step13364-epoch2.pth",
+        "qwen3",
+        None,
+    )]
 
 
 @pytest.mark.parametrize("ModelClass", [Qwen3Model])
