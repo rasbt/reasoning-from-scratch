@@ -4,6 +4,9 @@
 # Code: https://github.com/rasbt/LLMs-from-scratch
 
 
+import os
+from pathlib import Path
+
 import torch
 import chainlit
 
@@ -11,7 +14,8 @@ from reasoning_from_scratch.ch02 import (
     get_device,
 )
 from reasoning_from_scratch.ch02 import generate_text_basic_stream_cache
-from reasoning_from_scratch.ch03 import load_model_and_tokenizer
+from reasoning_from_scratch.ch03 import load_model_and_tokenizer, load_tokenizer_only
+from reasoning_from_scratch.qwen3 import Qwen3Model, QWEN_CONFIG_06_B
 
 # ============================================================
 # EDIT ME: Simple configuration
@@ -19,6 +23,13 @@ from reasoning_from_scratch.ch03 import load_model_and_tokenizer
 WHICH_MODEL = "reasoning"  # "base" for base model
 MAX_NEW_TOKENS = 38912
 LOCAL_DIR = "qwen3"
+# Set CHECKPOINT_PATH to load a custom .pth checkpoint instead of the
+# default weights in LOCAL_DIR. Keep WHICH_MODEL aligned with the tokenizer
+# that checkpoint expects; chapter 8 distillation checkpoints use "reasoning".
+# Terminal example:
+#   CHECKPOINT_PATH=/absolute/path/to/model.pth \
+#   uv run chainlit run qwen3_chat_interface_multiturn.py
+CHECKPOINT_PATH = os.getenv("CHECKPOINT_PATH")
 COMPILE = False
 # ============================================================
 
@@ -50,12 +61,34 @@ def build_prompt_from_history(history, add_assistant_header=True):
 
 
 DEVICE = get_device()
-MODEL, TOKENIZER = load_model_and_tokenizer(
-    which_model=WHICH_MODEL,
-    device=DEVICE,
-    use_compile=COMPILE,
-    local_dir=LOCAL_DIR
-)
+
+
+def load_app_model_and_tokenizer():
+    if CHECKPOINT_PATH is None:
+        return load_model_and_tokenizer(
+            which_model=WHICH_MODEL,
+            device=DEVICE,
+            use_compile=COMPILE,
+            local_dir=LOCAL_DIR,
+        )
+
+    checkpoint_path = Path(CHECKPOINT_PATH)
+    if not checkpoint_path.exists():
+        raise FileNotFoundError(f"Checkpoint file not found: {checkpoint_path}")
+
+    tokenizer = load_tokenizer_only(which_model=WHICH_MODEL, local_dir=LOCAL_DIR)
+    model = Qwen3Model(QWEN_CONFIG_06_B)
+    model.load_state_dict(torch.load(checkpoint_path, map_location="cpu"))
+    model.to(DEVICE)
+
+    if COMPILE:
+        torch._dynamo.config.allow_unspec_int_on_nn_module = True
+        model = torch.compile(model)
+
+    return model, tokenizer
+
+
+MODEL, TOKENIZER = load_app_model_and_tokenizer()
 
 # Even though the official TOKENIZER.eos_token_id is either <|im_end|> (reasoning)
 # or <|endoftext|> (base), the reasoning model sometimes emits both.
