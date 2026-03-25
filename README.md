@@ -67,6 +67,7 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 | Appendix D: Using larger LLMs                               | - [chD_main.ipynb](chD/chD_main.ipynb)                       |
 | Appendix E: Batching and throughput-oriented execution      | - [chE_main.ipynb](chE/chE_main.ipynb)                       |
 | Appendix F: Common Approaches to LLM Evaluation             | - [chF_main.ipynb](chF/01_main-chapter-code/chF_main.ipynb)  |
+| Appendix G: Building a Chat Interface                       | - [chG](chG)                                                 |
 
 <br>
 &nbsp;
@@ -143,6 +144,8 @@ Several folders contain optional materials as a bonus for interested readers:
   - [MMLU Evaluation Methods](chF/02_mmlu)
   - [LLM leaderboards](chF/03_leaderboards)
   - [LLM-as-a-judge](chF/04_llm-judge)
+- **Appendix G: Building a Chat Interface**
+  - [Chat interface code](chG/01_main-chapter-code)
 
 
 &nbsp;

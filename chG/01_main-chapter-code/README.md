@@ -1,4 +1,4 @@
-# Appendix G: Chat Interface
+# Appendix G: Building a Chat Interface
 
 
 
