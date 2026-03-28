@@ -1,11 +1,6 @@
 # Troubleshooting Guide
 
-This is a placeholder for providing help and tips on common issues encountered in the book. Right now, this page is intentionally left blank as no known issues have been reported.
-
-&nbsp;
-## File Download Issues
-
-Please use [this discussion page](https://github.com/rasbt/reasoning-from-scratch/discussions/145) if you have any issues with file downloads.
+This page collects common issues and setup tips encountered while working through the book.
 
 &nbsp;
 ## JupyterLab scrolling bug
@@ -22,6 +17,33 @@ If you are viewing the notebook code in JupyterLab rather than VSCode, note that
 
 &nbsp;
 ## Chapter 2
+
+&nbsp;
+### File Download Issues
+
+Please use [this discussion page](https://github.com/rasbt/reasoning-from-scratch/discussions/145) if you have any issues with file downloads.
+
+The code downloads from the following Hugging Face locations, which you can also open manually in a browser to check whether your machine or network is blocking them:
+
+- Chapter 2 model and tokenizer files: [rasbt/qwen3-from-scratch](https://huggingface.co/rasbt/qwen3-from-scratch/tree/main)
+- Base model file: [qwen3-0.6B-base.pth](https://huggingface.co/rasbt/qwen3-from-scratch/resolve/main/qwen3-0.6B-base.pth)
+- Base tokenizer file: [tokenizer-base.json](https://huggingface.co/rasbt/qwen3-from-scratch/resolve/main/tokenizer-base.json)
+- Reasoning model file: [qwen3-0.6B-reasoning.pth](https://huggingface.co/rasbt/qwen3-from-scratch/resolve/main/qwen3-0.6B-reasoning.pth)
+- Reasoning tokenizer file: [tokenizer-reasoning.json](https://huggingface.co/rasbt/qwen3-from-scratch/resolve/main/tokenizer-reasoning.json)
+- Chapter 7 GRPO checkpoints: [rasbt/qwen3-from-scratch-grpo-checkpoints](https://huggingface.co/rasbt/qwen3-from-scratch-grpo-checkpoints/tree/main)
+- Chapter 8 distillation checkpoints: [rasbt/qwen3-from-scratch-distill-checkpoints](https://huggingface.co/rasbt/qwen3-from-scratch-distill-checkpoints/tree/main)
+
+&nbsp;
+#### SSL / proxy / certificate errors
+
+If a model download fails with errors mentioning `SSL`, `CERTIFICATE_VERIFY_FAILED`, or `ProxyError`, the issue is often environmental rather than a missing file.
+
+This is uncommon overall, but it can happen on work or school machines where a VPN, proxy, firewall, or antivirus product intercepts HTTPS traffic. In that case, try the following:
+
+- Check whether the relevant Hugging Face URL listed above opens in your browser.
+- If the tokenizer downloads but the `.pth` model file does not, the proxy may be blocking larger files or the `.pth` extension.
+- Ask your IT team to allow the download or to make the proxy certificate trusted by Python.
+- On some managed machines, readers reported success with `pip install pip-system-certs`, which makes Python use the operating system certificate store.
 
 &nbsp;
 ### `InductorError: CppCompileError`
