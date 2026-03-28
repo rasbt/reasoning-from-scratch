@@ -3,6 +3,7 @@
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
 import reasoning_from_scratch.qwen3 as qwen3_mod
+import reasoning_from_scratch.utils as utils_mod
 
 from reasoning_from_scratch.qwen3 import (
     compute_rope_params,
@@ -24,6 +25,7 @@ from reasoning_from_scratch.utils import download_file
 import importlib
 import os
 import platform
+import requests
 import shutil
 import tempfile
 import pytest
@@ -59,6 +61,23 @@ class Qwen3RMSNorm(nn.Module):
 
     def extra_repr(self):
         return f"{tuple(self.weight.shape)}, eps={self.variance_epsilon}"
+
+
+class DummyDownloadResponse:
+    def __init__(self, size):
+        self.headers = {"Content-Length": str(size)}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+    def raise_for_status(self):
+        return None
+
+    def iter_content(self, chunk_size):
+        yield b"unused"
 
 
 transformers_installed = importlib.util.find_spec("transformers") is not None
@@ -269,6 +288,55 @@ def test_download_qwen3_distill_checkpoints(monkeypatch):
         "qwen3",
         None,
     )]
+
+
+def test_download_file_error_message_points_to_troubleshooting(tmp_path, monkeypatch):
+    calls = []
+
+    def fake_get(url, stream=True, timeout=30):
+        calls.append(url)
+        raise requests.exceptions.SSLError("CERTIFICATE_VERIFY_FAILED")
+
+    monkeypatch.setattr(utils_mod.requests, "get", fake_get)
+
+    with pytest.raises(RuntimeError) as excinfo:
+        download_file(
+            "https://primary.example.com/qwen3-0.6B-base.pth",
+            out_dir=tmp_path,
+            backup_url="https://backup.example.com/qwen3-0.6B-base.pth",
+        )
+
+    message = str(excinfo.value)
+    assert "Primary URL failed" in message
+    assert "Backup URL failed" in message
+    assert "CERTIFICATE_VERIFY_FAILED" in message
+    assert "https://github.com/rasbt/reasoning-from-scratch/blob/main/troubleshooting.md" in message
+    assert "VPN, proxy, or antivirus" in message
+    assert calls == [
+        "https://primary.example.com/qwen3-0.6B-base.pth",
+        "https://backup.example.com/qwen3-0.6B-base.pth",
+    ]
+
+
+def test_download_file_cached_file_returns_existing_path(tmp_path, monkeypatch):
+    calls = []
+    existing = tmp_path / "tokenizer-base.json"
+    existing.write_bytes(b"1234")
+
+    def fake_get(url, stream=True, timeout=30):
+        calls.append(url)
+        return DummyDownloadResponse(size=4)
+
+    monkeypatch.setattr(utils_mod.requests, "get", fake_get)
+
+    returned = download_file(
+        "https://primary.example.com/tokenizer-base.json",
+        out_dir=tmp_path,
+    )
+
+    assert returned == existing
+    assert existing.read_bytes() == b"1234"
+    assert calls == ["https://primary.example.com/tokenizer-base.json"]
 
 
 @pytest.mark.parametrize("ModelClass", [Qwen3Model])
