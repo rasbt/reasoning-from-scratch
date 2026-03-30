@@ -1,4 +1,4 @@
-# Appendix G: Chat Interface
+# Appendix G: Building a Chat Interface
 
 
 
@@ -53,3 +53,20 @@ uv run chainlit run qwen3_chat_interface.py
 ```
 
 Running one of the commands above should open a new browser tab where you can interact with the model. If the browser tab does not open automatically, inspect the terminal command and copy the local address into your browser address bar (usually, the address is `http://localhost:8000`).
+
+## Using a custom checkpoint
+
+Since `chainlit run ...` owns the command-line arguments, these scripts read a custom checkpoint path from the `CHECKPOINT_PATH` environment variable instead of `argparse`.
+
+Terminal example:
+
+```bash
+CHECKPOINT_PATH=/absolute/path/to/qwen3-0.6B-distill-step06682-epoch1.pth \
+uv run chainlit run qwen3_chat_interface.py
+```
+
+Notes:
+
+- Keep `WHICH_MODEL` in the script aligned with the tokenizer the checkpoint expects.
+- The chapter 8 checkpoints from [`ch08/05_download_training_checkpoints`](../../ch08/05_download_training_checkpoints) use the reasoning tokenizer, so use `WHICH_MODEL = "reasoning"`.
+- When `CHECKPOINT_PATH` is set, the script only downloads the tokenizer into `LOCAL_DIR`; it does not re-download the default model weights.

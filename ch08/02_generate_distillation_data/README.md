@@ -20,6 +20,8 @@ This folder contains scripts to generate teacher outputs for math problems, whic
 - [Datasets for distillation](#datasets-for-distillation)
 - [Dataset statistics](#dataset-statistics)
 - [Teacher accuracy](#teacher-accuracy)
+- [Generating a MATH-500 distillation dataset](#generating-a-math-500-distillation-dataset)
+- [Generating a distillation dataset of 12,000 MATH samples](#generating-a-distillation-dataset-of-12000-math-samples)
 
 
 &nbsp;
@@ -38,7 +40,7 @@ Both scripts expect a JSON file via `--math_json`. At a minimum, each object sho
 - `problem` (string): The math question.
 - `answer` (string): Ground-truth answer.
 
-Extra keys such as `level`, `type`, and `unique_id` are ignored. You can look at the [math_train_sample.json](math_train_sample.json) file for an example structure, which is based on the [math_full_minus_math500.json](https://github.com/rasbt/math_full_minus_math500/blob/main/math_full_minus_math500.json) we used in chapters 6 and 7. 
+Extra keys such as `level`, `type`, and `unique_id` are ignored. You can look at the [math_train_sample.json](math_train_sample.json) file for an example structure, which is based on the [math_full_minus_math500.json](https://github.com/rasbt/math_full_minus_math500/blob/main/math_full_minus_math500.json) we used in chapters 6, 7, and 8. 
 
 To apply it to the full 12,000 samples, simply download the [math_full_minus_math500.json](https://github.com/rasbt/math_full_minus_math500/blob/main/math_full_minus_math500.json) and pass it into the scripts via `--math_json math_full_minus_math500.json`. Note that this will take a long time, so I recommend truncating the file to a few hundred or a thousand examples.
 
@@ -207,9 +209,9 @@ Here is the breakdown:
 
 - Total input tokens: 11 × 1000 = 11,000 
 - Total output tokens: 1524 × 1000 = 1,524,000 
-- Input cost: $\frac{11{,}000}{1{,}000{,}000} \times 0.70 = \$0.0077$
-- Output cost: $\frac{1{,}524{,}000}{1{,}000{,}000} \times 2.50 = \$3.81$
-- Total cost: $\$3.81 + \$0.0077 \approx \$3.82$
+- Input cost: `(11,000 / 1,000,000) × $0.70 = $0.0077`
+- Output cost: `(1,524,000 / 1,000,000) × $2.50 = $3.81`
+- Total cost: `$3.81 + $0.0077 ≈ $3.82`
 
 &nbsp;
 ### 2.1 OpenRouter setup
@@ -291,3 +293,64 @@ uv run ../../ch03/02_math500-verifier-scripts/evaluate_json.py \
 ```
 Accuracy: 100.0% (5/5)
 ```
+
+&nbsp;
+## Generating a MATH-500 distillation dataset
+
+To generate teacher answers for the 500-example MATH-500 set, you can omit `--math_json`; both scripts automatically load `math500_test.json` (and save a local copy on first use).
+
+**Ollama**
+
+```bash
+uv run generate_with_ollama.py \
+  --dataset_size 500 \
+  --model deepseek-r1:8b \
+  --max_new_tokens 8192 \
+  --out_file math500_ollama_distill.json
+```
+
+**OpenRouter**
+
+```bash
+OPENROUTER_API_KEY="YOUR_API_KEY" uv run generate_with_openrouter.py \
+  --dataset_size 500 \
+  --model deepseek/deepseek-r1 \
+  --num_processes 1 \
+  --out_file math500_openrouter_distill.json
+```
+
+&nbsp;
+## Generating a distillation dataset of 12,000 MATH samples
+
+This uses the same non-overlapping 12,000-sample training set from chapters 6, 7, and 8. If you do not have it yet, download it first:
+
+```bash
+curl -fL -o math_full_minus_math500.json \
+https://raw.githubusercontent.com/rasbt/math_full_minus_math500/refs/heads/main/math_full_minus_math500.json
+```
+
+**Ollama**
+
+```bash
+uv run generate_with_ollama.py \
+  --math_json math_full_minus_math500.json \
+  --dataset_size 12000 \
+  --model deepseek-r1:8b \
+  --max_new_tokens 8192 \
+  --resume \
+  --out_file math12000_ollama_distill.json
+```
+
+**OpenRouter**
+
+```bash
+OPENROUTER_API_KEY="YOUR_API_KEY" uv run generate_with_openrouter.py \
+  --math_json math_full_minus_math500.json \
+  --dataset_size 12000 \
+  --model deepseek/deepseek-r1 \
+  --num_processes 50 \
+  --resume \
+  --out_file math12000_openrouter_distill.json
+```
+
+For large OpenRouter runs, reduce or increase `--num_processes` depending on your account limits and desired throughput.

@@ -195,12 +195,12 @@ def train_distillation(
         for example in epoch_examples:
             global_step += 1
             step_start = time.time()
+            optimizer.zero_grad()
             loss = compute_example_loss(model, example, device)
             supervised_tokens = max(
                 0, len(example["token_ids"]) - example["prompt_len"]
             )
 
-            optimizer.zero_grad()
             loss.backward()
             if grad_clip_norm is not None:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip_norm)

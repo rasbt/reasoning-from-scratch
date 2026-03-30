@@ -3,6 +3,7 @@
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
 import argparse
+import math
 import os
 import time
 from pathlib import Path
@@ -357,7 +358,13 @@ def train_rlvr_grpo(
             avg_response_len = (
                 step_tokens / len(stats["samples"]) if stats["samples"] else 0.0
             )
-            tokens_per_sec = step_tokens / step_time if step_time > 0 else 0.0
+            # This is an estimate based on rank 0's local rollout length scaled
+            # by the number of GPUs (it's not an exact cross-rank aggregate)
+            tokens_per_sec = (
+                (step_tokens * dist.get_world_size()) / step_time
+                if step_time > 0
+                else 0.0
+            )
             if is_main:
                 append_step_metrics(
                     current_step,
@@ -426,7 +433,11 @@ def main_worker(rank, world_size, args):
 
     try:
         math_data_full = load_math_train()
-        total_steps = args.steps if args.steps is not None else len(math_data_full)
+        total_steps = (
+            args.steps
+            if args.steps is not None
+            else math.ceil(len(math_data_full) / world_size)
+        )
         math_data = shard_data(math_data_full, rank, world_size)
         if not math_data:
             raise ValueError("Sharded dataset is empty on this rank.")

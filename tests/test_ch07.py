@@ -3,8 +3,10 @@
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
 import math
+import os
 
 import matplotlib
+import pytest
 import torch
 import reasoning_from_scratch.ch07 as ch07
 
@@ -50,6 +52,10 @@ class DummyTagTokenizer:
                 self._next_id += 1
             ids.append(self._vocab[token])
         return ids
+
+
+run_real_download = os.environ.get("RUN_REAL_DOWNLOAD_TESTS", "0") == "1"
+skip_expensive = os.environ.get("SKIP_EXPENSIVE", "0") == "1"
 
 
 def test_moving_average_uses_trailing_window_and_minimum_window_size():
@@ -143,6 +149,21 @@ def test_download_from_github_downloads_when_missing(tmp_path, monkeypatch):
     assert calls["url"].endswith("ch07/README.md")
     assert response.raise_called is True
     assert out.read_bytes() == b"new-content"
+
+
+@pytest.mark.skipif(
+    skip_expensive or not run_real_download,
+    reason="Set RUN_REAL_DOWNLOAD_TESTS=1 and unset SKIP_EXPENSIVE to run real download tests",
+)
+def test_download_from_github_real_download(tmp_path):
+    out = tmp_path / "ch07-readme.md"
+
+    ch07.download_from_github("ch07/README.md", out=out)
+
+    text = out.read_text(encoding="utf-8")
+    assert out.exists()
+    assert "# Chapter 7" in text
+    assert "Improving Policy Optimization" in text
 
 
 def test_plot_grpo_metrics_reads_csv_and_calls_show(tmp_path, monkeypatch):

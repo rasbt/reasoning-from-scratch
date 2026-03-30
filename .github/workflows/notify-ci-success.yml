@@ -1,0 +1,229 @@
+# Copyright (c) Sebastian Raschka under Apache License 2.0 (see LICENSE.txt)
+# Source for "Build a Reasoning Model (From Scratch)": https://mng.bz/lZ5B
+# Code repository: https://github.com/rasbt/reasoning-from-scratch
+
+name: Notify when CI passes
+
+on:
+  workflow_run:
+    workflows:
+      - Test Nightly PyTorch
+      - Test Old PyTorch
+      - Code Tests (Plain pip)
+      - Check Hyperlinks
+      - Spell Check
+      - Code Style Checks
+      - Code tests Linux
+      - Code tests macOS
+      - Code tests Windows
+    types:
+      - completed
+
+concurrency:
+  group: ci-pass-email-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  notify:
+    if: github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for workflow list to settle
+        run: sleep 30
+
+      - name: Check whether all matching CI runs passed
+        id: evaluate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_WORKFLOW_NAME: ${{ github.workflow }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          REQUIRED_WORKFLOWS_JSON: >-
+            ["Test Nightly PyTorch", "Test Old PyTorch", "Code Tests (Plain pip)", "Check Hyperlinks", "Spell Check", "Code Style Checks", "Code tests Linux", "Code tests macOS", "Code tests Windows"]
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          import urllib.parse
+          import urllib.request
+
+
+          def api_get(url: str) -> dict:
+              request = urllib.request.Request(
+                  url,
+                  headers={
+                      "Accept": "application/vnd.github+json",
+                      "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                  },
+              )
+              with urllib.request.urlopen(request) as response:
+                  return json.load(response)
+
+
+          def list_runs(event_name: str) -> list[dict]:
+              query = urllib.parse.urlencode(
+                  {
+                      "event": event_name,
+                      "head_sha": os.environ["HEAD_SHA"],
+                      "per_page": 100,
+                  }
+              )
+              repo = os.environ["GITHUB_REPOSITORY"]
+              url = f"https://api.github.com/repos/{repo}/actions/runs?{query}"
+              return api_get(url).get("workflow_runs", [])
+
+
+          def latest_runs_by_name(runs: list[dict], watched: set[str]) -> dict[str, dict]:
+              latest: dict[str, dict] = {}
+              for run in runs:
+                  name = run.get("name")
+                  if name not in watched:
+                      continue
+                  existing = latest.get(name)
+                  if existing is None or (
+                      run.get("created_at", ""),
+                      run.get("run_attempt", 0),
+                  ) > (
+                      existing.get("created_at", ""),
+                      existing.get("run_attempt", 0),
+                  ):
+                      latest[name] = run
+              return latest
+
+
+          watched = set(json.loads(os.environ["REQUIRED_WORKFLOWS_JSON"]))
+          push_runs = latest_runs_by_name(list_runs("push"), watched)
+
+          if not push_runs:
+              print("No matching push-triggered CI runs found for this commit.")
+              send_email = False
+              summary = []
+          else:
+              summary = [
+                  f"- {name}: {run.get('status')} / {run.get('conclusion') or 'n/a'}"
+                  for name, run in sorted(push_runs.items())
+              ]
+              incomplete = [
+                  name for name, run in push_runs.items() if run.get("status") != "completed"
+              ]
+              failed = [
+                  f"{name} ({run.get('conclusion') or 'n/a'})"
+                  for name, run in push_runs.items()
+                  if run.get("status") == "completed"
+                  and run.get("conclusion") != "success"
+              ]
+              send_email = not incomplete and not failed
+
+              if incomplete:
+                  print("Still waiting on:", ", ".join(sorted(incomplete)))
+              if failed:
+                  print("These workflows are not successful:", ", ".join(sorted(failed)))
+
+          current_run_id = int(os.environ["GITHUB_RUN_ID"])
+          workflow_name = os.environ["GITHUB_WORKFLOW_NAME"]
+          prior_notifications = [
+              run
+              for run in list_runs("workflow_run")
+              if run.get("name") == workflow_name
+              and run.get("id") != current_run_id
+              and run.get("conclusion") == "success"
+          ]
+
+          if prior_notifications:
+              print("A notification has already been sent for this commit.")
+              send_email = False
+
+          short_sha = os.environ["HEAD_SHA"][:7]
+          repository = os.environ["GITHUB_REPOSITORY"]
+          branch = os.environ["HEAD_BRANCH"]
+          subject = f"[{repository}] CI passed on {branch} ({short_sha})"
+          body_lines = [
+              "All matching CI workflows for this push have completed successfully.",
+              "",
+              f"Repository: {repository}",
+              f"Branch: {branch}",
+              f"Commit: {os.environ['HEAD_SHA']}",
+              f"Commit URL: https://github.com/{repository}/commit/{os.environ['HEAD_SHA']}",
+              f"Actions URL: https://github.com/{repository}/actions",
+          ]
+
+          if summary:
+              body_lines.extend(["", "Successful workflows:"])
+              body_lines.extend(summary)
+
+          output_path = os.environ["GITHUB_OUTPUT"]
+          with open(output_path, "a", encoding="utf-8") as output:
+              print(f"send_email={'true' if send_email else 'false'}", file=output)
+              print("subject<<EOF", file=output)
+              print(subject, file=output)
+              print("EOF", file=output)
+              print("body<<EOF", file=output)
+              print("\n".join(body_lines), file=output)
+              print("EOF", file=output)
+
+          if not send_email:
+              sys.exit(0)
+          PY
+
+      - name: Send success email
+        if: steps.evaluate.outputs.send_email == 'true'
+        env:
+          SMTP_HOST: ${{ secrets.CI_EMAIL_SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.CI_EMAIL_SMTP_PORT }}
+          SMTP_USE_SSL: ${{ secrets.CI_EMAIL_USE_SSL }}
+          SMTP_USERNAME: ${{ secrets.CI_EMAIL_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.CI_EMAIL_PASSWORD }}
+          EMAIL_FROM: ${{ secrets.CI_EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.CI_EMAIL_TO }}
+          SUBJECT: ${{ steps.evaluate.outputs.subject }}
+          BODY: ${{ steps.evaluate.outputs.body }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          import smtplib
+          from email.message import EmailMessage
+
+          required = [
+              "SMTP_HOST",
+              "SMTP_PORT",
+              "SMTP_USERNAME",
+              "SMTP_PASSWORD",
+              "EMAIL_FROM",
+              "EMAIL_TO",
+              "SUBJECT",
+              "BODY",
+          ]
+          missing = [name for name in required if not os.getenv(name)]
+          if missing:
+              raise SystemExit(
+                  "Missing required email secrets or values: " + ", ".join(missing)
+              )
+
+          port = int(os.environ["SMTP_PORT"])
+          use_ssl = os.getenv("SMTP_USE_SSL", "").lower() in {"1", "true", "yes"}
+
+          message = EmailMessage()
+          message["Subject"] = os.environ["SUBJECT"]
+          message["From"] = os.environ["EMAIL_FROM"]
+          message["To"] = os.environ["EMAIL_TO"]
+          message.set_content(os.environ["BODY"])
+
+          smtp_class = smtplib.SMTP_SSL if use_ssl else smtplib.SMTP
+          with smtp_class(os.environ["SMTP_HOST"], port, timeout=30) as smtp:
+              if not use_ssl:
+                  smtp.ehlo()
+                  smtp.starttls()
+                  smtp.ehlo()
+              smtp.login(os.environ["SMTP_USERNAME"], os.environ["SMTP_PASSWORD"])
+              smtp.send_message(message)
+          PY

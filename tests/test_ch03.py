@@ -4,6 +4,8 @@
 
 from pathlib import Path
 import json
+import os
+import pytest
 import sympy as sp
 import torch
 import reasoning_from_scratch.ch03 as ch03
@@ -22,6 +24,10 @@ class DummyTokenizer:
         return "".join(self._map.get(i, "?") for i in ids)
 
 
+run_real_download = os.environ.get("RUN_REAL_DOWNLOAD_TESTS", "0") == "1"
+skip_expensive = os.environ.get("SKIP_EXPENSIVE", "0") == "1"
+
+
 def test_load_math500_test_has_500_entries():
     repo_root = Path(__file__).resolve().parent.parent
     local_path = repo_root / "math500_test.json"
@@ -29,6 +35,41 @@ def test_load_math500_test_has_500_entries():
     data = ch03.load_math500_test(local_path=local_path, save_copy=False)
 
     assert len(data) == 500
+
+
+@pytest.mark.skipif(
+    skip_expensive or not run_real_download,
+    reason="Set RUN_REAL_DOWNLOAD_TESTS=1 and unset SKIP_EXPENSIVE to run real download tests",
+)
+def test_load_math500_test_real_download(tmp_path):
+    local_path = tmp_path / "math500_test.json"
+
+    data = ch03.load_math500_test(local_path=local_path, save_copy=True)
+
+    assert local_path.exists()
+    assert len(data) == 500
+    assert {"problem", "answer"} <= data[0].keys()
+
+
+@pytest.mark.skipif(
+    skip_expensive or not run_real_download,
+    reason="Set RUN_REAL_DOWNLOAD_TESTS=1 and unset SKIP_EXPENSIVE to run real download tests",
+)
+@pytest.mark.parametrize(
+    ("which_model", "expected_name", "expected_eos"),
+    [
+        ("base", "tokenizer-base.json", "<|endoftext|>"),
+        ("reasoning", "tokenizer-reasoning.json", "<|im_end|>"),
+    ],
+)
+def test_load_tokenizer_only_real_download(
+    which_model, expected_name, expected_eos, tmp_path
+):
+    tokenizer = ch03.load_tokenizer_only(which_model=which_model, local_dir=tmp_path)
+
+    assert (tmp_path / expected_name).exists()
+    assert tokenizer.eos_token == expected_eos
+    assert len(tokenizer.encode("Explain large language models.")) > 0
 
 
 def test_math500_parser_self_answers():

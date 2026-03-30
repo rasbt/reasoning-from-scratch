@@ -90,7 +90,8 @@ uv run ../../ch03/02_math500-verifier-scripts/evaluate_math500.py \
 ```bash
 uv run rlvr_grpo_original_no_kl.py \
 --num_rollouts 8 \
---max_new_tokens 512 
+--steps 100 \
+--max_new_tokens 512
 ```
 
 **Rows 7 & 8**

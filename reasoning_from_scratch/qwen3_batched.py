@@ -26,14 +26,35 @@ QWEN_CONFIG_06_B = {
 
 
 class Qwen3Model(nn.Module):
-    def __init__(self, cfg):
+    """Padding-aware batched Qwen3 implementation.
+
+    Args:
+        cfg: Model configuration dictionary.
+        float32_upcast: Keeps the attention score and softmax path in
+            float32 by default. The batched implementation combines
+            causal masking with left-padding masks, which is more
+            numerically fragile than the single-sequence path for long
+            or heavily padded batches. Using float32 here is the safer
+            default for batched generation and evaluation.
+             callers that
+            In short, float32_upcast will make the results equivalent
+            to the single-example variant without padding, but it's also
+            slower and uses more memory. If you
+            prefer lower memory use and faster training can opt out via
+            `Qwen3Model(..., float32_upcast=False)`.
+    """
+
+    def __init__(self, cfg, float32_upcast=True):
         super().__init__()
 
         # Main model parameters
         self.tok_emb = nn.Embedding(cfg["vocab_size"], cfg["emb_dim"], dtype=cfg["dtype"])
 
         self.trf_blocks = nn.ModuleList(  # ModuleList since Sequential can only accept one input, and we need `x, mask, cos, sin`
-            [TransformerBlock(cfg) for _ in range(cfg["n_layers"])]
+            [
+                TransformerBlock(cfg, float32_upcast=float32_upcast)
+                for _ in range(cfg["n_layers"])
+            ]
         )
         self.final_norm = RMSNorm(cfg["emb_dim"])
         self.out_head = nn.Linear(cfg["emb_dim"], cfg["vocab_size"], bias=False, dtype=cfg["dtype"])
@@ -105,7 +126,7 @@ class Qwen3Model(nn.Module):
 
 
 class TransformerBlock(nn.Module):
-    def __init__(self, cfg):
+    def __init__(self, cfg, float32_upcast=True):
         super().__init__()
         self.att = GroupedQueryAttention(
             d_in=cfg["emb_dim"],
@@ -113,7 +134,8 @@ class TransformerBlock(nn.Module):
             head_dim=cfg["head_dim"],
             num_kv_groups=cfg["n_kv_groups"],
             qk_norm=cfg["qk_norm"],
-            dtype=cfg["dtype"]
+            dtype=cfg["dtype"],
+            float32_upcast=float32_upcast,
         )
         self.ff = FeedForward(cfg)
         self.norm1 = RMSNorm(cfg["emb_dim"], eps=1e-6)
@@ -151,7 +173,14 @@ class FeedForward(nn.Module):
 
 class GroupedQueryAttention(nn.Module):
     def __init__(
-        self, d_in, num_heads, num_kv_groups, head_dim=None, qk_norm=False, dtype=None
+        self,
+        d_in,
+        num_heads,
+        num_kv_groups,
+        head_dim=None,
+        qk_norm=False,
+        dtype=None,
+        float32_upcast=True,
     ):
         super().__init__()
         assert num_heads % num_kv_groups == 0, "num_heads must be divisible by num_kv_groups"
@@ -178,6 +207,7 @@ class GroupedQueryAttention(nn.Module):
             self.k_norm = RMSNorm(head_dim, eps=1e-6)
         else:
             self.q_norm = self.k_norm = None
+        self.float32_upcast = float32_upcast
 
     def forward(self, x, mask, cos, sin, cache=None, pos_ids=None):
         b, num_tokens, _ = x.shape
@@ -213,7 +243,11 @@ class GroupedQueryAttention(nn.Module):
         keys = keys.repeat_interleave(self.group_size, dim=1)
         values = values.repeat_interleave(self.group_size, dim=1)
 
-        attn_scores = torch.matmul(queries.to(torch.float32), keys.transpose(2, 3).to(torch.float32))
+        score_dtype = torch.float32 if self.float32_upcast else queries.dtype
+        attn_scores = torch.matmul(
+            queries.to(score_dtype),
+            keys.transpose(2, 3).to(score_dtype),
+        )
         attn_scores = attn_scores / self.head_dim**0.5
 
         # Apply mask with -inf so masked entries are exactly zero after softmax
@@ -228,7 +262,7 @@ class GroupedQueryAttention(nn.Module):
         denom = exp_scores.sum(dim=-1, keepdim=True)
         attn_weights = exp_scores / denom.clamp(min=torch.finfo(exp_scores.dtype).tiny)
 
-        # Back to model dtype
+        # Match the value dtype for the context matmul when the score path was upcast
         attn_weights = attn_weights.to(values.dtype)
 
         # As before
@@ -330,6 +364,7 @@ def generate_text_basic_batched_cache(
 
     # Decode
     cur_attn = attn_mask
+    generated_tokens = []
     for _ in range(max_new_tokens):
         # If all sequences are already finished, stop
         if eos_token_id is not None and finished is not None and torch.all(finished):
@@ -349,12 +384,14 @@ def generate_text_basic_batched_cache(
 
         # Advance one token with KV cache
         out = model(next_token, cache=cache, attn_mask=cur_attn)[:, -1]
-        token_ids = torch.cat([token_ids, next_token], dim=1)
+        generated_tokens.append(next_token)
 
         # Update finished mask after appending this step's token
         if eos_token_id is not None:
             finished = finished | (next_token.squeeze(1) == eos_token_id)
 
+    if generated_tokens:
+        return torch.cat(generated_tokens, dim=1)
     return token_ids[:, input_length:]
 
 
@@ -587,7 +624,13 @@ def generate_text_basic_batched_stream_cache_stop(
         out = model(next_token_survivors, cache=cache, attn_mask=cur_attn_active)[:, -1]
 
 
-def load_model_and_tokenizer(which_model, device, use_compile, local_dir="qwen3"):
+def load_model_and_tokenizer(
+    which_model,
+    device,
+    use_compile,
+    local_dir="qwen3",
+    float32_upcast=True,
+):
     if which_model == "base":
 
         download_qwen3_small(
@@ -616,7 +659,7 @@ def load_model_and_tokenizer(which_model, device, use_compile, local_dir="qwen3"
     else:
         raise ValueError(f"Invalid choice: which_model={which_model}")
 
-    model = Qwen3Model(QWEN_CONFIG_06_B)
+    model = Qwen3Model(QWEN_CONFIG_06_B, float32_upcast=float32_upcast)
     model.load_state_dict(torch.load(model_path))
 
     model.to(device)

@@ -3,6 +3,8 @@
 *.png
 
 # Other temporary files
+ch08/01_main-chapter-code/deepseek-r1-math-train.json
+ch08/01_main-chapter-code/evaluate_json.py
 *-draft.ipynb
 ch07/01_main-chapter-code/*.py
 checkpoints
@@ -17,6 +19,11 @@ tmp
 qwen3-0.6B.pth
 qwen3-0.6B-reasoning.pth
 qwen3-0.6B-base.pth
+qwen3-1.7B-base
+qwen3-4b-base
+qwen3-8b-base
+qwen3-14B-base
+qwen3-32B-base
 tokenizer-reasoning.json
 tokenizer.json
 tokenizer-base.json
@@ -204,3 +211,13 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# chE temp files
+chE/__pycache__/
+chE/deepseek-r1-math-train.json
+chE/distill_batched.py
+chE/evaluate_math500_batched.py
+chE/evaluate_math500.py
+chE/figures/
+chE/math500_test.json
+chE/qwen3/

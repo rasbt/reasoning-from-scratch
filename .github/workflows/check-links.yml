@@ -9,41 +9,61 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   test:
+    name: Check Hyperlinks
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       SKIP_EXPENSIVE: "1"
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.10"
-    - name: Install dependencies
-      run: |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        uv add pytest-check-links
-    - name: Check links
-      env:
-        CHECK_LINKS_TIMEOUT: "10"  # per‑request timeout
-        CHECK_LINKS_RETRIES: "1"   # number of attempts after the initial failure
-        CHECK_LINKS_RETRY_AFTER_MAX: "10"  # how long to wait before retrying
-      run: |
-        source .venv/bin/activate
-        PYTHONPATH=.github/scripts pytest -p check_links_plugin --check-links ./ \
-          --check-links-ignore "https://platform.openai.com/*" \
-          --check-links-ignore "https://openai.com/*" \
-          --check-links-ignore "https://arena.lmsys.org" \
-          --check-links-ignore "https://unsloth.ai/blog/gradient" \
-          --check-links-ignore "https://www.reddit.com/r/*" \
-          --check-links-ignore "https://code.visualstudio.com/*" \
-          --check-links-ignore "https://arxiv.org/*" \
-          --check-links-ignore "https://ai.stanford.edu/~amaas/data/sentiment/" \
-          --check-links-ignore "https://x.com/*" \
-          --check-links-ignore "https://scholar.google.com/*" \
-          --check-links-ignore "https://en.wikipedia.org/*" \
-          --check-links-ignore "https?://localhost(:\\d+)?/.*" \
-          --check-links-ignore "https?://127[.]0[.]0[.]1(:\\d+)?/.*" \
-          --check-links-ignore "https://mng\\.bz/.*"
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - name: Install uv and link-check dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.local/bin:$PATH"
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv sync --dev --python=3.10
+          uv pip install pytest-check-links
+
+      - name: Check links
+        shell: bash
+        env:
+          CHECK_LINKS_TIMEOUT: "10"  # per-request timeout
+          CHECK_LINKS_RETRIES: "1"   # number of attempts after the initial failure
+          CHECK_LINKS_RETRY_AFTER_MAX: "10"  # how long to wait before retrying
+        run: |
+          set -euo pipefail
+          source .venv/bin/activate
+          PYTHONPATH=.github/scripts pytest -p check_links_plugin --check-links ./ \
+            --check-links-ignore "https://platform.openai.com/*" \
+            --check-links-ignore "https://openai.com/*" \
+            --check-links-ignore "https://arena.lmsys.org" \
+            --check-links-ignore "https://github\\.com/.*" \
+            --check-links-ignore "https://unsloth.ai/blog/gradient" \
+            --check-links-ignore "https://www.reddit.com/r/*" \
+            --check-links-ignore "https://code.visualstudio.com/*" \
+            --check-links-ignore "https://arxiv.org/*" \
+            --check-links-ignore "https://ai.stanford.edu/~amaas/data/sentiment/" \
+            --check-links-ignore "https://x.com/*" \
+            --check-links-ignore "https://scholar.google.com/*" \
+            --check-links-ignore "https://en.wikipedia.org/*" \
+            --check-links-ignore "https?://localhost(:\\d+)?/.*" \
+            --check-links-ignore "https?://127[.]0[.]0[.]1(:\\d+)?/.*" \
+            --check-links-ignore "https://mng\\.bz/.*"

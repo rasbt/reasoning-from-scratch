@@ -60,13 +60,14 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 | Ch 5: Inference-Time Scaling via Self-Refinement            | - [ch05_main.ipynb](ch05/01_main-chapter-code/ch05_main.ipynb)<br/>- [ch05_exercise-solutions.ipynb](ch05/01_main-chapter-code/ch05_exercise-solutions.ipynb) |
 | Ch 6: Training Reasoning Models with Reinforcement Learning | - [ch06_main.ipynb](ch06/01_main-chapter-code/ch06_main.ipynb)<br/>- [ch06_exercise-solutions.ipynb](ch06/01_main-chapter-code/ch06_exercise-solutions.ipynb) |
 | Ch 7: Improving GRPO for Reinforcement Learning             | - [ch07_main.ipynb](ch07/01_main-chapter-code/ch07_main.ipynb)<br/>- [ch07_exercise-solutions.ipynb](ch07/01_main-chapter-code/ch07_exercise-solutions.ipynb) |
-| Ch 8: Distilling Reasoning Models for Efficient Reasoning   | TBA                                                          |
+| Ch 8: Distilling Reasoning Models for Efficient Reasoning   | - [ch08_main.ipynb](ch08/01_main-chapter-code/ch08_main.ipynb)<br/>- [ch08_exercise-solutions.ipynb](ch08/01_main-chapter-code/ch08_exercise-solutions.ipynb) |
 | Appendix A: References and Further Reading                  | No code                                                      |
 | Appendix B: Exercise Solutions                              | Code and solutions are in each chapter's subfolder           |
 | Appendix C: Qwen3 LLM Source Code                           | - [chC_main.ipynb](chC/01_main-chapter-code/chC_main.ipynb)  |
-| Appendix D                                                  | TBA                                                          |
-| Appendix E                                                  | TBA                                                          |
+| Appendix D: Using larger LLMs                               | - [chD_main.ipynb](chD/chD_main.ipynb)                       |
+| Appendix E: Batching and throughput-oriented execution      | - [chE_main.ipynb](chE/chE_main.ipynb)                       |
 | Appendix F: Common Approaches to LLM Evaluation             | - [chF_main.ipynb](chF/01_main-chapter-code/chF_main.ipynb)  |
+| Appendix G: Building a Chat Interface                       | - [chG](chG)                                                 |
 
 <br>
 &nbsp;
@@ -134,13 +135,17 @@ Several folders contain optional materials as a bonus for interested readers:
   - [GRPO scripts](ch06/02_rlvr_grpo_scripts_intro) with a batched mode
 - **Chapter 7: Improving GRPO for Reinforcement Learning**
   - [Advanced GRPO scripts](ch07/03_rlvr_grpo_scripts_advanced) (including DeepSeek-V3.2-, Olmo3-, and GDPO-style training)
+  - [Download training checkpoints](ch07/04_download_trainining_checkpoints) (how to download and use the chapter 6 and 7 GRPO checkpoints)
 - **Chapter 8: Distilling Reasoning Models for Efficient Reasoning**
   - [Generate distillation data](ch08/02_generate_distillation_data) (teacher-output generation via Ollama or OpenRouter)
   - [Train with distillation](ch08/04_train_with_distillation) (including single-example and batched distillation scripts)
+  - [Download training checkpoints](ch08/05_download_training_checkpoints) (how to download and use the chapter 8 distillation checkpoints)
 - **Appendix F: Common Approaches to LLM Evaluation**
   - [MMLU Evaluation Methods](chF/02_mmlu)
   - [LLM leaderboards](chF/03_leaderboards)
   - [LLM-as-a-judge](chF/04_llm-judge)
+- **Appendix G: Building a Chat Interface**
+  - [Chat interface code](chG/01_main-chapter-code)
 
 
 &nbsp;
