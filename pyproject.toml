@@ -61,6 +61,9 @@ extra = [
 where = ["."]
 include = ["reasoning_from_scratch", "reasoning_from_scratch.*"]
 
+[tool.uv]
+exclude-newer = "7 days"  # Requires a newer uv; run `uv self update` if this fails to parse
+
 [tool.uv.sources]
 reasoning = { workspace = true }
 reasoning-from-scratch = { workspace = true }
