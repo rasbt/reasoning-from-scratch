@@ -140,6 +140,7 @@ Several folders contain optional materials as a bonus for interested readers:
   - [Generate distillation data](ch08/02_generate_distillation_data) (teacher-output generation via Ollama or OpenRouter)
   - [Train with distillation](ch08/04_train_with_distillation) (including single-example and batched distillation scripts)
   - [Download training checkpoints](ch08/05_download_training_checkpoints) (how to download and use the chapter 8 distillation checkpoints)
+  - [Use Qwen3 with Hugging Face](ch08/06_use_via_huggingface) (how to use the base model and chapter 6-8 checkpoints with `transformers`)
 - **Appendix F: Common Approaches to LLM Evaluation**
   - [MMLU Evaluation Methods](chF/02_mmlu)
   - [LLM leaderboards](chF/03_leaderboards)
