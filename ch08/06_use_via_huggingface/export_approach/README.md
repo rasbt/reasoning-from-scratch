@@ -1,6 +1,6 @@
 # Chapter 8 Bonus Material: Use Qwen3 From-Scratch Code via Hugging Face Transformers
 
-This folder shows how to convert the scratch [`Qwen3Model`](../../reasoning_from_scratch/qwen3.py) and any compatible `.pth` checkpoint created via chapters 6-8 into a Hugging Face Transformers-compatible folder, and how to run it with Hugging Face inference functions and the `Trainer`.
+This folder shows how to convert the scratch [`Qwen3Model`](../../../reasoning_from_scratch/qwen3.py) and any compatible `.pth` checkpoint created via chapters 6-8 into a Hugging Face Transformers-compatible folder, and how to run it with Hugging Face inference functions and the `Trainer`.
 
 The export is implemented as a custom `transformers` architecture, so it works with the standard Hugging Face APIs such as `AutoConfig`, `AutoTokenizer`, `AutoModelForCausalLM`, `model.generate(...)`, and `Trainer`. But because it is custom code, load it with `trust_remote_code=True`.
 
@@ -12,7 +12,7 @@ The export is implemented as a custom `transformers` architecture, so it works w
 - [hf_trainer.py](hf_trainer.py): continues training an exported model with `transformers.Trainer` on the chapter 8 distillation JSON format
 - [hf_qwen3.py](hf_qwen3.py): custom Hugging Face `PretrainedConfig` and `PreTrainedModel` implementation for the exported Qwen3 architecture
 
-The export scripts keep the Hugging Face-specific model code locally in this folder and import shared utilities from the [`reasoning_from_scratch`](../../reasoning_from_scratch) package for the chapter 3 prompt template, RoPE helpers, and Qwen3 download functions. (See [chapter 2 setup instructions](../../ch02/02_setup-tips/python-instructions.md) for installation details.)
+The export scripts keep the Hugging Face-specific model code locally in this folder and import shared utilities from the [`reasoning_from_scratch`](../../../reasoning_from_scratch) package for the chapter 3 prompt template, RoPE helpers, and Qwen3 download functions. (See [chapter 2 setup instructions](../../../ch02/02_setup-tips/python-instructions.md) for installation details.)
 
 ---
 
@@ -52,8 +52,8 @@ If you already have the raw `.pth` model and tokenizer locally, you can avoid a 
 uv run hf_export.py \
   --output_dir hf-qwen3-base \
   --tokenizer_kind base \
-  --model_path ../../ch02/01_main-chapter-code/qwen3/qwen3-0.6B-base.pth \
-  --tokenizer_path ../../ch02/01_main-chapter-code/qwen3/tokenizer-base.json
+  --model_path ../../../ch02/01_main-chapter-code/qwen3/qwen3-0.6B-base.pth \
+  --tokenizer_path ../../../ch02/01_main-chapter-code/qwen3/tokenizer-base.json
 ```
 
 The same also works with the chapter 6-8 checkpoint `.pth` files.
@@ -87,7 +87,7 @@ There is one small extra detail during export. I.e., the from-scratch checkpoint
 
 For `--tokenizer_kind reasoning`, the exporter also attaches the reasoning chat template to the tokenizer, so inference scripts can automatically wrap prompts in the expected chat format. 
 
-Because this custom Hugging Face module imports the installed [`reasoning_from_scratch`](../../reasoning_from_scratch) package, the exported folder is compatible as long as that package is installed in the Python environment.
+Because this custom Hugging Face module imports the installed [`reasoning_from_scratch`](../../../reasoning_from_scratch) package, the exported folder is compatible as long as that package is installed in the Python environment.
 
 &nbsp;
 ## Step 3: Export a saved checkpoint
@@ -99,7 +99,7 @@ For example, if you trained a chapter 8 checkpoint with the reasoning tokenizer:
 ```bash
 uv run hf_export.py \
   --output_dir hf-qwen3-distill \
-  --model_path ../04_train_with_distillation/checkpoints/distill/qwen3-0.6B-distill-step00004-epoch1.pth \
+  --model_path ../../04_train_with_distillation/checkpoints/distill/qwen3-0.6B-distill-step00004-epoch1.pth \
   --tokenizer_kind reasoning
 ```
 
@@ -143,7 +143,7 @@ model = AutoModelForCausalLM.from_pretrained(
 &nbsp;
 ## Step 5: Continue training with `Trainer`
 
-You can continue training an exported checkpoint with Hugging Face `Trainer` on the same JSON format used in [`../04_train_with_distillation`](../04_train_with_distillation).
+You can continue training an exported checkpoint with Hugging Face `Trainer` on the same JSON format used in [`../../04_train_with_distillation`](../../04_train_with_distillation).
 
 Example:
 
