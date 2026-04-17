@@ -24,7 +24,7 @@ requires-python = ">=3.10"
 
 dependencies = [
     "jupyterlab>=4.4.7",
-    "torch>=2.7.1",
+    "torch==2.7.1",
     "tokenizers>=0.21.2",
     "nbformat>=5.10.4",
     "sympy>=1.14.0", # For verifier in ch03
@@ -60,6 +60,9 @@ extra = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["reasoning_from_scratch", "reasoning_from_scratch.*"]
+
+[tool.uv]
+exclude-newer = "7 days"  # Requires a newer uv; run `uv self update` if this fails to parse
 
 [tool.uv.sources]
 reasoning = { workspace = true }

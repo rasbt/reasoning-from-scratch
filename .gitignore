@@ -15,6 +15,10 @@ logs
 *.jsonl
 Untitled.ipynb
 qwen3/
+hf-qwen3-base/
+hf-qwen3-reasoning/
+hf_trainer_output/
+wrapper_trainer_output/
 tmp
 qwen3-0.6B.pth
 qwen3-0.6B-reasoning.pth
