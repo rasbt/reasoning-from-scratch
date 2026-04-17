@@ -2,13 +2,12 @@
 # Source for "Build a Reasoning Model (From Scratch)": https://mng.bz/lZ5B
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
-"""Tests for ch08/02_generate_distillation_data/generate_with_minimax.py"""
+"""Tests for the MiniMax distillation generation script."""
 
 import importlib
 import json
 import subprocess
 import sys
-import types
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 from urllib import error
@@ -16,12 +15,12 @@ from urllib import error
 import pytest
 
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-SCRIPT_PATH = REPO_ROOT / "ch08" / "02_generate_distillation_data" / "generate_with_minimax.py"
+SCRIPT_PATH = Path(__file__).resolve().with_name("generate_with_minimax.py")
+REPO_ROOT = SCRIPT_PATH.parents[4]
 
 
 def load_minimax_module():
-    """Import generate_with_minimax.py as a module."""
+    """Import the MiniMax generation script as a module."""
     spec = importlib.util.spec_from_file_location("generate_with_minimax", SCRIPT_PATH)
     mod = importlib.util.module_from_spec(spec)
     # Prevent __main__ block from executing
