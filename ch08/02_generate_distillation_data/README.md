@@ -30,14 +30,12 @@ This folder contains scripts to generate teacher outputs for math problems, whic
 - [average_field_lengths_json.py](average_field_lengths_json.py): Utility script to print basic statistics of the generated datasets.
 - [generate_with_ollama.py](generate_with_ollama.py): Uses the Ollama to generate the model answers for distillation. This script is recommended if  you want to distill from smaller models you can run locally, for example, Qwen3 4B, gpt-oss 20B, DeepSeek R1 32B, etc. 
 - [generate_with_openrouter.py](generate_with_openrouter.py): Uses models through the OpenRouter API to generate the model answers distillation. This is recommended when using larger models like DeepSeek R1 (671B) or Kimi K2.5 (1T) that are too large to be run locally.
-- [other_providers/minimax/README.md](other_providers/minimax/README.md): MiniMax-specific setup and usage notes for hosted distillation data generation.
-- [other_providers/minimax/generate_with_minimax.py](other_providers/minimax/generate_with_minimax.py): Uses MiniMax's cloud API to generate the model answers for distillation. MiniMax offers models like MiniMax-M2.7 (1M context window) through an OpenAI-compatible API.
 - [math_train_sample.json](math_train_sample.json): Small sample dataset for quick sanity checks.
 
 &nbsp;
 ## Input Data Format
 
-All scripts expect a JSON file via `--math_json`. At a minimum, each object should have:
+Both scripts expect a JSON file via `--math_json`. At a minimum, each object should have:
 
 - `problem` (string): The math question.
 - `answer` (string): Ground-truth answer.
@@ -50,7 +48,7 @@ To apply it to the full 12,000 samples, simply download the [math_full_minus_mat
 &nbsp;
 ## Output Format
 
-All scripts write a JSON array where each row looks like:
+Both scripts write a JSON array where each row looks like:
 
 ```
 {
@@ -253,7 +251,6 @@ The [sample_openrouter_outputs.json](sample_openrouter_outputs.json) output file
 
 **Tip:** If you are generating a lot of data, running this sequential distillation process can be very slow (e.g., ~100 hours for 12,000 answers with DeepSeek R1). In this case, I recommend running multiple parallel data generation threads via `--num_processes`. For instance, using `--num_processes 50` with the DeepSeek R1 models cuts the runtime from 100 hours down to approximately 2 hours.
 
-For MiniMax-based generation, see [other_providers/minimax/README.md](other_providers/minimax/README.md).
 
 &nbsp;
 ## Datasets for distillation
@@ -300,7 +297,7 @@ Accuracy: 100.0% (5/5)
 &nbsp;
 ## Generating a MATH-500 distillation dataset
 
-To generate teacher answers for the 500-example MATH-500 set, you can omit `--math_json`; all scripts automatically load `math500_test.json` (and save a local copy on first use).
+To generate teacher answers for the 500-example MATH-500 set, you can omit `--math_json`; both scripts automatically load `math500_test.json` (and save a local copy on first use).
 
 **Ollama**
 
