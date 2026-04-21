@@ -240,7 +240,7 @@ def generate_text_top_p_stream_cache(
 
         orig_device = token_ids.device
 
-        if temperature is None or temperature == 1.0:
+        if temperature is None or temperature == 0.0:
             next_token = torch.argmax(out, dim=-1, keepdim=True)
 
         else:
