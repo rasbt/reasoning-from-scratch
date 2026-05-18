@@ -20,11 +20,11 @@ authors = [
 ]
 
 license = { file = "LICENSE" }
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.15"
 
 dependencies = [
     "jupyterlab>=4.4.7",
-    "torch==2.7.1",
+    "torch>=2.7.1,<2.11",
     "tokenizers>=0.21.2",
     "nbformat>=5.10.4",
     "sympy>=1.14.0", # For verifier in ch03
@@ -37,6 +37,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent"
 ]

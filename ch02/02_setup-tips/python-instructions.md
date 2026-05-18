@@ -13,7 +13,7 @@ If neither of the two options below works for you, please do not hesitate to rea
 
 If you are using a recent version of Python already, you can install packages using the built-in `pip` installer. 
 
-I used Python 3.12 for this book. However, older versions like 3.11 and 3.10 will also work fine. You can check your Python version by running:
+I used Python 3.12 for this book. However, newer versions like Python 3.13 and 3.14, as well as older versions like 3.11 and 3.10, will also work fine as long as they are supported by PyTorch. You can check your Python version by running:
 
 ```bash
 python --version
@@ -90,7 +90,14 @@ Next, navigate into this folder, e.g., on Linux and MacOS:
 cd reasoning-from-scratch
 ```
 
-Then, since this folder contains a `pyproject.toml` file, you are already good to go: `uv` will automatically create a (by default invisible) virtual environment folder (`.venv`) for this `reasoning-from-scratch` project into which it installs all the dependencies the first time you run a script or open Jupyter Lab.
+Then, since this folder contains a `pyproject.toml` file and a `.python-version` file, you are already good to go: `uv` will automatically create a (by default invisible) virtual environment folder (`.venv`) for this `reasoning-from-scratch` project into which it installs all the dependencies the first time you run a script or open Jupyter Lab.
+
+The `.python-version` file currently pins Python 3.13 for the local `uv` environment. This avoids accidentally selecting a Python version that is newer than the PyTorch releases tested with this project. If `uv` uses a different Python version, you can reset the local pin by running:
+
+```bash
+uv python pin 3.13
+uv sync
+```
 
 You will probably not need it but in general, you can install additional packages, which are not already part of the requirements listed in `pyproject.toml`, via `uv add`:
 
@@ -108,7 +115,7 @@ This section describes the `uv` commands to run Jupyter Lab and Python scripts.
 
 To open Jupyter Lab, execute:
 
-```python
+```bash
 uv run jupyter lab
 ```
 
