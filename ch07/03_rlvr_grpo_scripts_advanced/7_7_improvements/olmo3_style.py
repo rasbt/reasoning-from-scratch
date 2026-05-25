@@ -224,11 +224,8 @@ def compute_grpo_loss_plus_kl(
         adv_i = adv[idx]
         unclipped = ratio * adv_i
         clipped = clipped_ratio * adv_i
-        token_obj = torch.where(
-            adv_i >= 0,
-            torch.minimum(unclipped, clipped),
-            torch.maximum(unclipped, clipped),
-        )
+        token_obj = torch.minimum(unclipped, clipped)
+
         new_logps_sum.append(new_logp.sum())
         if token_obj.numel() > 0:
             obj_terms.append(token_obj)

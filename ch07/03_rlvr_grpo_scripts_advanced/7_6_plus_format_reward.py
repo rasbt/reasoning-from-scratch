@@ -255,11 +255,7 @@ def compute_grpo_loss_plus_format_reward(
 
     unclipped = ratio * adv
     clipped = clipped_ratio * adv
-    obj = torch.where(
-        adv >= 0,
-        torch.minimum(unclipped, clipped),
-        torch.maximum(unclipped, clipped),
-    )
+    obj = torch.minimum(unclipped, clipped)
 
     pg_loss = -obj.mean()
     if kl_coeff:

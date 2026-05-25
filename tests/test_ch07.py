@@ -217,3 +217,120 @@ def test_reward_format_cases_from_prompt_example():
         )
 
         assert reward == expected
+
+
+###################################################
+# PPO-Style clipping implementation check
+###################################################
+
+# See https://livebook.manning.com/forum?comment=584433 for discussion
+
+
+CHAPTER_CLIP_EPS = 10.0
+PRACTICAL_CLIP_EPS = 0.2
+
+
+def _old_torch_where_objective(advantage, ratio, clip_eps):
+    # Previous listing 7.8 formulation
+    advantage = torch.tensor([advantage])
+    ratio = torch.tensor([ratio])
+    clipped_ratio = torch.clamp(ratio, 1.0 - clip_eps, 1.0 + clip_eps)
+    unclipped = ratio * advantage
+    clipped = clipped_ratio * advantage
+    return torch.where(
+        advantage >= 0,
+        torch.minimum(unclipped, clipped),
+        torch.maximum(unclipped, clipped),
+    )
+
+
+def _correct_torch_minimum_objective(advantage, ratio, clip_eps):
+    # Corrected listing 7.8 formulation (PPO-style clipping)
+    advantage = torch.tensor([advantage])
+    ratio = torch.tensor([ratio])
+    clipped_ratio = torch.clamp(ratio, 1.0 - clip_eps, 1.0 + clip_eps)
+    unclipped = ratio * advantage
+    clipped = clipped_ratio * advantage
+    return torch.minimum(unclipped, clipped)
+
+
+def test_positive_advantage_clips_ratio_above_upper_bound_in_both_versions():
+    # Positive advantages should clip ratios above
+    # the upper bound (correct in both versions)
+    old_where_obj = _old_torch_where_objective(1.0, 20.0, CHAPTER_CLIP_EPS)
+    correct_minimum_obj = _correct_torch_minimum_objective(1.0, 20.0, CHAPTER_CLIP_EPS)
+
+    assert old_where_obj.item() == pytest.approx(11.0)
+    assert correct_minimum_obj.item() == pytest.approx(11.0)
+
+    old_where_obj = _old_torch_where_objective(1.0, 1.5, PRACTICAL_CLIP_EPS)
+    correct_minimum_obj = _correct_torch_minimum_objective(1.0, 1.5, PRACTICAL_CLIP_EPS)
+
+    assert old_where_obj.item() == pytest.approx(1.2)
+    assert correct_minimum_obj.item() == pytest.approx(1.2)
+
+
+def test_positive_advantage_does_not_use_lower_clipping_bound_in_both_versions():
+    # Positive advantages should not use the lower
+    # clipping bound (correct in both versions)
+    old_where_obj = _old_torch_where_objective(1.0, 0.5, CHAPTER_CLIP_EPS)
+    correct_minimum_obj = _correct_torch_minimum_objective(1.0, 0.5, CHAPTER_CLIP_EPS)
+
+    assert old_where_obj.item() == pytest.approx(0.5)
+    assert correct_minimum_obj.item() == pytest.approx(0.5)
+
+    old_where_obj = _old_torch_where_objective(1.0, 0.5, PRACTICAL_CLIP_EPS)
+    correct_minimum_obj = _correct_torch_minimum_objective(1.0, 0.5, PRACTICAL_CLIP_EPS)
+
+    assert old_where_obj.item() == pytest.approx(0.5)
+    assert correct_minimum_obj.item() == pytest.approx(0.5)
+
+
+def test_negative_advantage_lower_bound_behavior_differs_by_clip_eps():
+    # With clip_eps = 10.0, the lower bound is negative
+    # and therefore inactive for positive policy ratios
+    old_where_obj = _old_torch_where_objective(-1.0, 0.5, CHAPTER_CLIP_EPS)
+    correct_minimum_obj = _correct_torch_minimum_objective(-1.0, 0.5, CHAPTER_CLIP_EPS)
+
+    assert old_where_obj.item() == pytest.approx(-0.5)
+    assert correct_minimum_obj.item() == pytest.approx(-0.5)
+
+    # For a negative advantage, use the lower clipping bound
+    # (wrong in previous version)
+    old_where_obj = _old_torch_where_objective(-1.0, 0.5, PRACTICAL_CLIP_EPS)
+    correct_minimum_obj = _correct_torch_minimum_objective(-1.0, 0.5, PRACTICAL_CLIP_EPS)
+
+    assert old_where_obj.item() != pytest.approx(correct_minimum_obj.item())
+    assert correct_minimum_obj.item() == pytest.approx(-0.8)
+
+
+def test_negative_advantage_does_not_clip_upper_bound_in_correct_version():
+    # For a negative advantage, do not clip ratios above
+    # the upper bound (wrong in previous version)
+    old_where_obj = _old_torch_where_objective(-1.0, 20.0, CHAPTER_CLIP_EPS)
+    correct_minimum_obj = _correct_torch_minimum_objective(-1.0, 20.0, CHAPTER_CLIP_EPS)
+
+    assert old_where_obj.item() != pytest.approx(correct_minimum_obj.item())
+    assert correct_minimum_obj.item() == pytest.approx(-20.0)
+
+    old_where_obj = _old_torch_where_objective(-1.0, 1.5, PRACTICAL_CLIP_EPS)
+    correct_minimum_obj = _correct_torch_minimum_objective(-1.0, 1.5, PRACTICAL_CLIP_EPS)
+
+    assert old_where_obj.item() != pytest.approx(correct_minimum_obj.item())
+    assert correct_minimum_obj.item() == pytest.approx(-1.5)
+
+
+def test_ratio_inside_clipping_interval_remains_unchanged_in_both_versions():
+    # Ratios inside the clipping interval should remain unchanged
+    # (correct in both versions)
+    old_where_obj = _old_torch_where_objective(-1.0, 1.0, CHAPTER_CLIP_EPS)
+    correct_minimum_obj = _correct_torch_minimum_objective(-1.0, 1.0, CHAPTER_CLIP_EPS)
+
+    assert old_where_obj.item() == pytest.approx(-1.0)
+    assert correct_minimum_obj.item() == pytest.approx(-1.0)
+
+    old_where_obj = _old_torch_where_objective(-1.0, 1.0, PRACTICAL_CLIP_EPS)
+    correct_minimum_obj = _correct_torch_minimum_objective(-1.0, 1.0, PRACTICAL_CLIP_EPS)
+
+    assert old_where_obj.item() == pytest.approx(-1.0)
+    assert correct_minimum_obj.item() == pytest.approx(-1.0)

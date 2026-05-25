@@ -205,11 +205,7 @@ def compute_grpo_loss(
     # PPO-style clipping
     unclipped = ratio * adv
     clipped = clipped_ratio * adv
-    obj = torch.where(
-        adv >= 0,
-        torch.minimum(unclipped, clipped),
-        torch.maximum(unclipped, clipped),
-    )
+    obj = torch.minimum(unclipped, clipped)
 
     loss = -obj.mean()
 
