@@ -65,11 +65,10 @@ def parse_args():
     parser.add_argument(
         "--model",
         type=str,
-        default="MiniMax-M2.7",
+        default="MiniMax-M3",
         help=(
             "MiniMax model name. Available models: "
-            "MiniMax-M2.7, MiniMax-M2.7-highspeed, "
-            "MiniMax-M2.5, MiniMax-M2.5-highspeed"
+            "MiniMax-M3, MiniMax-M2.7, MiniMax-M2.7-highspeed"
         ),
     )
     parser.add_argument(

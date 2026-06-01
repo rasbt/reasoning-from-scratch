@@ -176,6 +176,9 @@ class TestRenderPrompt:
 
 class TestModelToFilename:
     def test_standard_model(self, minimax_mod):
+        assert minimax_mod.model_to_filename("MiniMax-M3") == "math500_minimax_m3_full_answers.json"
+
+    def test_legacy_model(self, minimax_mod):
         assert minimax_mod.model_to_filename("MiniMax-M2.7") == "math500_minimax_m2_7_full_answers.json"
 
     def test_highspeed_model(self, minimax_mod):
@@ -317,7 +320,7 @@ class TestQueryMiniMaxChat:
         with patch.object(minimax_mod.request, "urlopen", return_value=mock_response):
             result = minimax_mod.query_minimax_chat(
                 prompt="Reply with OK.",
-                model="MiniMax-M2.7",
+                model="MiniMax-M3",
                 api_key="test-key",
                 max_new_tokens=8,
                 temperature=0.7,
@@ -341,7 +344,7 @@ class TestQueryMiniMaxChat:
             with pytest.raises(RuntimeError, match="Failed to query MiniMax"):
                 minimax_mod.query_minimax_chat(
                     prompt="test",
-                    model="MiniMax-M2.7",
+                    model="MiniMax-M3",
                     api_key="test-key",
                     max_new_tokens=8,
                     temperature=0.7,
@@ -371,7 +374,7 @@ class TestQueryMiniMaxChat:
         with patch.object(minimax_mod.request, "urlopen", side_effect=capture_urlopen):
             minimax_mod.query_minimax_chat(
                 prompt="test",
-                model="MiniMax-M2.7",
+                model="MiniMax-M3",
                 api_key="test-key",
                 max_new_tokens=8,
                 temperature=0.0,
@@ -410,7 +413,7 @@ class TestGenerateRow:
             result = minimax_mod.generate_row(
                 row=row,
                 shorter_answers_prompt=False,
-                model="MiniMax-M2.7",
+                model="MiniMax-M3",
                 api_key="test-key",
                 max_new_tokens=2048,
                 temperature=0.7,
@@ -441,7 +444,7 @@ class TestRealMiniMaxAPI:
         api_key = os.environ["MINIMAX_API_KEY"]
         result = minimax_mod.query_minimax_chat(
             prompt="What is 2+2? Reply with just the number.",
-            model="MiniMax-M2.7",
+            model="MiniMax-M3",
             api_key=api_key,
             max_new_tokens=64,
             temperature=0.7,

@@ -9,7 +9,7 @@ The input and output JSON formats are the same as the ones documented in the [ma
 &nbsp;
 ## Files
 
-- [generate_with_minimax.py](generate_with_minimax.py): Uses MiniMax's cloud API to generate the model answers for distillation. MiniMax offers models like MiniMax-M2.7 (1M context window) through an OpenAI-compatible API.
+- [generate_with_minimax.py](generate_with_minimax.py): Uses MiniMax's cloud API to generate the model answers for distillation. MiniMax offers models like MiniMax-M3 (512K context window) through an OpenAI-compatible API.
 
 &nbsp;
 ## MiniMax setup
@@ -19,10 +19,9 @@ The input and output JSON formats are the same as the ones documented in the [ma
 3. Save the API key in a secure location (e.g., a password manager)
 
 Available models:
-- `MiniMax-M2.7` — Latest model with 1M context window (default)
-- `MiniMax-M2.7-highspeed` — Faster variant optimized for throughput
-- `MiniMax-M2.5` — Previous generation with 204K context
-- `MiniMax-M2.5-highspeed` — Faster variant of M2.5
+- `MiniMax-M3` — Latest model with 512K context window, 128K max output (default)
+- `MiniMax-M2.7` — Previous generation with 1M context window
+- `MiniMax-M2.7-highspeed` — Faster variant of M2.7 optimized for throughput
 
 &nbsp;
 ## Data generation with MiniMax
@@ -33,7 +32,7 @@ The MiniMax script works similarly to the OpenRouter script:
 MINIMAX_API_KEY="YOUR_API_KEY" uv run other_providers/minimax/generate_with_minimax.py \
   --math_json math_train_sample.json \
   --dataset_size 5 \
-  --model MiniMax-M2.7 \
+  --model MiniMax-M3 \
   --num_processes 1 \
   --out_file sample_minimax_outputs.json
 ```
@@ -52,7 +51,7 @@ To generate teacher answers for the 500-example MATH-500 set, you can omit `--ma
 ```bash
 MINIMAX_API_KEY="YOUR_API_KEY" uv run other_providers/minimax/generate_with_minimax.py \
   --dataset_size 500 \
-  --model MiniMax-M2.7 \
+  --model MiniMax-M3 \
   --num_processes 1 \
   --out_file math500_minimax_distill.json
 ```
@@ -71,7 +70,7 @@ https://raw.githubusercontent.com/rasbt/math_full_minus_math500/refs/heads/main/
 MINIMAX_API_KEY="YOUR_API_KEY" uv run other_providers/minimax/generate_with_minimax.py \
   --math_json math_full_minus_math500.json \
   --dataset_size 12000 \
-  --model MiniMax-M2.7 \
+  --model MiniMax-M3 \
   --num_processes 50 \
   --resume \
   --out_file math12000_minimax_distill.json
