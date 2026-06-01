@@ -81,6 +81,8 @@ class DummyDownloadResponse:
 
 
 transformers_installed = importlib.util.find_spec("transformers") is not None
+run_real_download = os.environ.get("RUN_REAL_DOWNLOAD_TESTS", "0") == "1"
+skip_expensive = os.environ.get("SKIP_EXPENSIVE", "0") == "1"
 
 
 @pytest.mark.skipif(not transformers_installed, reason="transformers not installed")
@@ -156,8 +158,11 @@ def test_rmsnorm_equivalence():
     torch.testing.assert_close(out1, out2, atol=1e-5, rtol=1e-5)
 
 
-@pytest.mark.skipif(not transformers_installed, reason="transformers not installed")
-def test_tokenizer_equivalence():
+@pytest.mark.skipif(
+    skip_expensive or not run_real_download or not transformers_installed,
+    reason="Set RUN_REAL_DOWNLOAD_TESTS=1 and unset SKIP_EXPENSIVE to run real download tests",
+)
+def test_tokenizer_equivalence_real_download():
     from transformers import AutoTokenizer
 
     prompt = "Give me a short introduction to large language models."

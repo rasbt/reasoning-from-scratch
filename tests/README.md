@@ -65,6 +65,7 @@ The opt-in real-download tests currently cover:
 - `tests/test_ch07.py`: real GitHub raw file download
 - `tests/test_ch08.py`: real distillation dataset and tokenizer downloads
 - `tests/test_appendix_d.py`: real `Qwen/Qwen3-1.7B-Base` snapshot download
+- `tests/test_qwen3.py`: real `Qwen/Qwen3-0.6B` tokenizer comparison
 
 
 ### 4. Everything (not recommended)

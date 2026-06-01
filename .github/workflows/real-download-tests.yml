@@ -42,4 +42,5 @@ jobs:
             tests/test_ch07.py \
             tests/test_ch08.py \
             tests/test_appendix_d.py \
+            tests/test_qwen3.py \
             -k real_download
