@@ -27,6 +27,7 @@ dependencies = [
     "torch>=2.7.1,<2.11",
     "tokenizers>=0.21.2",
     "nbformat>=5.10.4",
+    "setuptools>=61.0",
     "sympy>=1.14.0", # For verifier in ch03
     "matplotlib>=3.10.7",
 ]

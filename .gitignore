@@ -1,12 +1,12 @@
-./temp
-
 # Plotting
 *.pdf
 *.png
 
 # Other temporary files
+./temp
 ch08/01_main-chapter-code/deepseek-r1-math-train.json
 ch08/01_main-chapter-code/evaluate_json.py
+ch06/01_main-chapter-code/qwen3-from-scratch-grpo-checkpoints/
 *-draft.ipynb
 ch07/01_main-chapter-code/*.py
 checkpoints

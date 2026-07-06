@@ -1,4 +1,5 @@
 reasoning-from-scratch >= 0.1.2
+setuptools>=61.0
 sympy>=1.14.0  # For verifier in ch03
 torch >= 2.7.1
 tokenizers >= 0.21.2
