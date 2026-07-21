@@ -283,7 +283,7 @@ def load_json(path):
     return data
 
 
-def split_data(data, validation_size=50, seed=123):
+def split_data(data, validation_size=25, seed=123):
     data = list(data)
     rnd = random.Random(seed)
     rnd.shuffle(data)
