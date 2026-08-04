@@ -61,6 +61,9 @@ extra = [
     "chainlit>=2.8.3",  # Appendix G, Chat UI
 ]
 
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["reasoning_from_scratch", "reasoning_from_scratch.*"]
