@@ -51,7 +51,7 @@ jobs:
         run: |
           set -euo pipefail
           source .venv/bin/activate
-          PYTHONPATH=.github/scripts pytest -p check_links_plugin --check-links ./ \
+          PYTHONPATH=.github/scripts pytest -p no:python -p check_links_plugin --check-links ./ \
             --check-links-ignore "https://platform.openai.com/*" \
             --check-links-ignore "https://openai.com/*" \
             --check-links-ignore "https://arena.lmsys.org" \
