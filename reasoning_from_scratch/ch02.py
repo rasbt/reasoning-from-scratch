@@ -14,7 +14,10 @@ def get_device(enable_tensor_cores=True):
 
         if enable_tensor_cores:
             major, minor = map(int, torch.__version__.split(".")[:2])
-            if (major, minor) >= (2, 9):
+            # PyTorch 2.9 and 2.10 still read the legacy TF32 setting in torch.compile.
+            # See https://github.com/pytorch/pytorch/issues/166387
+            # and https://github.com/rasbt/reasoning-from-scratch/issues/256
+            if (major, minor) >= (2, 11):
                 torch.backends.cuda.matmul.fp32_precision = "tf32"
                 torch.backends.cudnn.conv.fp32_precision = "tf32"
             else:

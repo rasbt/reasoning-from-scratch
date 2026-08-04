@@ -2,6 +2,10 @@
 # Source for "Build a Reasoning Model (From Scratch)": https://mng.bz/lZ5B
 # Code repository: https://github.com/rasbt/reasoning-from-scratch
 
+import subprocess
+import sys
+
+import pytest
 import torch
 
 from reasoning_from_scratch.ch02 import (
@@ -50,6 +54,34 @@ def test_get_device_returns_torch_device(capsys):
     device = get_device()
     assert isinstance(device, torch.device)
     assert device.type in ("cpu", "cuda", "mps")
+
+
+def test_get_device_tf32_setting_is_compatible_with_torch_compile():
+    torch_version = tuple(map(int, torch.__version__.split(".")[:2]))
+    if not (2, 9) <= torch_version < (2, 11):
+        pytest.skip("PyTorch's mixed TF32 API bug affects versions 2.9 and 2.10")
+
+    # PyTorch 2.9 and 2.10 still read the legacy allow_tf32 flag inside
+    # torch.compile. Using the new API in get_device() triggers a mixed-API error.
+    code = """
+import torch
+
+from reasoning_from_scratch.ch02 import get_device
+
+torch.cuda.is_available = lambda: True
+get_device()
+torch.backends.cuda.matmul.allow_tf32
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, (
+        "get_device() selected a TF32 API that is incompatible with "
+        f"torch.compile:\n{result.stderr}"
+    )
 
 
 def test_generate_text_basic_stops_on_eos():
