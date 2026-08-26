@@ -13,7 +13,7 @@ from reasoning_from_scratch.ch02 import (
     generate_text_basic_cache,
 )
 # Local imports
-from test_qwen3 import test_model
+from test_qwen3 import check_model_generation
 from conftest import import_definitions_from_notebook
 
 
@@ -33,7 +33,6 @@ torch.set_num_threads(1)
 torch.use_deterministic_algorithms(True)
 
 
-@pytest.mark.parametrize("ModelClass", [Qwen3Model])
 @pytest.mark.parametrize("generate_fn", [generate_text_basic, generate_text_basic_cache])
-def test_model_here_too(ModelClass, qwen3_weights_path, generate_fn):
-    test_model(ModelClass, qwen3_weights_path, generate_fn)
+def test_model_here_too(generate_fn):
+    check_model_generation(Qwen3Model, generate_fn)

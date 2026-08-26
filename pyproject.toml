@@ -64,6 +64,9 @@ extra = [
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F"]
 
+[tool.pytest.ini_options]
+norecursedirs = ["run_notebook_diffs"]
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["reasoning_from_scratch", "reasoning_from_scratch.*"]
