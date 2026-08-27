@@ -125,6 +125,21 @@ Python scripts can be run via:
 uv run python script.py
 ```
 
+The committed `uv.lock` file uses PyTorch 2.10.0, which is the version originally used for the code in this book. Therefore, regular `uv run` commands use PyTorch 2.10.0 by default. The lockfile works across the supported operating systems because `uv` selects the appropriate packages for each platform.
+
+The `pyproject.toml` file also allows newer PyTorch 2.x versions. To update PyTorch in the local lockfile, run:
+
+```bash
+uv lock --upgrade-package torch
+```
+
+This only needs to be done once. Subsequent `uv run` commands use the updated version. Note that this modifies the local `uv.lock` file. To return to the version included with the repository, run:
+
+```bash
+git restore uv.lock
+uv sync
+```
+
 
 
 

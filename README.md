@@ -20,7 +20,7 @@ The methods described in this book walk you through the process of developing yo
 
 - Link to the official [source code repository](https://github.com/rasbt/reasoning-from-scratch)
 - Link to the [book at Manning](https://mng.bz/lZ5B) (the publisher's website)
-- Link to the book page on Amazon.com (TBD)
+- Link to the [book page on Amazon.com](https://amzn.to/4aAKiFY)
 - ISBN 9781633434677
 
 
