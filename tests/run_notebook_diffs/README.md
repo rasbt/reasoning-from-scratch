@@ -58,7 +58,7 @@ notebooks=(
   chC/01_main-chapter-code/chC_main.ipynb
   chD/chD_main.ipynb
   chE/chE_main.ipynb
-  chF/01_main-chapter-code/chF_main.ipynb
+  # chF/01_main-chapter-code/chF_main.ipynb
 )
 
 uv run python tests/run_notebook_diffs/run.py \
