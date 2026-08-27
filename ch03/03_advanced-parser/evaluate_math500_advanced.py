@@ -18,8 +18,8 @@ from reasoning_from_scratch.ch02 import get_device
 from reasoning_from_scratch.ch03 import (
     eta_progress_message,
     extract_final_candidate,
-    evaluate_math500_stream,
     load_math500_test,
+    evaluate_math500_stream,
     generate_text_stream_concat,
     load_model_and_tokenizer,
     load_tokenizer_only,
