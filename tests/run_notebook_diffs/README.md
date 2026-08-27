@@ -62,6 +62,7 @@ notebooks=(
 )
 
 UV_PYTHON=3.13 uv run python tests/run_notebook_diffs/run.py \
+  --allow-errors \
   --torch-version 2.7.1 \
   --torch-version 2.13.0 \
   "${notebooks[@]}"

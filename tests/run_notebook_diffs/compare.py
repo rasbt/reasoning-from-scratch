@@ -22,6 +22,7 @@ BINARY_MIME_TYPES = {
     "image/webp",
 }
 MAX_DIFF_LINES = 200
+MAX_SOURCE_PREVIEW = 100
 
 
 def _clean_text(value):
@@ -80,16 +81,56 @@ def _normalize_output(output):
     return normalized
 
 
+def _normalize_outputs(outputs):
+    normalized = []
+    for output in outputs:
+        current = _normalize_output(output)
+        if (
+            current["output_type"] == "stream"
+            and normalized
+            and normalized[-1]["output_type"] == "stream"
+            and normalized[-1]["name"] == current["name"]
+        ):
+            normalized[-1]["text"] += current["text"]
+        else:
+            normalized.append(current)
+    return normalized
+
+
 def _cell_view(cell):
     view = {
         "cell_type": cell.get("cell_type"),
         "source": _clean_text(cell.get("source", "")),
     }
     if cell.get("cell_type") == "code":
-        view["outputs"] = [
-            _normalize_output(output) for output in cell.get("outputs", [])
-        ]
+        view["outputs"] = _normalize_outputs(cell.get("outputs", []))
     return view
+
+
+def _cell_heading(left_document, right_document, index):
+    if index < len(left_document.cells):
+        document = left_document
+    else:
+        document = right_document
+
+    cell = document.cells[index]
+    cell_type = cell.get("cell_type", "unknown")
+    type_number = sum(
+        item.get("cell_type") == cell_type for item in document.cells[: index + 1]
+    )
+    type_label = "Markdown" if cell_type == "markdown" else cell_type
+    details = f"{type_label} cell {type_number}"
+    if cell_type == "code" and cell.get("execution_count") is not None:
+        details += f", execution [{cell['execution_count']}]"
+
+    source = _clean_text(cell.get("source", ""))
+    first_line = next((line.strip() for line in source.splitlines() if line.strip()), "")
+    if len(first_line) > MAX_SOURCE_PREVIEW:
+        first_line = first_line[: MAX_SOURCE_PREVIEW - 3] + "..."
+
+    heading = f"## Notebook cell {index + 1}/{len(document.cells)} ({details})"
+    preview = f"Source: `{first_line}`" if first_line else "Source: *(empty)*"
+    return heading, preview
 
 
 def _diff_lines(left, right, left_label, right_label):
@@ -172,7 +213,8 @@ def compare_notebooks(left_path, right_path):
         return "\n".join(lines), summary
 
     for index, left, right in changed:
-        lines.extend([f"## Cell {index + 1}", ""])
+        heading, preview = _cell_heading(left_document, right_document, index)
+        lines.extend([heading, "", preview, ""])
         if left is None:
             lines.extend(["Cell exists only in the right notebook.", ""])
         elif right is None:
