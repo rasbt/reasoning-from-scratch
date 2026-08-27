@@ -39,9 +39,6 @@ math500_test.json
 math_train.json
 *.jsonl
 
-# Installation artifacts
-uv.lock
-
 # Temporary OS files
 .DS_Store
 

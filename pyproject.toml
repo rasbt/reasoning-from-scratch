@@ -24,7 +24,7 @@ requires-python = ">=3.10,<3.15"
 
 dependencies = [
     "jupyterlab>=4.4.7",
-    "torch>=2.7.1",
+    "torch>=2.10,<3",  # 2.10.0 is the version originally used in the book
     "tokenizers>=0.21.2",
     "nbformat>=5.10.4",
     "setuptools>=61.0",
