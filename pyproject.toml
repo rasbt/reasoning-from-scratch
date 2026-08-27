@@ -77,6 +77,14 @@ exclude-newer = "7 days"  # Requires a newer uv; run `uv self update` if this fa
 [tool.uv.sources]
 reasoning = { workspace = true }
 reasoning-from-scratch = { workspace = true }
+torch = [
+    { index = "pytorch-cu130", marker = "sys_platform == 'linux' and platform_machine == 'aarch64'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
 
 [tool.uv.workspace]
 members = [
