@@ -61,7 +61,7 @@ notebooks=(
   # chF/01_main-chapter-code/chF_main.ipynb
 )
 
-uv run python tests/run_notebook_diffs/run.py \
+UV_PYTHON=3.13 uv run python tests/run_notebook_diffs/run.py \
   --torch-version 2.7.1 \
   --torch-version 2.13.0 \
   "${notebooks[@]}"
