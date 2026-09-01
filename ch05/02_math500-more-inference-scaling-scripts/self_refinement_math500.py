@@ -29,7 +29,7 @@ from reasoning_from_scratch.ch05 import (
 @torch.inference_mode()
 def avg_logprob_answer_extract(model, tokenizer, prompt, answer, device="cpu"):
 
-    cand = extract_final_candidate(answer, fallback="none")
+    cand = extract_final_candidate(answer, fallback=None)
     if not cand:
         cand = extract_final_candidate(answer, fallback="number_only")
     if not cand:

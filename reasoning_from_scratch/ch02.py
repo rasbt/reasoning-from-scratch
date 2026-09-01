@@ -170,6 +170,7 @@ def _print_peak_memory_stats(device):
 
 def generate_stats(output_token_ids, tokenizer, start_time,
                    end_time):
+    # tokenizer is currently unused but retained for backward compatibility
     total_time = end_time - start_time
     print(f"\n\nTime: {total_time:.2f} sec")
     print(f"{int(output_token_ids.numel() / total_time)} tokens/sec")
