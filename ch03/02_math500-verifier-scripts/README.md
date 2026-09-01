@@ -125,7 +125,7 @@ Some PyTorch ops used in efficient batched inference are not yet supported on MP
 
 
 
-- The accuracy of the base model  is 15.6% (78/500); the accuracy of the reasoning model is 50.8% (254/500).
+- The accuracy of the base model  is 15.6% (78/500); the accuracy of the reasoning model is 48.2% (241/500).
 
 
 &nbsp;

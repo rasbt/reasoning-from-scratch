@@ -22,7 +22,7 @@ def heuristic_score(
     score = 0.0
 
     # Reward answers that have a final boxed value
-    cand = extract_final_candidate(answer, fallback="none")
+    cand = extract_final_candidate(answer, fallback=None)
     if cand:
         score += boxed_bonus
 
