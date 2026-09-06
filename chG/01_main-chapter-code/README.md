@@ -15,19 +15,31 @@ To implement this user interface, we use the open-source [Chainlit Python packag
 &nbsp;
 ## Step 1: Install dependencies
 
-First, we install the `chainlit` package and dependency:
+Use Python 3.13 for this appendix. Chainlit currently does not support Python 3.14 (see the [upstream issue](https://github.com/Chainlit/chainlit/issues/2952)). On Python 3.14, installing the repository's `extra` dependencies skips Chainlit.
+
+First, navigate to this folder from the repository root:
 
 ```bash
-pip install chainlit
+cd chG/01_main-chapter-code
 ```
 
-Or, if you are using `uv`:
+If you are using `pip`, create a Python 3.13 virtual environment in this folder and install the dependencies. On macOS and Linux:
 
 ```bash
-uv add chainlit
+python3.13 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e "../..[extra]"
 ```
 
+On Windows (PowerShell):
 
+```powershell
+py -3.13 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e "../..[extra]"
+```
+
+If you are using `uv`, skip the `pip` commands above. The `uv run` command in Step 2 creates an isolated Python 3.13 environment and installs the repository's `extra` dependencies. This also works when your main project environment uses Python 3.14.
 
 &nbsp;
 
@@ -49,7 +61,7 @@ chainlit run qwen3_chat_interface.py
 or, if you are using `uv`:
 
 ```bash
-uv run chainlit run qwen3_chat_interface.py
+uv run --isolated --python 3.13 --extra extra chainlit run qwen3_chat_interface.py
 ```
 
 Running one of the commands above should open a new browser tab where you can interact with the model. If the browser tab does not open automatically, inspect the terminal command and copy the local address into your browser address bar (usually, the address is `http://localhost:8000`).
@@ -62,7 +74,8 @@ Terminal example:
 
 ```bash
 CHECKPOINT_PATH=/absolute/path/to/qwen3-0.6B-distill-step06682-epoch1.pth \
-uv run chainlit run qwen3_chat_interface.py
+uv run --isolated --python 3.13 --extra extra \
+  chainlit run qwen3_chat_interface.py
 ```
 
 Notes:

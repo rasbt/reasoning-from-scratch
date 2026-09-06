@@ -58,7 +58,7 @@ dev = [
 [project.optional-dependencies]
 extra = [
     "datasets>=4.1.1",  # Appendix F, MMLU
-    "chainlit>=2.8.3",  # Appendix G, Chat UI
+    "chainlit>=2.8.3; python_version < '3.14'",  # Appendix G, Chat UI
 ]
 
 [tool.ruff.lint]

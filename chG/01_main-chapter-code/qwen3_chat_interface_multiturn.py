@@ -28,7 +28,8 @@ LOCAL_DIR = "qwen3"
 # that checkpoint expects; chapter 8 distillation checkpoints use "reasoning".
 # Terminal example:
 #   CHECKPOINT_PATH=/absolute/path/to/model.pth \
-#   uv run chainlit run qwen3_chat_interface_multiturn.py
+#   uv run --isolated --python 3.13 --extra extra \
+#     chainlit run qwen3_chat_interface_multiturn.py
 CHECKPOINT_PATH = os.getenv("CHECKPOINT_PATH")
 COMPILE = False
 # ============================================================
