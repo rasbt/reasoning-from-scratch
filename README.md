@@ -43,7 +43,7 @@ git clone --depth 1 https://github.com/rasbt/reasoning-from-scratch.git
 <br>
 <br>
 
-## Table of Contents (In Progress)
+## Table of Contents
 
 [![Code tests Linux](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-linux.yml/badge.svg)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-linux.yml)
 [![Code tests macOS](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-macos.yml/badge.svg)](https://github.com/rasbt/reasoning-from-scratch/actions/workflows/tests-macos.yml)
