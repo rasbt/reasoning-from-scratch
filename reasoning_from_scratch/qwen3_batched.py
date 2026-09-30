@@ -86,6 +86,11 @@ class Qwen3Model(nn.Module):
             pos_start = 0
 
         pos_end = pos_start + num_tokens
+        if pos_end > self.cfg["context_length"]:
+            raise ValueError(
+                f"Sequence length {pos_end} exceeds the model's context length "
+                f"of {self.cfg['context_length']} tokens."
+            )
 
         # Build causal mask for [Q=num_tokens, K=pos_end]
         base = torch.triu(

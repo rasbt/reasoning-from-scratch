@@ -63,16 +63,21 @@ class Qwen3Model(nn.Module):
         x = tok_embeds
 
         num_tokens = x.shape[1]
+        pos_start = self.current_pos if cache is not None else 0
+        pos_end = pos_start + num_tokens
+        if pos_end > self.cfg["context_length"]:
+            raise ValueError(
+                f"Sequence length {pos_end} exceeds the model's context length "
+                f"of {self.cfg['context_length']} tokens."
+            )
+
         if cache is not None:
-            pos_start = self.current_pos
-            pos_end = pos_start + num_tokens
             self.current_pos = pos_end
             mask = torch.triu(
                 torch.full((num_tokens, pos_end), -torch.inf, device=x.device, dtype=self.cfg["dtype"]),
                 diagonal=1 + pos_start,
             )
         else:
-            pos_start = 0  # Not strictly necessary but helps torch.compile
             mask = torch.triu(
                 torch.full((num_tokens, num_tokens), -torch.inf, device=x.device, dtype=self.cfg["dtype"]),
                 diagonal=1,
