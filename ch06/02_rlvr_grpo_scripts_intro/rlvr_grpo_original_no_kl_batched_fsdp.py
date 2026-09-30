@@ -93,7 +93,7 @@ def sample_responses_batched(
     finished = torch.zeros(batch_size, dtype=torch.bool, device=device)
 
     generated_steps = []
-    for _ in range(max_new_tokens):
+    for step in range(max_new_tokens):
         step_logits = logits
         if temperature and temperature != 1.0:
             step_logits = step_logits / temperature
@@ -113,7 +113,8 @@ def sample_responses_batched(
         if torch.all(finished):
             break
 
-        logits = model(next_token, cache=cache)[:, -1]
+        if step + 1 < max_new_tokens:  # Skips the forward pass after the last token is generated
+            logits = model(next_token, cache=cache)[:, -1]
 
     if generated_steps:
         gen_tokens = torch.cat(generated_steps, dim=1)
