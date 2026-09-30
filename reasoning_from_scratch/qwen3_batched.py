@@ -370,10 +370,19 @@ def generate_text_basic_batched_cache(
     # Decode
     cur_attn = attn_mask
     generated_tokens = []
-    for _ in range(max_new_tokens):
+    for step in range(max_new_tokens):
         # If all sequences are already finished, stop
         if eos_token_id is not None and finished is not None and torch.all(finished):
             break
+
+        if step > 0:
+            # Extend mask to include the newly generated token
+            if cur_attn is not None:
+                ones = torch.ones((batch_size, 1), dtype=cur_attn.dtype, device=device)
+                cur_attn = torch.cat([cur_attn, ones], dim=1)
+
+            # Advance one token with KV cache
+            out = model(generated_tokens[-1], cache=cache, attn_mask=cur_attn)[:, -1]
 
         next_token = torch.argmax(out, dim=-1, keepdim=True)
 
@@ -382,13 +391,6 @@ def generate_text_basic_batched_cache(
             eos_tok = next_token.new_full((batch_size, 1), eos_token_id)
             next_token = torch.where(finished.view(batch_size, 1), eos_tok, next_token)
 
-        # Extend mask to include the newly generated token
-        if cur_attn is not None:
-            ones = torch.ones((batch_size, 1), dtype=cur_attn.dtype, device=device)
-            cur_attn = torch.cat([cur_attn, ones], dim=1)
-
-        # Advance one token with KV cache
-        out = model(next_token, cache=cache, attn_mask=cur_attn)[:, -1]
         generated_tokens.append(next_token)
 
         # Update finished mask after appending this step's token
@@ -427,13 +429,15 @@ def generate_text_basic_batched_stream_cache(
 
     # Decode
     cur_attn = attn_mask
-    for _ in range(max_new_tokens):
+    for step in range(max_new_tokens):
         next_token = torch.argmax(out, dim=-1, keepdim=True)
 
         if eos_token_id is not None and torch.all(next_token.squeeze(-1) == eos_token_id):
             break
 
         yield next_token
+        if step + 1 == max_new_tokens:
+            break
 
         # Extend mask to include the newly generated token
         if cur_attn is not None:
@@ -493,7 +497,7 @@ def generate_text_basic_batched_cache_stop(
     cur_attn_active = attn_mask                  # mirrors the active cache
     generated_full_steps = []                    # list of (B,1) step tensors
 
-    for _ in range(max_new_tokens):
+    for step in range(max_new_tokens):
         # Next tokens for the active sub-batch
         next_token_active = torch.argmax(out, dim=-1, keepdim=True)  # (B_active, 1)
 
@@ -503,6 +507,8 @@ def generate_text_basic_batched_cache_stop(
                                dtype=token_ids.dtype, device=device)
         step_full.index_copy_(0, active_idx, next_token_active)
         generated_full_steps.append(step_full)
+        if step + 1 == max_new_tokens:
+            break
 
         # Update finished bookkeeping in full-batch coordinates
         if eos_token_id is not None:
@@ -581,7 +587,7 @@ def generate_text_basic_batched_stream_cache_stop(
     active_idx = torch.arange(B, device=device)
     cur_attn_active = attn_mask
 
-    for _ in range(max_new_tokens):
+    for step in range(max_new_tokens):
         next_token_active = torch.argmax(out, dim=-1, keepdim=True)  # (B_active, 1)
 
         # Build full-sized step to yield
@@ -603,6 +609,8 @@ def generate_text_basic_batched_stream_cache_stop(
 
         # Yield before shrinking so callers still see exactly one (B,1) per step
         yield step_full
+        if step + 1 == max_new_tokens:
+            break
 
         if eos_token_id is not None and torch.all(finished_full):
             break

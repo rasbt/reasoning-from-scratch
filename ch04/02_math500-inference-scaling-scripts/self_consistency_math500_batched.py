@@ -58,7 +58,7 @@ def generate_text_top_p_batched(
 
     out = model(token_ids, cache=cache)[:, -1]
 
-    for _ in range(max_new_tokens):
+    for step in range(max_new_tokens):
         if temperature is None or temperature == 0.0:
             next_token = torch.argmax(out, dim=-1, keepdim=True)
             if eos_token_id is not None and torch.any(finished):
@@ -104,7 +104,8 @@ def generate_text_top_p_batched(
         if torch.all(finished):
             break
 
-        out = model(next_token, cache=cache)[:, -1]
+        if step + 1 < max_new_tokens:  # Skips the forward pass after the last token is generated
+            out = model(next_token, cache=cache)[:, -1]
 
     return generated_tokens
 

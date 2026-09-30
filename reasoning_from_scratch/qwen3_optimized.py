@@ -606,7 +606,7 @@ def generate_text_basic_cache(
     out = model(token_ids, cache=cache)[:, -1]
     generated_tokens = []
 
-    for _ in range(max_new_tokens):
+    for step in range(max_new_tokens):
         next_token = torch.argmax(out, dim=-1, keepdim=True)
 
         if (eos_token_id is not None
@@ -614,7 +614,8 @@ def generate_text_basic_cache(
             break
 
         generated_tokens.append(next_token)
-        out = model(next_token, cache=cache)[:, -1]
+        if step + 1 < max_new_tokens:  # Skips the forward pass after the last token is generated
+            out = model(next_token, cache=cache)[:, -1]
 
     if generated_tokens:
         return torch.cat(generated_tokens, dim=1)

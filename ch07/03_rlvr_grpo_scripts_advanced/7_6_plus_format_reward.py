@@ -70,7 +70,7 @@ def sample_response(
     logits = model(input_ids.unsqueeze(0), cache=cache)[:, -1]
 
     generated = []
-    for _ in range(max_new_tokens):
+    for step in range(max_new_tokens):
         if temperature and temperature != 1.0:
             logits = logits / temperature
 
@@ -86,7 +86,8 @@ def sample_response(
             and token_id == tokenizer.eos_token_id
         ):
             break
-        logits = model(next_token, cache=cache)[:, -1]
+        if step + 1 < max_new_tokens:  # Skips the forward pass after the last token is generated
+            logits = model(next_token, cache=cache)[:, -1]
 
     full_token_ids = torch.cat(
         [input_ids,
