@@ -122,8 +122,8 @@ If you are low on RAM, consider lowering the number of rollouts (`--num_rollouts
 | 8            | 1024           | 30.50 GB          |
 | 8            | 512            | 20.31 GB          |
 | 8            | 256            | 15.60 GB          |
-| 4            | 1024           | 12.80 GB          |
-| 4            | 512            | 14.60 GB          |
+| 4            | 1024           | 14.60 GB          |
+| 4            | 512            | 12.80 GB          |
 | 4            | 256            | 10.59 GB          |
 
 
