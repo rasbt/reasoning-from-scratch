@@ -170,7 +170,7 @@ Chicago-style citation:
 BibTeX entry:
 
 ```
-@book{build-llms-from-scratch-book,
+@book{build-reasoning-from-scratch-book,
   author       = {Sebastian Raschka},
   title        = {Build A Reasoning Model (From Scratch)},
   publisher    = {Manning},
