@@ -170,11 +170,11 @@ Chicago-style citation:
 BibTeX entry:
 
 ```
-@book{build-llms-from-scratch-book,
+@book{build-reasoning-from-scratch-book,
   author       = {Sebastian Raschka},
   title        = {Build A Reasoning Model (From Scratch)},
   publisher    = {Manning},
-  year         = {2025},
+  year         = {2026},
   isbn         = {9781633434677},
   url          = {https://mng.bz/lZ5B},
   github       = {https://github.com/rasbt/reasoning-from-scratch}
