@@ -62,7 +62,7 @@ The [`self_refinement_math500.py`](self_refinement_math500.py) script implements
 
 The accuracy values and runtimes shown in the table were computed on all 500 samples in the MATH-500 test set using a "cuda" GPU (DGX Spark).
 
-The following codes give instructions on how to run the self-consistency experiments in rows 4-12 (replace `uv run` with `python` if you are not a `uv` user).
+The following commands run the self-refinement experiments in rows 2-9 and 11-16 (replace `uv run` with `python` if you are not a `uv` user).
 
 **Row 2:**
 
