@@ -26,7 +26,7 @@ Both evaluation scripts import functionality from the [`reasoning_from_scratch`]
 
 ## Chain-of-thought prompting
 
-The [`cot_prompting_math500.py`](self_consistency_math500.py) script implements the chain-of-thought prompting method from chapter 4.
+The [`cot_prompting_math500.py`](cot_prompting_math500.py) script implements the chain-of-thought prompting method from chapter 4.
 
 &nbsp;
 
@@ -44,21 +44,21 @@ The table below compares this approach (row 3) with the baselines from chapter 3
 
 The accuracy values and runtimes shown in the table were computed on all 500 samples in the MATH-500 test set using a "cuda" GPU (DGX Spark).
 
-To run the experiment in row one, use:
-
-```bash
-python cot_prompting_math500.py \
---which_model "base" \
---dataset_size 500
-```
-
-Or, with `uv:`
-
+The following command runs the baseline in row 1.
 
 ```bash
 uv run cot_prompting_math500.py \
---which_model "base" \
---dataset_size 500
+    --which_model "base" \
+    --dataset_size 500
+```
+
+For row 3, add the same prompt suffix used in section 4.3 of the [chapter notebook](../01_main-chapter-code/ch04_main.ipynb).
+
+```bash
+uv run cot_prompting_math500.py \
+    --which_model "base" \
+    --dataset_size 500 \
+    --prompt_suffix $' \n\nExplain step by step.'
 ```
 
 For additional options, use the `--help` flag.
