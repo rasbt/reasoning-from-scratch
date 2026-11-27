@@ -105,6 +105,14 @@ history = [
 ]
 
 
+def strip_thinking(text):
+    if "</think>" in text:
+        return text.split("</think>", 1)[-1].lstrip()
+    if "<think>" in text:
+        return text.split("<think>", 1)[0].rstrip()
+    return text
+
+
 def build_prompt_from_history(history, add_assistant_header=True):
     """
     history: [{"role": "system"|"user"|"assistant", "content": str}, ...]
@@ -178,9 +186,9 @@ def run_generate(user_text):
     )
     print("-" * 60)
 
-    # Add model reply to history
+    # Add model reply to history without <think>...</think> blocks
     assistant_text = tokenizer.decode(all_token_ids)
-    history.append({"role": "assistant", "content": assistant_text})
+    history.append({"role": "assistant", "content": strip_thinking(assistant_text)})
     return assistant_text
 
 
